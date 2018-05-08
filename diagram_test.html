@@ -1,0 +1,33 @@
+<html>
+
+    <head>
+        <script src="/svg/web/script/CSSOM.js">
+          // From https://github.com/NV/CSSOM
+        </script>
+    </head>
+
+    <body>
+        <script type="module">
+            import {Parser} from './script/parser.js';
+
+            let xhr = new XMLHttpRequest();
+
+            xhr.onload = function() {
+                let xmldoc = xhr.responseXML;
+
+                const parser = new Parser();
+                const diagram = parser.parse(xmldoc);
+                const svg = diagram.svg();
+                console.log(svg);
+            }
+
+            xhr.onerror = function() {
+                console.log("Error while getting xml");
+            }
+
+            xhr.open("GET", "http://localhost:8080/svg/noble_1962_celldl.xml");
+            xhr.responseType = "document";
+            xhr.send();
+        </script>
+    </body>
+</html>
