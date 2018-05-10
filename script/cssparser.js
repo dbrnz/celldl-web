@@ -71,7 +71,7 @@
     recoverable: (boolean: TRUE when the parser has a error recovery rule available for this particular error)
   }
 */
-export var cssparser = (function(){
+
 var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[1,5],$V1=[1,6],$V2=[1,25],$V3=[1,26],$V4=[1,27],$V5=[1,43],$V6=[1,21],$V7=[1,31],$V8=[1,44],$V9=[1,20],$Va=[1,45],$Vb=[1,52],$Vc=[1,46],$Vd=[1,39],$Ve=[1,49],$Vf=[1,50],$Vg=[1,48],$Vh=[1,47],$Vi=[1,40],$Vj=[1,41],$Vk=[1,42],$Vl=[1,51],$Vm=[5,7,8,25,27,30,36,37,46,48,56,57,67,85,86,121,122,123,124,125,126,127,128],$Vn=[1,57],$Vo=[5,7,8,15,25,27,30,36,37,46,48,56,57,67,85,86,121,122,123,124,125,126,127,128],$Vp=[14,51],$Vq=[1,67],$Vr=[1,69],$Vs=[1,66],$Vt=[1,68],$Vu=[14,51,69],$Vv=[1,74],$Vw=[1,73],$Vx=[1,75],$Vy=[1,82],$Vz=[1,87],$VA=[14,51,67,69,85,86,87,112,113,121,122,123,124,125,126,127,128],$VB=[1,95],$VC=[1,96],$VD=[1,94],$VE=[1,99],$VF=[1,100],$VG=[1,101],$VH=[1,102],$VI=[1,106],$VJ=[1,107],$VK=[1,118],$VL=[1,127],$VM=[1,128],$VN=[1,129],$VO=[14,15,17,51,52,62,63,65,67,69,82,83,85,86,87,88,89,102,106,107,112,113,121,122,123,124,125,126,127,128,130,131,132,133,134,135,140,142,144,148],$VP=[2,180],$VQ=[67,85,86,121,122,123,124,125,126,127,128],$VR=[17,62,65,94,123,125,148],$VS=[1,142],$VT=[14,17,51],$VU=[1,144],$VV=[123,125,148],$VW=[14,63,64],$VX=[1,163],$VY=[5,7,8,15,25,27,30,36,37,46,48,56,57,67,85,86,121,122,123,124,125,126,127,128,144,148],$VZ=[15,17],$V_=[15,17,102],$V$=[15,25,27,30,36,37,46,48,56,57,67,85,86,121,122,123,124,125,126,127,128],$V01=[1,190],$V11=[62,65],$V21=[1,211],$V31=[1,212],$V41=[1,207],$V51=[52,107,123,125,140,142,144,147,148],$V61=[52,62,67,69,83,85,86,88,107,121,122,123,124,125,126,127,128,139,140,142,144,148],$V71=[1,235],$V81=[1,232],$V91=[1,233],$Va1=[1,234],$Vb1=[15,123,125,144,148],$Vc1=[14,17,51,63],$Vd1=[69,130],$Ve1=[15,17,51,52,62,69,83,85,86,87,88,89,102,106,107,121,122,123,125,127,130,140,142,144,148],$Vf1=[1,246],$Vg1=[15,17,51,69,102,106],$Vh1=[15,17,51,52,62,69,83,102,106,107,121,122,123,125,127,140,142,144,148],$Vi1=[1,250],$Vj1=[1,251],$Vk1=[1,252],$Vl1=[1,253],$Vm1=[1,254],$Vn1=[15,17,51,52,62,69,83,85,86,87,88,89,102,106,107,121,122,123,125,127,140,142,144,148],$Vo1=[52,62,83,107,121,122,123,125,127,140,142,144,148],$Vp1=[69,85,86,87,88,89];
 var parser = {trace: function trace() { },
 yy: {},
@@ -644,7 +644,7 @@ var isArray = function isArray(o) {
     return Object.prototype.toString.call(o) === '[object Array]';
 };
 
-var toAtomic = function toAtomic(o) {
+export function toAtomic(o) {
     if (o instanceof CSSObject) {
         return o.toAtomicJSON();
     } else if (isArray(o)) {
@@ -656,7 +656,7 @@ var toAtomic = function toAtomic(o) {
     return o;
 };
 
-var toDeep = function toDeep(o) {
+export function toDeep(o) {
     if (o instanceof CSSObject) {
         return o.toDeepJSON();
     } else if (isArray(o)) {
@@ -668,7 +668,7 @@ var toDeep = function toDeep(o) {
     return o;
 };
 
-var toSimple = function toSimple(o) {
+export function toSimple(o) {
     if (o instanceof CSSObject) {
         return o.toSimpleJSON();
     } else if (isArray(o)) {
@@ -680,7 +680,7 @@ var toSimple = function toSimple(o) {
     return o;
 };
 
-var toJSON = function toJSON(o, level) {
+export function toJSON(o, level) {
     level = level.toLowerCase();
 
     if (!o) {
@@ -2749,27 +2749,9 @@ conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
 return lexer;
 })();
 parser.lexer = lexer;
-function Parser () {
+
+export function Parser () {
   this.yy = {};
 }
-Parser.prototype = parser;parser.Parser = Parser;
-return new Parser;
-})();
-
-
-if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
-exports.parser = cssparser;
-exports.Parser = cssparser.Parser;
-exports.parse = function () { return cssparser.parse.apply(cssparser, arguments); };
-exports.main = function commonjsMain(args) {
-    if (!args[1]) {
-        console.log('Usage: '+args[0]+' FILE');
-        process.exit(1);
-    }
-    var source = require('fs').readFileSync(require('path').normalize(args[1]), "utf8");
-    return exports.parser.parse(source);
-};
-if (typeof module !== 'undefined' && require.main === module) {
-  exports.main(process.argv.slice(1));
-}
-}
+Parser.prototype = parser;
+parser.Parser = Parser;
