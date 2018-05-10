@@ -20,7 +20,7 @@ limitations under the License.
 
 'use strict';
 
-import { cssparser} from './cssparser.js';
+import * as cssparser from './cssparser.js';
 import * as SPECIFICITY from './specificity.js';
 /*
 import * as io from 'io';
@@ -90,12 +90,15 @@ class StyleSheet {
 
     addStyle(styleElement) {
         const css = styleElement.textContent;
-        const rules = this._parser.parse(css).toAtomicJSON().value;
+        const ast = this._parser.parse(css);
+        const rules = ast._props_.value;
         for (let rule of rules) {
-            for (let selector of rule.selectors.value) {
-                this.stylesheet.push({selector: selector.value.value,
-                                style: rule.value.value,
-                                specificity: SPECIFICITY.calculate(selector.value.value)[0]['specificityArray'],
+            let selectors = cssparser.toSimple(rule._props_.selectors);
+            let styling = cssparser.toAtomic(rule._props_.value);
+            for (let selector of selectors) {
+                this.stylesheet.push({selector: selector,
+                                style: styling,
+                                specificity: SPECIFICITY.calculate(selector)[0]['specificityArray'],
                                 order: this._order});
                 this._order += 1;
             }
@@ -114,48 +117,78 @@ class StyleSheet {
     }
 
     style(element) {
-        let style = {};
+        let styling = {};
         for (let rule of this.stylesheet) {
             if (element.matches(rule.selector)) {
-                for (let i = 0; i < rule.style.length; ++i) {
-                    const key = rule.style[i];
-                    style[key] = rule.style[key];
+                const style = rule.style;
+                if (style.type === 'DECLARATION_LIST') {
+                    for (let declaration of style.value) {
+                        styling[declaration.property.value] = declaration.value;
+                    }
                 }
             }
         }
-        return style;
+        return styling;
     }
 
 }
 
 //==============================================================================
 
-/* Convention is that `tokens` is at **last** token processed */
+export class styleTokensIterator {
+    constructor(tokens) {
+        this.tokens = (tokens === null) ? []
+                    : (tokens.type === 'SEQUENCE') ? tokens.value;
+                                                   : [tokens];
+        this.length = this.tokens.length;
+        this.position = 0;
+        }
 
-function getNumber(tokens) {
-    /*
-    :param tokens: `StyleTokens` of tokens
-    :return: numeric value
-    */
-    var token;
-    token = tokens.next();
-    if ((token.type !== "number")) {
+    next() {
+        if (this.position < this.length) {
+            const value = this.tokens[this.position];
+            this.position += 1;
+            return { value: value, done: false };
+        }
+        return { value: undefined, done: true };
+    }
+
+    peek() {
+        if (this.position < this.length) {
+            return { value: this.tokens[this.position], done: false };
+        }
+        return { value: undefined, done: true };
+    }
+
+    reset() {
+        this.position = 0;
+    }
+
+    static fromStyleElement(style, name) {
+        return new styleTokensIterator((name in style) ? style[name] : null);
+    }
+}
+
+//==============================================================================
+
+function getNumber(tokenIterator) {
+    if ((tokens.type !== "NUMBER")) {
         throw new SyntaxError("Number expected.");
     } else {
-        return (token.is_integer ? token.int_value : token.value);
+        return tokens.value;
     }
 }
 
 //==============================================================================
 
-function getPercentage(tokens, default_value = null) {
+function getPercentage(tokenIterator, defaultValue=null) {
     /*
     :param tokens: `StyleTokens` of tokens
     :return: Length
     */
     var modifier, percentage, token;
-    token = tokens.peek();
-    if (((token === null) || (token.type !== "percentage"))) {
+    token = tokens.next();
+    if (((token === null) || (token.type !== "PERCENTAGE"))) {
         if ((default_value !== null)) {
             return default_value;
         } else {
@@ -178,33 +211,27 @@ function getPercentage(tokens, default_value = null) {
 
 //==============================================================================
 
-function getLength(tokens, default_value = null) {
+function getLength(tokens, defaultValue=null) {
     /*
     :param tokens: `StyleTokens` of tokens
     :return: Length
 
     `100`, `100x`, `100y`
     */
-    var modifier, token, value;
-    token = tokens.peek();
-    if (((token !== null) && (token.type === "percentage"))) {
-        return get_percentage(tokens, default_value);
-    } else {
-        if (((token === null) || (! _pj.in_es6(token.type, ["number", "dimension"])))) {
-            if ((default_value !== null)) {
-                return default_value;
-            } else {
-                throw new SyntaxError("Length expected.");
-            }
+    if (tokens !== null && tokens.type === "PERCENTAGE") {
+        return getPercentage(tokens, default_value);
+    } else if (tokens === null || !(tokens.type in ["NUMBER", "DIMENSION"])) {
+        if (defaultValue !== null) {
+            return defaultValue;
+        } else {
+            throw new SyntaxError("Length expected.");
         }
     }
-    value = (token.is_integer ? token.int_value : token.value);
-    modifier = ((token.type === "dimension") ? token.lower_unit : "");
-    if ((! _pj.in_es6(modifier, ["", "x", "y"]))) {
+    const modifier = (token.type === "DIMENSION") ? token.unit : "";
+    if (!(modifier in ["", "x", "y"])) {
         throw new SyntaxError("Modifier must be 'x' or 'y'.");
     }
-    tokens.next();
-    return [value, modifier];
+    return [token.value, modifier];
 }
 
 //==============================================================================

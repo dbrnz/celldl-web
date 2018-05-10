@@ -31,7 +31,7 @@ import * as nx from 'networkx';
 import * as layout from './layout.js';
 import * as parser from './parser.js';
 import * as svg_elements from './svg_elements.js';
-import {PositionedElement} from './element.js';
+import {Element, PositionedElement} from './element.js';
 
 //==============================================================================
 
@@ -249,75 +249,69 @@ export class Diagram extends Container {
     constructor(attributes, style) {
         super(null, attributes, style, "Diagram");
         this.elements = [];
-        this.elements_by_id = new OrderedDict();
-        this.elements_by_name = new OrderedDict();
+        this.elementsById = {}
+        this.elementsByName = {}
         this.compartments = [];
         this.quantities = [];
         this.transporters = [];
         this.layout = null;
-        this.width = this._number_from_style("width", 0);
-        this.height = this._number_from_style("height", 0);
-        this.flow_offset = this._length_from_style("flow-offset", layout.FLOW_OFFSET);
-        this.quantity_offset = this._length_from_style("quantity-offset", layout.QUANTITY_OFFSET);
-        this.bond_graph = null;
+        this.width = this.numberFromStyle("width", 0);
+        this.height = this.numberFromStyle("height", 0);
+        this.flow_offset = this.lengthFromStyle("flow-offset", layout.FLOW_OFFSET);
+        this.quantity_offset = this.lengthFromStyle("quantity-offset", layout.QUANTITY_OFFSET);
+        this.bondGraph = null;
     }
 
-    length_from_style(name, default_value) {
-        var value;
-        if ((this.style && _pj.in_es6(name, this.style))) {
-            value = parser.get_length(new parser.StyleTokens(this.style.get(name)));
-            return value;
+    lengthFromStyle(name, defaultValue) {
+        if (name in this.style) {
+            return parser.getLength(this.style[name]);
         }
-        return default_value;
+        return defaultValue;
     }
 
-    _number_from_style(name, default_value) {
-        var value;
-        if ((this.style && _pj.in_es6(name, this.style))) {
-            value = parser.get_number(new parser.StyleTokens(this.style.get(name)));
-            return value;
+    numberFromStyle(name, defaultValue) {
+        if (name in this.style) {
+            return parser.getNumber(this.style[name]);
         }
-        return default_value;
+        return defaultValue;
     }
 
-    set_bond_graph(bond_graph) {
-        this._bond_graph = bond_graph;
+    setBondGraph(bondGraph) {
+        this.bondGraph = bondGraph;
     }
 
-    add_compartment(compartment) {
-        this.add_element(compartment);
-        this._compartments.append(compartment);
+    addCompartment(compartment) {
+        this.addElement(compartment);
+        this.compartments.push(compartment);
     }
 
-    add_quantity(quantity) {
-        this.add_element(quantity);
-        this._quantities.append(quantity);
+    addQuantity(quantity) {
+        this.addElement(quantity);
+        this.quantities.push(quantity);
     }
 
-    add_transporter(transporter) {
-        this.add_element(transporter);
-        this._transporters.append(transporter);
+    addTransporter(transporter) {
+        this.addElement(transporter);
+        this.transporters.push(transporter);
     }
 
-    add_element(element) {
-        this._elements.append(element);
-        if ((element.id !== null)) {
-            if (_pj.in_es6(element.id, this._elements_by_id)) {
-                throw new KeyError("Duplicate 'id': {}".format(element.id));
+    addElement(element) {
+        this.elements.push(element);
+        if (element.id !== null) {
+            if (element.id in this.elementsById) {
+                throw new KeyError("Duplicate 'id': ${element.id}");
             }
-            this._elements_by_id[element.id] = element;
+            this.elementsById[element.id] = element;
         }
-        this._elements_by_name[element.full_name] = element;
+        this.elementsByName[element.fullName] = element;
     }
 
-    find_element(id_or_name, cls = Element) {
-        var e;
-        if (id_or_name.startswith("#")) {
-            e = this._elements_by_id.get(id_or_name);
-        } else {
-            e = this._elements_by_name.get(id_or_name);
-        }
-        return (((e !== null) && (e instanceof cls)) ? e : null);
+    findElement(idOrName, cls=Element) {
+        const e = (idOrName.startsWith("#")
+                   && idOrName in this.elementsById) ? this.elementsById[idOrName]
+                  : (idOrName in this.elementsByName ? this.elementsByName[idOrName]
+                  : null);
+        return ((e !== null) && (e instanceof cls)) ? e : null;
     }
 
     layout() {

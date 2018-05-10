@@ -86,11 +86,11 @@ export class Element {
         return (d ? " display=\"{}\"".format(d) : "");
     }
 
-    id_class() {
+    idClass() {
         let s = [""];
-        if ((this._id !== null))
+        if ((this.id !== null))
             s.append("id=\"{}\"".format(this._id.slice(1)));
-        if (this._classes)
+        if (this.classes)
             s.append("class=\"{}\"".format(" ".join(this._classes)));
         return " ".join(s);
     }
@@ -103,8 +103,8 @@ export class PositionedElement extends Element {
         super(container, attributes, style, className);
         this.position = new layout.Position(this);
         this.position.addDependency(container);
-        this.positionTokens = parser.StyleTokens.create(style, "position");
-        this.geometry = null;
+        this.positionTokens = parser.styleTokensIterator(style, 'position');
+        this._geometry = null;
     }
 
     get positionResolved() {
@@ -116,22 +116,22 @@ export class PositionedElement extends Element {
     }
 
     get geometry() {
-        if ((this.geometry === null) && this.position.hasCoords) {
-            this.geometry = Point(this.coords);
+        if ((this._geometry === null) && this.position.hasCoords) {
+            this._geometry = Point(this.coords);
         }
-        return this.geometry;
+        return this._geometry;
     }
 
     resolvePosition() {
         this.position.resolve();
     }
 
-    parse_geometry(defaultOffset = null, defaultDependency = null) {
+    parseGeometry(defaultOffset = null, defaultDependency = null) {
         /*
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
         */
-        if (this._position_tokens !== null) {
+        if (this.PositionTokens !== null) {
             this.position.parse(this.positionTokens, defaultOffset, defaultDependency);
         }
     }
