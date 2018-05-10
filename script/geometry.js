@@ -18,8 +18,8 @@ limitations under the License.
 
 ******************************************************************************/
 
-import * as dia from './diagram';
-import * as SyntaxError from './SyntaxError';
+import * as dia from './diagram.js';
+import * as SyntaxError from './SyntaxError.js';
 
 //==============================================================================
 
@@ -44,7 +44,7 @@ _pj_snippets(_pj);
 
 //==============================================================================
 
-class Length extends object {
+class Length {
     constructor(length = 0, units = "%") {
         this._length = length;
         this._units = units;
@@ -181,7 +181,7 @@ class Length extends object {
 
 //==============================================================================
 
-class LengthTuple extends object {
+class LengthTuple {
     constructor(lengths) {
         this._lengths = tuple(lengths);
     }
@@ -356,7 +356,7 @@ class LengthTuple extends object {
 
 //==============================================================================
 
-class GeometricObject extends object {
+class GeometricObject {
     constructor(pos = null, size = null) {
         this._position = LengthTuple.from_text(pos);
         this._size = LengthTuple.from_text(size);
@@ -385,9 +385,8 @@ class GeometricObject extends object {
 
 //==============================================================================
 
-class Box extends GeometricObject {
+export class Box {
     constructor(container = null, ref = null, kwds = {}) {
-        super();
         this._ref = ref;
         if ((! this.size)) {
             throw new ValueError("Box cannot have zero size");

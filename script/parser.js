@@ -18,7 +18,9 @@ limitations under the License.
 
 ******************************************************************************/
 
-import * as SPECIFICITY from './specificity';
+'use strict';
+
+import * as SPECIFICITY from './specificity.js';
 /*
 import * as io from 'io';
 import * as itertools from 'itertools';
@@ -30,10 +32,10 @@ import * as tinycss2.color3 from 'tinycss2/color3';
 */
 //==============================================================================
 
-import * as SyntaxError from './syntaxerror';
-import * as bg from './bondgraph';
-import * as dia from './diagram';
-import {GradientStore} from './svg_elements';
+import * as SyntaxError from './syntaxerror.js';
+import * as bg from './bondgraph.js';
+import * as dia from './diagram.js';
+import {GradientStore} from './svg_elements.js';
 
 //==============================================================================
 
@@ -75,91 +77,6 @@ _pj_snippets(_pj);
 //==============================================================================
 
 var NAMESPACE = "http://www.cellml.org/celldl/1.0#";
-
-function CellDL_namespace(tag) {
-    return "{{{}}}{}".format(NAMESPACE, tag);
-}
-
-//==============================================================================
-
-class StyleTokens extends object {
-    constructor(tokens) {
-        this._tokens = iter(tokens);
-        this._buffer = [];
-        this._value = null;
-        this._skip_space = true;
-    }
-
-    static create(style, name) {
-        var tokens;
-        tokens = style.get(name, null);
-        return (tokens ? this(tokens) : null);
-    }
-
-    __iter__() {
-        return this;
-    }
-
-    __next__() {
-        var token;
-        while (true) {
-            try {
-                token = (this._buffer ? this._buffer.pop() : next(this._tokens));
-            } catch(e) {
-                if ((e instanceof StopIteration)) {
-                    this._value = null;
-                    throw StopIteration;
-                } else {
-                    throw e;
-                }
-            }
-            if (((! this._skip_space) || (! _pj.in_es6(token.type, ["comment", "whitespace"])))) {
-                this._skip_space = true;
-                this._value = token;
-                return token;
-            }
-        }
-    }
-
-    get value() {
-        return this._value;
-    }
-
-    next(skip_space = true) {
-        var token;
-        this._skip_space = skip_space;
-        try {
-            token = next(this);
-        } catch(e) {
-            if ((e instanceof StopIteration)) {
-                return null;
-            } else {
-                throw e;
-            }
-        }
-        return token;
-    }
-
-    back() {
-        this._buffer.append(this._value);
-    }
-
-    peek(skip_space = true) {
-        var token;
-        this._skip_space = skip_space;
-        try {
-            token = next(this);
-        } catch(e) {
-            if ((e instanceof StopIteration)) {
-                return null;
-            } else {
-                throw e;
-            }
-        }
-        this._buffer.append(token);
-        return token;
-    }
-}
 
 //==============================================================================
 
@@ -381,88 +298,6 @@ function getColourValue(tokens) {
 
 //==============================================================================
 
-class ElementWrapper extends object {
-    constructor(element, stylesheets) {
-        var styling;
-        this._element = element;
-        this._tag = element.etree_element.tag;
-        this._text = element.etree_element.text;
-        this._attributes = dict(element.etree_element.items());
-        for (var name, _pj_c = 0, _pj_a = this._reserved_words, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            name = _pj_a[_pj_c];
-            if (_pj.in_es6(name, this._attributes)) {
-                this._attributes[(name + "_")] = this._attributes.pop(name);
-            }
-        }
-        this._style = {};
-        for (var s, _pj_c = 0, _pj_a = stylesheets, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            s = _pj_a[_pj_c];
-            this._style.update(s.match(element));
-        }
-        styling = this._attributes.pop("style", null);
-        if ((styling !== null)) {
-            for (var d, _pj_c = 0, _pj_a = function () {
-                var _pj_d = [], _pj_e = tinycss2.parse_declaration_list(styling, {"skip_whitespace": true});
-                for (var _pj_f = 0, _pj_g = _pj_e.length; (_pj_f < _pj_g); _pj_f += 1) {
-                    var obj = _pj_e[_pj_f];
-                    if ((obj.type === "declaration")) {
-                        _pj_d.push(obj);
-                    }
-                }
-                return _pj_d;
-            }.call(this), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-                d = _pj_a[_pj_c];
-                this._style[d.lower_name] = StyleSheet.style_value(d);
-            }
-        }
-        logging.debug("ELEMENT: %s %s %s", this._tag, this._attributes, this._style);
-    }
-
-    get element() {
-        return this._element;
-    }
-
-    get attributes() {
-        return this._attributes;
-    }
-
-    get style() {
-        return this._style;
-    }
-
-    get tag() {
-        return this._tag;
-    }
-
-    get text() {
-        return this._text;
-    }
-}
-
-_pj.set_properties(ElementWrapper, {"_reserved_words": ["class", "from"]});
-
-//==============================================================================
-
-class ElementChildren extends object {
-    constructor(root, stylesheets = null) {
-        this._root_element = root.element;
-        this._stylesheets = (stylesheets ? stylesheets : []);
-    }
-
-    * __iter__() {
-        for (var e, _pj_c = 0, _pj_a = this._root_element.iter_children(), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            e = _pj_a[_pj_c];
-            if ((! (e.etree_element instanceof etree._Element))) {
-                continue;
-            }
-            yield new ElementWrapper(e, this._stylesheets);
-        }
-        throw StopIteration;
-    }
-}
-
-//==============================================================================
-
 export class Parser
 /*===============*/
 {
@@ -478,16 +313,16 @@ export class Parser
         for (var e, _pj_c = 0, _pj_a = new ElementChildren(element, this._stylesheets), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
             e = _pj_a[_pj_c];
             this._last_element = e;
-            if ((e.tag === new CellDL_namespace("compartment"))) {
+            if (e.nodeName === "compartment") {
                 this.parse_compartment(e, container);
             } else {
-                if ((e.tag === new CellDL_namespace("quantity"))) {
+                if (e.nodeName === "quantity") {
                     this.parse_quantity(e, container);
                 } else {
-                    if (((e.tag === new CellDL_namespace("transporter")) && (container instanceof dia.Compartment))) {
-                        this.parse_transporter(e, container);
+                    if ((e.nodeName === "transporter") && (container instanceof dia.Compartment)) {
+                        this.parseTransporter(e, container);
                     } else {
-                        throw new SyntaxError("Unexpected XML element <{}>".format(e.tag));
+                        throw new SyntaxError("Unexpected XML element <${e.nodeName}>");
                     }
                 }
             }
@@ -497,26 +332,23 @@ export class Parser
     parseCompartment(element, container)
     /*================================*/
     {
-        var compartment;
-        compartment = new dia.Compartment(container, {"style": element.style, "attributes": element.attributes});
-        this._diagram.addCompartment(compartment);
+        const compartment = new dia.Compartment(container, element.attributes. this.stylesheet.style(element));
+        this.diagram.addCompartment(compartment);
         this.parseContainer(element, compartment);
     }
 
     parseQuantity(element, container)
     /*=============================*/
     {
-        var quantity;
-        quantity = new dia.Quantity(container, {"style": element.style, "attributes": element.attributes});
-        this._diagram.addQuantity(quantity);
+        const quantity = new dia.Quantity(container, element.attributes. this.stylesheet.style(element));
+        this.diagram.addQuantity(quantity);
     }
 
     parseTransporter(element, compartment)
     /*==================================*/
     {
-        var transporter;
-        transporter = new dia.Transporter(compartment, {"style": element.style, "attributes": element.attributes});
-        this._diagram.addRransporter(transporter);
+        const transporter = new dia.Transporter(compartment, element.attributes. this.stylesheet.style(element));
+        this.diagram.addTransporter(transporter);
     }
 
     parseBondGraph(element)
@@ -525,10 +357,10 @@ export class Parser
         for (var e, _pj_c = 0, _pj_a = new ElementChildren(element, this._stylesheets), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
             e = _pj_a[_pj_c];
             this._last_element = e;
-            if ((e.tag === new CellDL_namespace("potential"))) {
+            if (e.nodeName === "potential") {
                 this.parsePotential(e);
             } else {
-                if ((e.tag === new CellDL_namespace("flow"))) {
+                if (e.nodeName === "flow") {
                     this.parseFlow(e);
                 } else {
                     throw new SyntaxError("Invalid <bond-graph> element");
@@ -540,31 +372,30 @@ export class Parser
     parsePotential(element)
     /*===================*/
     {
-        var potential;
-        potential = new bg.Potential(this._diagram, {"style": element.style, "attributes": element.attributes});
-        if ((potential.quantity === null)) {
+        let potential = new bg.Potential(this.diagram, element.attributes, this.stylesheet.style(element));
+        if (potential.quantity === null) {
             throw new SyntaxError("Missing or unknown quantity.");
         }
         potential.setContainer(potential.quantity.container);
-        this._diagram.addElement(potential);
-        this._bond_graph.add{otential(potential);
+        this.diagram.addElement(potential);
+        this.bondGraph.addPotential(potential);
     }
 
     parseFlow(element)
     /*==============*/
     {
-        var component, container, flow;
-        flow = new bg.Flow(this._diagram, {"style": element.style, "attributes": element.attributes});
-        this._diagram.addElement(flow);
-        container = ((flow.transporter !== null) ? flow.transporter.container : null);
+        const flow = new bg.Flow(this.diagram, element.attributes, this.stylesheet.style(element));
+        this.diagram.addElement(flow);
+
+        let container = ((flow.transporter !== null) ? flow.transporter.container : null);
         for (var e, _pj_c = 0, _pj_a = new ElementChildren(element, this._stylesheets), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
             e = _pj_a[_pj_c];
             this._last_element = e;
-            if ((e.tag === new CellDL_namespace("component"))) {
+            if (e.nodeName === "component") {
                 if (((! _pj.in_es6("from_", e.attributes)) || (! _pj.in_es6("to", e.attributes)))) {
                     throw new SyntaxError("Flow component requires 'from' and 'to' potentials.");
                 }
-                component = new bg.FlowComponent(this._diagram, flow, {"style": e.style, "attributes": e.attributes});
+                const component = new bg.FlowComponent(this.diagram, flow, e.attributes, this.stylesheet.style(e));
                 if ((flow.transporter === null)) {
                     if ((container === null)) {
                         container = component.fromPotential.container;
@@ -625,18 +456,16 @@ export class Parser
             }
         }
 
-// Multiple stylesheets in order...
-//    const elementStyle = stylesheet.style(element);
-
         if (diagramElement !== null) {
-            this.diagram = new dia.Diagram({"style": diagramElement.style, "attributes": diagramElement.attributes});
+            this.diagram = new dia.Diagram(diagramElement.attributes, this.stylesheet.style(diagramElement));
             this.parseContainer(diagramElement, this.diagram);
         } else {
             this.diagram = new dia.Diagram();
         }
 
         if ((bondGraphElement !== null)) {
-            this.bondGraph = new bg.BondGraph(this.diagram, {"style": bondGraphElement.style, "attributes": bondGraphElement.attributes});
+            this.bondGraph = new bg.BondGraph(this.diagram,
+                                              bondGraphElement.attributes, this.stylesheet.style(bondGraphElement));
             this.parseBondGraph(bondGraphElement);
         } else {
             this.bondGraph = new bg.BondGraph(this.diagram);

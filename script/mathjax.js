@@ -64,7 +64,7 @@ function clean_svg(svg, id_base) {
 
 //==============================================================================
 
-function typeset(latex, id_base) {
+export function typeset(latex, id_base) {
     var headers, http_client, mathjax, request, response, svg;
     if ((latex.startswith("$") && latex.endswith("$"))) {
         latex = latex.slice(1, (- 1));

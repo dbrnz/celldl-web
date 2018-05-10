@@ -18,6 +18,8 @@ limitations under the License.
 
 ******************************************************************************/
 
+'use strict';
+
 /*
 import {OrderedDict} from 'collections';
 import * as geo from 'shapely/geometry';
@@ -26,10 +28,10 @@ import * as nx from 'networkx';
 
 //==============================================================================
 
-import * as layout from './layout';
-import * as parser from './parser';
-import * as svg_elements from './svg_elements';
-import {PositionedElement} from './element';
+import * as layout from './layout.js';
+import * as parser from './parser.js';
+import * as svg_elements from './svg_elements.js';
+import {PositionedElement} from './element.js';
 
 //==============================================================================
 
@@ -55,17 +57,13 @@ _pj_snippets(_pj);
 //==============================================================================
 
 class Container extends PositionedElement {
-    constructor(container, class_name = "Container", kwds = {}) {
-        super(container);
-        this._unit_converter = null;
+    constructor(container, attributes, style, className="Container") {
+        super(container, attributes, style, className);
+        this.unitConverter = null;
     }
 
-    get pixel_size() {
+    get pixelSize() {
         return [this._width, this._height];
-    }
-
-    get unit_converter() {
-        return this._unit_converter;
     }
 
     get geometry() {
@@ -107,14 +105,10 @@ class Container extends PositionedElement {
 
 //==============================================================================
 
-class Compartment extends Container {
-    constructor(container, kwds = {}) {
-        super(container);
-        this._size = new layout.Size(((this.style !== null) ? this.style.get("size", null) : null));
-    }
-
-    get size() {
-        return this._size;
+export class Compartment extends Container {
+    constructor(container, attributes, style) {
+        super(container, attributes, style, "Compartment");
+        this.size = new layout.Size(((this.style !== null) ? this.style.get("size", null) : null));
     }
 
     parse_geometry() {
@@ -144,10 +138,10 @@ class Compartment extends Container {
 
 //==============================================================================
 
-class Quantity extends PositionedElement {
-    constructor(container, kwds = {}) {
+export class Quantity extends PositionedElement {
+    constructor(container, attributes, style) {
+        super(container, attributes, style, "Quantity");
         this._potential = null;
-        super(container);
     }
 
     set_potential(potential) {
@@ -174,20 +168,12 @@ class Quantity extends PositionedElement {
 
 //==============================================================================
 
-class Transporter extends PositionedElement {
-    constructor(container, kwds = {}) {
-        super(container);
+export class Transporter extends PositionedElement {
+    constructor(container, attributes, style) {
+        super(container, attributes, style, "Transporter");
         this._compartment_side = null;
         this._flow = null;
         this._width = [10, "x"];
-    }
-
-    get compartment_side() {
-        return this._compartment_side;
-    }
-
-    get width() {
-        return this._width;
     }
 
     parse_geometry() {
@@ -259,24 +245,24 @@ class Transporter extends PositionedElement {
 
 //==============================================================================
 
-class Diagram extends Container {
-    constructor(kwds = {}) {
-        super(this);
-        this._elements = [];
-        this._elements_by_id = new OrderedDict();
-        this._elements_by_name = new OrderedDict();
-        this._compartments = [];
-        this._quantities = [];
-        this._transporters = [];
-        this._layout = null;
-        this._width = this._number_from_style("width", 0);
-        this._height = this._number_from_style("height", 0);
-        this._flow_offset = this._length_from_style("flow-offset", layout.FLOW_OFFSET);
-        this._quantity_offset = this._length_from_style("quantity-offset", layout.QUANTITY_OFFSET);
-        this._bond_graph = null;
+export class Diagram extends Container {
+    constructor(attributes, style) {
+        super(null, attributes, style, "Diagram");
+        this.elements = [];
+        this.elements_by_id = new OrderedDict();
+        this.elements_by_name = new OrderedDict();
+        this.compartments = [];
+        this.quantities = [];
+        this.transporters = [];
+        this.layout = null;
+        this.width = this._number_from_style("width", 0);
+        this.height = this._number_from_style("height", 0);
+        this.flow_offset = this._length_from_style("flow-offset", layout.FLOW_OFFSET);
+        this.quantity_offset = this._length_from_style("quantity-offset", layout.QUANTITY_OFFSET);
+        this.bond_graph = null;
     }
 
-    _length_from_style(name, default_value) {
+    length_from_style(name, default_value) {
         var value;
         if ((this.style && _pj.in_es6(name, this.style))) {
             value = parser.get_length(new parser.StyleTokens(this.style.get(name)));
@@ -292,30 +278,6 @@ class Diagram extends Container {
             return value;
         }
         return default_value;
-    }
-
-    get bond_graph() {
-        return this._bond_graph;
-    }
-
-    get elements() {
-        return this._elements;
-    }
-
-    get height() {
-        return this._height;
-    }
-
-    get width() {
-        return this._width;
-    }
-
-    get flow_offset() {
-        return this._flow_offset;
-    }
-
-    get quantity_offset() {
-        return this._quantity_offset;
     }
 
     set_bond_graph(bond_graph) {

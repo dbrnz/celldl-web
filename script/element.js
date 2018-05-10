@@ -18,49 +18,35 @@ limitations under the License.
 
 ******************************************************************************/
 
-//import 'jsts/org/locationtech/jts/geom/GeometryFactory' as 'geo';
-
-import Coordinate      from './jsts/org/locationtech/jts/geom/Coordinate'
-import GeometryFactory from './jsts/org/locationtech/jts/geom/GeometryFactory'
-
-const factory = new GeometryFactory()
-
-function Point(c) {
-  return factory.createPoint(new Coordinate(c[0], c[1]))
-}
+import * as geo from './geometry.js';
 
 //==============================================================================
 
-import * as layout from './layout';
-import * as parser from './parser';
-
-import * as svg_elements from './svg_elements';
-
-import * as SyntaxError from './SyntaxError';
+import * as layout from './layout.js';
+import * as parser from './parser.js';
+import * as svg_elements from './svg_elements.js';
+import * as SyntaxError from './SyntaxError.js';
 
 //==============================================================================
 
 export class Element {
-    constructor(container, class_name = "Element", _class = null, id = null, name = null, label = null, style = null) {
-        this._id = ((id !== null) ? ("#" + id) : null);
-        if ((name === null)) {
-            name = ((id !== null) ? id : "");
-        }
-        this._local_name = name;
-        if ((this === container)) {
-            this._container = null;
-            this._diagram = this;
-            this._full_name = "/";
+    constructor(container, attributes, style, className="Element") {
+        this.id = ('id' in attributes) ? ("#" + attributes.id) : null;
+        const name = ('name' in attributes) ? attributes.name
+                   : ((this.id !== null) ? thid.id : "");
+        this.localName = name;
+        this.container = container;
+        if (container === null) {
+            this.diagram = this;
+            this.fullName = "/";
         } else {
-            this._container = container;
-            this._diagram = container.diagram;
-            this._full_name = (((container && container.full_name) && name) ? ((container.full_name + "/") + name) : null);
+            this.diagram = container.diagram;
+            this.fullName = container.fullName + "/" + name;
         }
-        this._class_name = class_name;
-        this._classes = ((_class !== null) ? _class.split(/\s*/) : []);
-        this._label = (label ? label : name);
-        this._style = ((style !== null) ? style : {});
-        // Now invoke any PositionedElement mix-in...
+        this.className = className;
+        this.classes = ('class' in attributes) ? attribute.class.split(/\s*/) : [];
+        this.label = ('label' in attributes) ?  attributes.label : name;
+        this.style = style;
     }
 
     toString() {
@@ -69,34 +55,6 @@ export class Element {
             s.append("({})".format(this._id));
         }
         return " ".join(s);
-    }
-
-    get full_name() {
-        return this._full_name;
-    }
-
-    get id() {
-        return this._id;
-    }
-
-    get label() {
-        return this._label;
-    }
-
-    get local_name() {
-        return this._local_name;
-    }
-
-    get diagram() {
-        return this._diagram;
-    }
-
-    get container() {
-        return this._container;
-    }
-
-    get style() {
-        return this._style;
     }
 
     get colour() {
@@ -115,11 +73,11 @@ export class Element {
         return this.get_style_as_string("stroke-width", "1");
     }
 
-    is_class(name) {
+    isClass(name) {
         return this.classes.indexOf(name) > - 1;
     }
 
-    set_container(container) {
+    setContainer(container) {
         this._container = container;
     }
 
@@ -140,44 +98,41 @@ export class Element {
 
 //==============================================================================
 
-export class PositionedElement {
-    constructor() {
-        this._position = new layout.Position(this);
-        this._position.add_dependency(this._container);
-        this._position_tokens = parser.StyleTokens.create(this._style, "position");
-        this._geometry = null;
+export class PositionedElement extends Element {
+    constructor(container, attributes, style, className="positionedElement") {
+        super(container, attributes, style, className);
+        this.position = new layout.Position(this);
+        this.position.addDependency(container);
+        this.positionTokens = parser.StyleTokens.create(style, "position");
+        this.geometry = null;
     }
 
-    get position() {
-        return this._position;
-    }
-
-    get position_resolved() {
-        return ((this._position !== null) && this._position.resolved);
+    get positionResolved() {
+        return ((this.position !== null) && this.position.resolved);
     }
 
     get coords() {
-        return this._position.coords;
+        return this.position.coords;
     }
 
     get geometry() {
-        if (((this._geometry === null) && this.position.has_coords)) {
-            this._geometry = Point(this.coords);
+        if ((this.geometry === null) && this.position.hasCoords) {
+            this.geometry = Point(this.coords);
         }
-        return this._geometry;
+        return this.geometry;
     }
 
-    resolve_position() {
-        this._position.resolve();
+    resolvePosition() {
+        this.position.resolve();
     }
 
-    parse_geometry(default_offset = null, default_dependency = null) {
+    parse_geometry(defaultOffset = null, defaultDependency = null) {
         /*
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
         */
-        if ((this._position_tokens !== null)) {
-            this.position.parse(this._position_tokens, default_offset, default_dependency);
+        if (this._position_tokens !== null) {
+            this.position.parse(this.positionTokens, defaultOffset, defaultDependency);
         }
     }
 
@@ -194,8 +149,8 @@ export class PositionedElement {
 
     svg(radius = layout.ELEMENT_RADIUS) {
         var svg, x, y;
-        svg = ["<g{}{}>".format(this.id_class(), this.display())];
-        if (this.position.has_coords) {
+        svg = ["<g{}{}>".format(this.idClass(), this.display())];
+        if (this.position.hasCoords) {
             [x, y] = this.coords;
             svg.append("  <circle r=\"{}\" cx=\"{}\" cy=\"{}\" stroke=\"{}\" stroke-width=\"{}\" fill=\"{}\"/>".format(radius, x, y, this.stroke, this.stroke_width, this.colour));
             svg.append(this.label_as_svg());

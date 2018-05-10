@@ -27,16 +27,16 @@ import * as geo from 'shapely/geometry';
 
 //==============================================================================
 
-import * as dia from './diagram';
-import * as layout from './layout';
-import * as parser from './parser';
-import {PositionedElement} from './element';
-import {svg_line} from './svg_elements';
+import * as dia from './diagram.js';
+import * as layout from './layout.js';
+import * as parser from './parser.js';
+import {PositionedElement} from './element.js';
+import {svg_line} from './svg_elements.js';
 
 //==============================================================================
 
 var _pj;
-var LINE_OFFSET;
+
 function _pj_snippets(container) {
     function in_es6(left, right) {
         if (((right instanceof Array) || ((typeof right) === "string"))) {
@@ -57,23 +57,15 @@ _pj_snippets(_pj);
 
 //==============================================================================
 
-LINE_OFFSET = 3.5;
+const LINE_OFFSET = 3.5;
 
 //==============================================================================
 
-class BondGraph extends Element {
-    constructor(diagram, kwds = {}) {
-        super(diagram);
+export class BondGraph extends Element {
+    constructor(diagram, attributes, style) {
+        super(diagram, attributes, style, "BondGraph");
         this._flows = [];
         this._potentials = new OrderedDict();
-    }
-
-    get flows() {
-        return this._flows;
-    }
-
-    get potentials() {
-        return this._potentials;
     }
 
     add_flow(flow) {
@@ -121,20 +113,12 @@ class BondGraph extends Element {
 
 //==============================================================================
 
-class Flow extends PositionedElement {
-    constructor(diagram, transporter = null, kwds = {}) {
-        this._transporter = (transporter ? diagram.find_element(("#" + transporter), dia.Transporter) : null);
-        super(diagram);
-        this._components = [];
-        this._component_offsets = {};
-    }
-
-    get components() {
-        return this._components;
-    }
-
-    get transporter() {
-        return this._transporter;
+export class Flow extends PositionedElement {
+    constructor(diagram, transporter = null, attributes, style) {
+        super(diagram, attributes, style, "Flow");
+        this.transporter = (transporter ? diagram.find_element(("#" + transporter), dia.Transporter) : null);
+        this.components = [];
+        this.component_offsets = {};
     }
 
     add_component(component) {
@@ -203,9 +187,9 @@ class Flow extends PositionedElement {
 
 //==============================================================================
 
-class FlowComponent extends PositionedElement {
-    constructor(diagram, flow, from_ = null, to = null, count = 1, line = null, kwds = {}) {
-        super(diagram);
+export class FlowComponent extends PositionedElement {
+    constructor(diagram, flow, from_ = null, to = null, count = 1, line = null, attributes, style) {
+        super(diagram, attributes, style, "FlowComponent");
         this._from_potential = diagram.find_element(("#" + from), Potential);
         this._to_potentials = function () {
             var _pj_a = [], _pj_b = to.split();
@@ -218,18 +202,6 @@ class FlowComponent extends PositionedElement {
         this._count = Number.parseInt(count);
         this._lines = dict({"start": new layout.Line(this, parser.StyleTokens.create(this._style, "line-start")), "end": new layout.Line(this, parser.StyleTokens.create(this._style, "line-end"))});
         this._flow = flow;
-    }
-
-    get from_potential() {
-        return this._from_potential;
-    }
-
-    get to_potentials() {
-        return this._to_potentials;
-    }
-
-    get count() {
-        return this._count;
     }
 
     parse_geometry() {
@@ -271,19 +243,15 @@ class FlowComponent extends PositionedElement {
 
 //==============================================================================
 
-class Potential extends PositionedElement {
-    constructor(diagram, quantity = null, kwds = {}) {
-        this._quantity = diagram.find_element(("#" + quantity), dia.Quantity);
-        this._quantity.set_potential(this);
-        super(this._quantity.container);
+export class Potential extends PositionedElement {
+    constructor(diagram, quantity = null, attributes, style) {
+        this.quantity = diagram.find_element(("#" + quantity), dia.Quantity);
+        this.quantity.setPotential(this);
+        super(this._quantity.container, attributes, style, "Quantity");
     }
 
-    get quantity_id() {
-        return this._quantity.id;
-    }
-
-    get quantity() {
-        return this._quantity;
+    get quantityOd() {
+        return this.quantity.id;
     }
 
     parse_geometry() {

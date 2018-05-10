@@ -24,9 +24,9 @@ import * as math from 'math';
 
 //==============================================================================
 
-import * as bg from './bondgraph';
-import * as dia from './diagram';
-import * as parser from './parser';
+import * as bg from './bondgraph.js';
+import * as dia from './diagram.js';
+import * as parser from './parser.js';
 
 //==============================================================================
 
@@ -146,51 +146,43 @@ export class Point {
 
 export class Position {
     constructor(element) {
-        this._element = element;
-        this._lengths = null;
-        this._relationships = list();
-        this._coords = null;
-        this._dependencies = set();
+        this.element = element;
+        this.lengths = null;
+        this.relationships = [];
+        this.coords = null;
+        this.dependencies = new Set();
     }
 
     __bool__() {
-        return (bool(this._dependencies) || bool(this._lengths));
+        return (bool(this.dependencies) || bool(this.lengths));
     }
 
-    get coords() {
-        return this._coords;
-    }
-
-    get dependencies() {
-        return this._dependencies;
-    }
-
-    get has_coords() {
-        return (this._coords !== null);
+    get hasCoords() {
+        return (this.coords !== null);
     }
 
     get resolved() {
-        return ((this._coords !== null) && (! _pj.in_es6(null, this._coords)));
+        return ((this.coords !== null) && (! _pj.in_es6(null, this._coords)));
     }
 
     add_dependencies(dependencies) {
         this._dependencies.update(dependencies);
     }
 
-    add_dependency(dependency) {
-        this._dependencies.add(dependency);
+    addDependency(dependency) {
+        this.dependencies.add(dependency);
     }
 
-    add_relationship(offset, relation, dependencies) {
-        this._relationships.append([offset, relation, dependencies]);
+    addRelationship(offset, relation, dependencies) {
+        this.relationships.push({offset, relation, dependencies});
     }
 
-    set_coords(coords) {
-        this._coords = coords;
+    setCoords(coords) {
+        this.coords = coords;
     }
 
-    set_lengths(lengths) {
-        this._lengths = lengths;
+    setLengths(lengths) {
+        this.lengths = lengths;
     }
 
     centroid(dependencies) {
@@ -227,7 +219,8 @@ export class Position {
                 using_default = (! _pj.in_es6(token.type, ["number", "dimension", "percentage"]));
                 offset = parser.get_length(tokens, {"default": default_offset});
                 token = tokens.next();
-                if (((token.type !== "ident") || (! _pj.in_es6(token.lower_value, POSITION_RELATIONS)))) {
+
+                if (token.type !== "ident" || POSITION_RELATIONS.indexOf(token.toLowerCase) < 0) {
                     throw new SyntaxError("Unknown relationship for position.");
                 }
                 reln = token.lower_value;
