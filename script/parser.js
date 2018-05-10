@@ -20,6 +20,7 @@ limitations under the License.
 
 'use strict';
 
+import { cssparser} from './cssparser.js';
 import * as SPECIFICITY from './specificity.js';
 /*
 import * as io from 'io';
@@ -84,17 +85,17 @@ class StyleSheet {
     constructor() {
         this.stylesheet = [];
         this._order = 0;
+        this._parser = new cssparser.Parser();
     }
 
     addStyle(styleElement) {
         const css = styleElement.textContent;
-        const rules = CSSOM.parse(css).cssRules;
+        const rules = this._parser.parse(css).toAtomicJSON().value;
         for (let rule of rules) {
-            const selectors = rule.selectorText.split(',');
-            for (let selector of selectors) {
-                this.stylesheet.push({selector: selector,
-                                style: rule.style,
-                                specificity: SPECIFICITY.calculate(selector)[0]['specificityArray'],
+            for (let selector of rule.selectors.value) {
+                this.stylesheet.push({selector: selector.value.value,
+                                style: rule.value.value,
+                                specificity: SPECIFICITY.calculate(selector.value.value)[0]['specificityArray'],
                                 order: this._order});
                 this._order += 1;
             }
