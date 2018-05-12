@@ -30,29 +30,8 @@ import * as nx from 'networkx';
 
 import * as layout from './layout.js';
 import * as parser from './parser.js';
-import * as svg_elements from './svg_elements.js';
+import * as svgElements from './svgElements.js';
 import {Element, PositionedElement} from './element.js';
-
-//==============================================================================
-
-var _pj;
-function _pj_snippets(container) {
-    function in_es6(left, right) {
-        if (((right instanceof Array) || ((typeof right) === "string"))) {
-            return (right.indexOf(left) > (- 1));
-        } else {
-            if (((right instanceof Map) || (right instanceof Set) || (right instanceof WeakMap) || (right instanceof WeakSet))) {
-                return right.has(left);
-            } else {
-                return (left in right);
-            }
-        }
-    }
-    container["in_es6"] = in_es6;
-    return container;
-}
-_pj = {};
-_pj_snippets(_pj);
 
 //==============================================================================
 
@@ -60,45 +39,47 @@ class Container extends PositionedElement {
     constructor(container, attributes, style, className="Container") {
         super(container, attributes, style, className);
         this.unitConverter = null;
+        this.width = null;
+        this.height = null;
     }
 
     get pixelSize() {
-        return [this._width, this._height];
+        return [this.width, this.height];
     }
 
     get geometry() {
-        if (((this._geometry === null) && this.position.has_coords)) {
-            this._geometry = geo.box(this.coords[0], this.coords[1], (this.coords[0] + this._width), (this.coords[1] + this._height));
+        if (this.geometry === null && this.position.hasCoords) {
+            this.geometry = geo.box(this.coords[0], this.coords[1],
+                                    this.coords[0] + this._width, this.coords[1] + this._height);
         }
-        return this._geometry;
+        return this.geometry;
     }
 
-    set_pixel_size(pixel_size) {
-        [this._width, this._height] = pixel_size;
+    setPixelSize(pixelSize) {
+        [this.width, this.height] = pixelSize;
     }
 
-    set_unit_converter(unit_converter) {
-        this._unit_converter = unit_converter;
+    setUnitConverter(unitConverter) {
+        this.UnitConverter = unitConverter;
     }
 
     svg() {
-        var element, element_class, id, svg;
-        svg = ["<g{}{}>".format(this.id_class(), this.display())];
-        if (this.position.has_coords) {
-            svg.append("<g transform=\"translate({:g}, {:g})\">".format(...this.position.coords));
-            element_class = this.get_style_as_string("svg-element");
-            if (_pj.in_es6(element_class, dir(svg_elements))) {
-                id = (this._id ? this._id.slice(1) : "");
-                element = svg_elements.__dict__.get(element_class)(id, this._width, this._height);
-                svg.append(element.svg());
+        let svg = ['<g${this.idClass()}${this.display()}>'];
+        if (this.position.hasCoords) {
+            svg.push('<g transform="translate(${this.position.coords.x}, ${this.position.coords.y})">');
+            const elementClass = this.get_style_as_string("svg-element");
+            if (elementClass in svgElements) {
+                const id = this.id ? this.id.substring(1) : "";
+                const element = svgElements[elementClass](id, this.width, this.height);
+                svg.push(element.svg());
             } else {
-                if ((! (this instanceof Diagram))) {
-                    svg.append("<path fill=\"#eeeeee\" stroke=\"#222222\" stroke-width=\"2.0\" opacity=\"0.6\" d=\"M0,0 L{right:g},0 L{right:g},{bottom:g} L0,{bottom:g} z\"/>".format({"right": this._width, "bottom": this._height}));
+                if (!(this instanceof Diagram)) {
+                    svg.push('<path fill="#eeeeee" stroke="#222222" stroke-width="2.0" opacity="0.6" d="M0,0 L${this.width},0 L${this.width},${this.height} L0,${this.height} z"/>');
                 }
             }
-            svg.append("</g>");
+            svg.push("</g>");
         }
-        svg.append("</g>");
+        svg.push("</g>");
         return svg;
     }
 }
@@ -111,13 +92,21 @@ export class Compartment extends Container {
         this.size = ('size' in this.style) ? new layout.Size(this.style.size) : null;
     }
 
+    get pixelSize() {
+        return [this.width, this.height];
+    }
+
+    setPixelSize(pixelSize) {
+        [this.width, this.height] = pixelSize;
+    }
+
     parse_geometry() {
         /*
         * Compartment size/position: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         */
         var lengths;
         lengths = null;
-        for (var token, _pj_c = 0, _pj_a = this._position_tokens, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
+        for (var token, _pj_c = 0, _pj_a = this.position_tokens, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
             token = _pj_a[_pj_c];
             if (((token.type === "() block") && (lengths === null))) {
                 lengths = parser.getCoordinates(new parser.StyleTokensIterator(token.content));
@@ -129,10 +118,6 @@ export class Compartment extends Container {
         }
         this._position.set_lengths(lengths);
         this._position.add_dependency(this.container);
-    }
-
-    svg() {
-        return super.svg();
     }
 }
 
@@ -149,20 +134,18 @@ export class Quantity extends PositionedElement {
     }
 
     parseGeometry() {
-        // super() ??
-        PositionedElement.parseGeometry(this, {"default_offset": this.diagram.quantity_offset, "default_dependency": this._potential});
+        super.parseGeometry(this.diagram.quantityOffset, this.potential);
     }
 
     svg() {
-        var h, svg, w, x, y;
-        svg = ["<g{}{}>".format(this.idClass(), this.display())];
+        let svg = ['<g${this.idClass()}${this.display()}>'];
         if (this.position.hasCoords) {
-            [x, y] = this.coords;
-            [w, h] = [layout.QUANTITY_WIDTH, layout.QUANTITY_HEIGHT];
-            svg.append("  <rect rx=\"{}\" ry=\"{}\" x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" stroke=\"none\" fill=\"{}\"/>".format((0.375 * w), (0.375 * h), (x - (w / 2)), (y - (h / 2)), w, h, this.colour));
-            svg.append(this.label_as_svg());
+            const [x, y] = this.coords;
+            const [w, h] = [layout.QUANTITY_WIDTH, layout.QUANTITY_HEIGHT];
+            svg.push('  <rect rx="${0.375 * w}" ry="${0.375 * h}" x="${x - w/2}" y="${y - h/2}" width="${w}" height="${h}" stroke="none" fill="${this.colour}"/>');
+            svg.push(this.labelAsSvg());
         }
-        svg.append("</g>");
+        svg.push('</g>');
         return svg;
     }
 }
@@ -174,7 +157,7 @@ export class Transporter extends PositionedElement {
         super(container, attributes, style, "Transporter");
         this.compartmentSide = null;
         this.flow = null;
-        this.width = [10, "x"];
+        this.width = {value: 10, unit: 'x'};
     }
 
     parseGeometry() {
@@ -217,7 +200,7 @@ export class Transporter extends PositionedElement {
             }
         } catch(e) {
             if ((e instanceof StopIteration)) {
-                throw new SyntaxError("Invalid `transporter` position");
+                throw new SyntaxError('Invalid transporter position');
             } else {
                 throw e;
             }
@@ -228,14 +211,15 @@ export class Transporter extends PositionedElement {
 
     svg() {
         var element, element_class, id, radius, svg;
-        svg = [];
-        element_class = this.get_style_as_string("svg-element");
-        if (_pj.in_es6(element_class, dir(svg_elements))) {
-            svg.append("<g{}{}>".format(this.id_class(), this.display()));
-            id = (this._id ? this._id.slice(1) : "");
-            element = svg_elements.__dict__.get(element_class)(id, this.coords, (_pj.in_es6(this.compartment_side, layout.HORIZONTAL_BOUNDARIES) ? 0 : 90));
-            svg.append(element.svg());
-            svg.append("</g>");
+        let svg = [];
+        const elementClass = this.getStyleAsString("svg-element");
+        if (elementClass in svgElements) {
+            svg.push('<g${this.idClass()}${this.display()}>');
+            const id = this.id ? this.id.substring(1) : "";
+            const element = svgElements[elementClass](id, this.coords,
+                (layout.HORIZONTAL_BOUNDARIES.indexOf(this.compartmentSide) >= 0) ? 0 : 90);
+            svg.push(element.svg());
+            svg.push('</g>');
             radius = layout.ELEMENT_RADIUS;
         } else {
             radius = layout.TRANSPORTER_RADIUS;
@@ -266,14 +250,14 @@ export class Diagram extends Container {
 
     lengthFromStyle(name, defaultValue) {
         if (name in this.style) {
-            return parser.getLength(new parser.StyleTokensIterator(this.style[name]));
+            return parser.getLength(this.style[name]);
         }
         return defaultValue;
     }
 
     numberFromStyle(name, defaultValue) {
         if (name in this.style) {
-            return parser.getNumber(new parser.StyleTokensIterator(this.style[name]));
+            return parser.getNumber(this.style[name]);
         }
         return defaultValue;
     }
@@ -313,7 +297,7 @@ export class Diagram extends Container {
                    && idOrName in this.elementsById) ? this.elementsById[idOrName]
                   : (idOrName in this.elementsByName ? this.elementsByName[idOrName]
                   : null);
-        return ((e !== null) && (e instanceof cls)) ? e : null;
+        return (e !== null && e instanceof cls) ? e : null;
     }
 
     layout() {
@@ -323,42 +307,42 @@ export class Diagram extends Container {
         We position and size all compartments before positioning
         other elements.
         */
-        var dependency, g, id_or_name;
+
         this.position.setCoords(new layout.Point());
-        g = new nx.DiGraph();
-        for (var e, _pj_c = 0, _pj_a = this._elements, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            e = _pj_a[_pj_c];
-            e.parse_geometry();
-            if (e.position) {
-                g.add_node(e);
+
+        let g = new nx.DiGraph();
+
+        for (let e of this.elements) {
+            e.parseGeometry();
+            if (e.position.bool()) {
+                g.addNode(e);
             }
         }
-        for (var e, _pj_c = 0, _pj_a = list(g), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            e = _pj_a[_pj_c];
-            for (var dependency, _pj_f = 0, _pj_d = e.position.dependencies, _pj_e = _pj_d.length; (_pj_f < _pj_e); _pj_f += 1) {
-                dependency = _pj_d[_pj_f];
-                if ((((typeof dependency) === "string") || (dependency instanceof String))) {
-                    id_or_name = dependency;
-                    dependency = this.find_element(id_or_name);
-                    if ((dependency === null)) {
-                        throw new KeyError("Unknown element: {}".format(id_or_name));
+
+        for (let e of list(g)) {
+            for (let d of e.position.dependencies) {
+                let dependency = d;
+                if (d instanceof String) {
+                    dependency = this.findElement(d);
+                    if (dependency === null) {
+                        throw new KeyError("Unknown element: ${d}");
                     }
                 }
-                g.add_edge(dependency, e);
+                g.addEdge(dependency, e);
             }
         }
-        this.set_unit_converter(new layout.UnitConverter(this.pixel_size, this.pixel_size));
-        for (var e, _pj_c = 0, _pj_a = nx.topological_sort(g), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            e = _pj_a[_pj_c];
-            if (((e !== this) && (! e.position_resolved))) {
-                e.resolve_position();
-                if ((e instanceof Compartment)) {
-                    e.set_pixel_size(e.container.unit_converter.pixel_pair(e.size.lengths, false));
-                    e.set_unit_converter(new layout.UnitConverter(this.pixel_size, e.pixel_size, e.position.coords));
+
+        this.setUnitConverter(new layout.UnitConverter(this.pixelSize, this.pixelSize));
+        for (let e of nx.topological_sort(g)) {
+            if (e !== this && !e.positionResolved) {
+                e.resolvePosition();
+                if (e instanceof Compartment) {
+                    e.setPixelSize(e.container.unitConverter.pixelPair(e.size.lengths, false));
+                    e.setUnitConverter(new layout.UnitConverter(this.pixelSize, e.pixelSize, e.position.coords));
                 }
             }
         }
-        this.bond_graph.set_offsets();
+        this.bondGraph.setOffsets();
     }
 
     svg() {
@@ -371,27 +355,23 @@ export class Diagram extends Container {
         Transporter SVG elements need to generate SVG from super class (Exchanger, Channel, etc)
         with <defs> only once for each superclass...
         */
-        var svg;
-        svg = ["<?xml version=\"1.0\" encoding=\"UTF-8\"?>"];
-        svg.append("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" width=\"{width:g}\" height=\"{height:g}\" viewBox=\"0 0 {width:g} {height:g}\">".format({"width": this._width, "height": this._height}));
-        for (var c, _pj_c = 0, _pj_a = this._compartments, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            c = _pj_a[_pj_c];
+        let svg = ['<?xml version=\"1.0\" encoding=\"UTF-8\"?>'];
+        svg.push('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="${this.width}" height="${this.height}" viewBox="0 0 ${this.width} ${this.height}">');
+        for (let c of this.compartments) {
             svg.extend(c.svg());
         }
         svg.extend(this.bond_graph.svg());
-        for (var q, _pj_c = 0, _pj_a = this._quantities, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            q = _pj_a[_pj_c];
+        for (let q of this.quantities) {
             svg.extend(q.svg());
         }
-        for (var t, _pj_c = 0, _pj_a = this._transporters, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            t = _pj_a[_pj_c];
+        for (let t of this.transporters) {
             svg.extend(t.svg());
         }
-        svg.append("<defs>");
+        svg.push('<defs>');
         svg.extend(svg_elements.DefinesStore.defines());
-        svg.append("</defs>");
-        svg.append("</svg>");
-        return "\n".join(svg);
+        svg.push('</defs>');
+        svg.push('</svg>');
+        return '\n'.join(svg);
     }
 }
 

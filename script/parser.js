@@ -192,37 +192,28 @@ export function getLength(tokens, defaultValue=null) {
 
 //==============================================================================
 
-export function getCoordinates(tokens, allow_local = true) {
+export function getCoordinates(tokens, allowLocal = true) {
     /*
     Get a coordinate pair.
 
     :param tokens: `StyleTokens` of tokens
     :return: tuple(Length, Length)
     */
-    var coords, got_comma, length, token;
-    coords = [];
-    got_comma = true;
-    token = tokens.next();
-    while ((token !== null)) {
-        if ((token === ",")) {
-            if (got_comma) {
-                throw new SyntaxError("Unexpected comma.");
-            }
-            got_comma = true;
-        } else {
-            if ((got_comma && (_pj.in_es6(token.type, ["dimension", "number"]) || (allow_local && (token.type === "percentage"))))) {
-                got_comma = false;
-                tokens.back();
-                length = get_length(tokens);
-                coords.append(length);
+    let coords = [];
+
+    if (tokens instanceof Array && tokens.length == 2) {
+        let (token of tokens) {
+            if (token.type ==== 'SEQUENCE') {
+                <offset> <reln> <id_list>
+            } else if (_pj.in_es6(token.type, ["dimension", "number"])
+                   || (allowLocal && token.type === "percentage")) {
+                <offset>
             } else {
                 throw new SyntaxError("Invalid syntax.");
             }
         }
-        token = tokens.next();
-    }
-    if ((coords.length !== 2)) {
-        throw new SyntaxError("Expected length pair.");
+    } else {
+        throw new SyntaxError("Expected cordinates.");
     }
     return coords;
 }

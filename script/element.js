@@ -102,12 +102,12 @@ export class PositionedElement extends Element {
         super(container, attributes, style, className);
         this.position = new layout.Position(this);
         this.position.addDependency(container);
-        this.positionTokens = parser.StyleTokensIterator.fromStyleElement(style, 'position');
-        this._geometry = null;
+        this.positionTokens = ('position' in this.style) ? this.style.position: null;
+        this.geometry = null;
     }
 
     get positionResolved() {
-        return ((this.position !== null) && this.position.resolved);
+        return this.position.resolved;
     }
 
     get coords() {
@@ -115,17 +115,17 @@ export class PositionedElement extends Element {
     }
 
     get geometry() {
-        if ((this._geometry === null) && this.position.hasCoords) {
-            this._geometry = Point(this.coords);
+        if (this.geometry === null && this.position.resolved) {
+            this.geometry = Point(this.coords);
         }
-        return this._geometry;
+        return this.geometry;
     }
 
     resolvePosition() {
         this.position.resolve();
     }
 
-    parseGeometry(defaultOffset = null, defaultDependency = null) {
+    parseGeometry(defaultOffset=null, defaultDependency=null) {
         /*
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`

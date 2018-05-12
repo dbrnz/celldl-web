@@ -156,8 +156,8 @@ export class Position {
         // (index into global array/list of elements)
     }
 
-    __bool__() {
-        return (bool(this.dependencies) || bool(this.lengths));
+    bool() {
+        return (this.dependencies.length > 0 || this.lengths !== null);
     }
 
     get hasCoords() {
@@ -165,7 +165,7 @@ export class Position {
     }
 
     get resolved() {
-        return (this.coords !== null && this._coords.indexOf(null) < 0);
+        return (this.coords !== null && this.coords.indexOf(null) < 0);
     }
 
     addDependency(dependency) {
@@ -190,15 +190,14 @@ export class Position {
         this.lengths = lengths;
     }
 
-    centroid(dependencies) {
+    static centroid(dependencies) {
         var coords;
         coords = new Point();
-        for (var dependency, _pj_c = 0, _pj_a = dependencies, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            dependency = _pj_a[_pj_c];
-            if ((! dependency.position.resolved)) {
+        for (let dependency of dependencies) {
+            if (!dependency.position.resolved) {
                 throw new ValueError("No position for '${dependency}' element");
             }
-            coords += dependency.position.coords;
+            coords.sum(dependency.position.coords);
         }
         coords /= dependencies.length;
         return coords;
@@ -209,6 +208,34 @@ export class Position {
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
         */
+
+
+            "value": [
+              {
+                "type": "SEQUENCE",
+                "value": [
+                  {
+                    "type": "PERCENTAGE",
+                    "value": 10,
+                    "unit": "%x"
+                  },
+                  {
+                    "type": "ID",
+                    "value": "left"
+                  },
+                  {
+                    "type": "HASH",
+                    "value": "#w"
+                  }
+                ]
+              },
+              {
+                "type": "DIMENSION",
+                "value": 2,
+                "unit": "x"
+              }
+            ]
+
         let elementDependencies = [];
         let token = tokens.peek();
         if ((token.type === "() block")) {
