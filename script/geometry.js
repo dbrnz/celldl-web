@@ -19,7 +19,6 @@ limitations under the License.
 ******************************************************************************/
 
 import * as dia from './diagram.js';
-import * as SyntaxError from './SyntaxError.js';
 
 //==============================================================================
 

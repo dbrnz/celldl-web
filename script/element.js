@@ -25,15 +25,14 @@ import * as geo from './geometry.js';
 import * as layout from './layout.js';
 import * as parser from './parser.js';
 import * as svg_elements from './svg_elements.js';
-import * as SyntaxError from './SyntaxError.js';
 
 //==============================================================================
 
 export class Element {
     constructor(container, attributes, style, className="Element") {
-        this.id = ('id' in attributes) ? ("#" + attributes.id) : null;
-        const name = ('name' in attributes) ? attributes.name
-                   : ((this.id !== null) ? thid.id : "");
+        this.id = ('id' in attributes) ? ("#" + attributes.id.textContent) : null;
+        const name = ('name' in attributes) ? attributes.name.textContent
+                   : ((this.id !== null) ? this.id : "");
         this.localName = name;
         this.container = container;
         if (container === null) {
@@ -44,8 +43,8 @@ export class Element {
             this.fullName = container.fullName + "/" + name;
         }
         this.className = className;
-        this.classes = ('class' in attributes) ? attribute.class.split(/\s*/) : [];
-        this.label = ('label' in attributes) ?  attributes.label : name;
+        this.classes = ('class' in attributes) ? attributes.class.textContent.split(/\s*/) : [];
+        this.label = ('label' in attributes) ? attributes.label.textContent : name;
         this.style = style;
     }
 
@@ -58,11 +57,11 @@ export class Element {
     }
 
     get colour() {
-        const tokens = this._style.get("colour", this._style.get("color", null));
-        if ((tokens === null)) {
-            return "#808080";
-        }
-        return parser.get_colour(new parser.StyleTokens(tokens));
+        const key = ('colour' in this.style) ? 'colour'
+                   : ('color' in this.style) ? 'color'
+                   : null;
+        return (key === null) ? '#808080'
+                              : parser.getColour(new parser.StyleTokensIterator(this.style[key]));
     }
 
     get stroke() {
@@ -103,7 +102,7 @@ export class PositionedElement extends Element {
         super(container, attributes, style, className);
         this.position = new layout.Position(this);
         this.position.addDependency(container);
-        this.positionTokens = parser.styleTokensIterator(style, 'position');
+        this.positionTokens = parser.StyleTokensIterator.fromStyleElement(style, 'position');
         this._geometry = null;
     }
 

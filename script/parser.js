@@ -22,62 +22,16 @@ limitations under the License.
 
 import * as cssparser from './cssparser.js';
 import * as SPECIFICITY from './specificity.js';
-/*
-import * as io from 'io';
-import * as itertools from 'itertools';
-import * as logging from 'logging';
-import {etree} from 'lxml';
-import * as cssselect2 from 'cssselect2';
-import * as tinycss2 from 'tinycss2';
-import * as tinycss2.color3 from 'tinycss2/color3';
-*/
+
 //==============================================================================
 
-import * as SyntaxError from './syntaxerror.js';
 import * as bg from './bondgraph.js';
 import * as dia from './diagram.js';
 import {GradientStore} from './svg_elements.js';
 
 //==============================================================================
 
-var _pj;
-function _pj_snippets(container) {
-    function in_es6(left, right) {
-        if (((right instanceof Array) || ((typeof right) === "string"))) {
-            return (right.indexOf(left) > (- 1));
-        } else {
-            if (((right instanceof Map) || (right instanceof Set) || (right instanceof WeakMap) || (right instanceof WeakSet))) {
-                return right.has(left);
-            } else {
-                return (left in right);
-            }
-        }
-    }
-    function set_properties(cls, props) {
-        var desc, value;
-        var _pj_a = props;
-        for (var p in _pj_a) {
-            if (_pj_a.hasOwnProperty(p)) {
-                value = props[p];
-                if (((((! ((value instanceof Map) || (value instanceof WeakMap))) && (value instanceof Object)) && ("get" in value)) && (value.get instanceof Function))) {
-                    desc = value;
-                } else {
-                    desc = {"value": value, "enumerable": false, "configurable": true, "writable": true};
-                }
-                Object.defineProperty(cls.prototype, p, desc);
-            }
-        }
-    }
-    container["in_es6"] = in_es6;
-    container["set_properties"] = set_properties;
-    return container;
-}
-_pj = {};
-_pj_snippets(_pj);
-
-//==============================================================================
-
-var NAMESPACE = "http://www.cellml.org/celldl/1.0#";
+var CELLDL_NAMESPACE = "http://www.cellml.org/celldl/1.0#";
 
 //==============================================================================
 
@@ -135,10 +89,10 @@ class StyleSheet {
 
 //==============================================================================
 
-export class styleTokensIterator {
+export class StyleTokensIterator {
     constructor(tokens) {
         this.tokens = (tokens === null) ? []
-                    : (tokens.type === 'SEQUENCE') ? tokens.value;
+                    : (tokens.type === 'SEQUENCE') ? tokens.value
                                                    : [tokens];
         this.length = this.tokens.length;
         this.position = 0;
@@ -153,6 +107,10 @@ export class styleTokensIterator {
         return { value: undefined, done: true };
     }
 
+    done() {
+        return this.position >= this.length;
+    }
+
     peek() {
         if (this.position < this.length) {
             return { value: this.tokens[this.position], done: false };
@@ -165,78 +123,76 @@ export class styleTokensIterator {
     }
 
     static fromStyleElement(style, name) {
-        return new styleTokensIterator((name in style) ? style[name] : null);
+        return new StyleTokensIterator((name in style) ? style[name] : null);
     }
 }
 
 //==============================================================================
 
-function getNumber(tokenIterator) {
-    if ((tokens.type !== "NUMBER")) {
+export function getNumber(tokens) {
+    const token = tokens.next();
+    if (token.done || token.value.type !== "NUMBER") {
         throw new SyntaxError("Number expected.");
     } else {
-        return tokens.value;
+        return token.value.value;
     }
 }
 
 //==============================================================================
 
-function getPercentage(tokenIterator, defaultValue=null) {
+export function getPercentage(tokens, defaultValue=null) {
     /*
     :param tokens: `StyleTokens` of tokens
     :return: Length
     */
-    var modifier, percentage, token;
-    token = tokens.next();
-    if (((token === null) || (token.type !== "PERCENTAGE"))) {
-        if ((default_value !== null)) {
-            return default_value;
+    const token = tokens.peek();
+    if (token.done || token.value.type !== 'PERCENTAGE') {
+        if (defaultValue !== null) {
+            return defaultValue;
         } else {
             throw new SyntaxError("Percentage expected.");
         }
     }
-    percentage = (token.is_integer ? token.int_value : token.value);
-    tokens.next();
-    token = tokens.peek(false);
-    modifier = (((token !== null) && (token.type === "ident")) ? token.lower_value : "");
-    if ((! _pj.in_es6(modifier, ["", "x", "y"]))) {
-        throw new SyntaxError("Modifier ({}) must be 'x' or 'y'.".format(modifier));
-    } else {
-        if ((modifier !== "")) {
-            tokens.next();
-        }
+    const percentage = token.value.value;
+    const unit = token.value.unit;
+    const modifier = unit.substring(1);
+    if (["", "x", "y"].indexOf(unit) < 0) {
+        throw new SyntaxError("Modifier (${unit}) must be 'x' or 'y'.");
     }
-    return [percentage, ("%" + modifier)];
+    tokens.next();
+    return {value: percentage, unit: unit};
 }
 
 //==============================================================================
 
-function getLength(tokens, defaultValue=null) {
+export function getLength(tokens, defaultValue=null) {
     /*
     :param tokens: `StyleTokens` of tokens
     :return: Length
 
     `100`, `100x`, `100y`
     */
-    if (tokens !== null && tokens.type === "PERCENTAGE") {
-        return getPercentage(tokens, default_value);
-    } else if (tokens === null || !(tokens.type in ["NUMBER", "DIMENSION"])) {
+    const token = tokens.peek();
+    if (!token.done && token.value.type === "PERCENTAGE") {
+        return getPercentage(tokens, defaultValue);
+    } else if (token.done || ["NUMBER", "DIMENSION"].indexOf(token.value.type) < 0) {
         if (defaultValue !== null) {
             return defaultValue;
         } else {
             throw new SyntaxError("Length expected.");
         }
     }
-    const modifier = (token.type === "DIMENSION") ? token.unit : "";
-    if (!(modifier in ["", "x", "y"])) {
+    const unit = (token.value.type === "DIMENSION") ? token.value.unit : "";
+    if (["", "x", "y"].indexOf(unit) < 0) {
         throw new SyntaxError("Modifier must be 'x' or 'y'.");
     }
-    return [token.value, modifier];
+    tokens.next();
+    return {value: token.value.value, unit: unit};
 }
 
 //==============================================================================
 
-function getCoordinates(tokens, allow_local = true) {
+export function getCoordinates(tokens, allow_local = true) {
     /*
     Get a coordinate pair.
 
@@ -273,56 +229,62 @@ function getCoordinates(tokens, allow_local = true) {
 
 //==============================================================================
 
-function getColour(tokens) {
-    var colour, gradient, stop, stop_colours, token;
-    token = tokens.peek();
-    if ((token.type === "function")) {
-        tokens.next();
-        if ((! _pj.in_es6(token.name, ["radial-gradient", "linear-gradient"]))) {
-            throw new SyntaxError("Unknown colour gradient.");
-        }
-        gradient = token.name.slice(0, 6);
-        tokens = new StyleTokens(token.arguments);
-        stop_colours = [];
-        token = tokens.peek();
-        while ((token !== null)) {
-            colour = get_colour_value(tokens);
-            token = tokens.next();
-            if (((token !== null) && (token.type === "percentage"))) {
-                stop = token.value;
-                token = tokens.next();
-            } else {
-                stop = null;
+export function getColour(tokens) {
+    const token = tokens.peek();
+    if (!token.done()) {
+        const value = token.value;
+
+
+        if (value.type === "FUNCTION") {
+            const name = value.name.value;
+            if (["radial-gradient", "linear-gradient"].indexOf(name) < 0) {
+                throw new SyntaxError("Unknown colour gradient.");
             }
-            if ((! _pj.in_es6(token, [null, ","]))) {
-                throw new SyntaxError("Gradient stop percentage expected.");
+            if ('parameters' in value) {
+                const parameters = value.parameters;
+
+                if (parameters instanceof Array) {
+// TODO...
+                }
             }
-            stop_colours.append([colour, stop]);
+
+            gradient = token.name.slice(0, 6);
+            tokens = new StyleTokens(token.arguments);
+            stop_colours = [];
             token = tokens.peek();
+            while ((token !== null)) {
+                colour = get_colour_value(tokens);
+                token = tokens.next();
+                if (((token !== null) && (token.type === "percentage"))) {
+                    stop = token.value;
+                    token = tokens.next();
+                } else {
+                    stop = null;
+                }
+                if ((! _pj.in_es6(token, [null, ","]))) {
+                    throw new SyntaxError("Gradient stop percentage expected.");
+                }
+                stop_colours.append([colour, stop]);
+                token = tokens.peek();
+            }
+            return GradientStore.url(gradient, stop_colours);
         }
-        return GradientStore.url(gradient, stop_colours);
-    } else {
-        return get_colour_value(tokens);
     }
+    return getColourValue(tokens);
 }
 
 //==============================================================================
 
-function getColourValue(tokens) {
-    var token;
-    token = tokens.next();
-    if ((token !== null)) {
-        if ((token.type === "hash")) {
-            return ("#" + token.value);
-        } else {
-            if ((token.type === "ident")) {
-                return token.value;
-            }
+export function getColourValue(tokens) {
+    const token = tokens.next();
+    if (!token.done()) {
+        const value = token.value;
+        if (['HASH', 'ID'].indexOf(value.type) >= 0) {
+            return value.value;
         }
     }
     throw new SyntaxError("Colour expected.");
 }
-
 
 //==============================================================================
 
@@ -338,14 +300,12 @@ export class Parser
     parseContainer(element, container)
     /*==============================*/
     {
-        for (var e, _pj_c = 0, _pj_a = new ElementChildren(element, this._stylesheets), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            e = _pj_a[_pj_c];
-            this._last_element = e;
+        for (let e of element.children) {
             if (e.nodeName === "compartment") {
-                this.parse_compartment(e, container);
+                this.parseCompartment(e, container);
             } else {
                 if (e.nodeName === "quantity") {
-                    this.parse_quantity(e, container);
+                    this.parseQuantity(e, container);
                 } else {
                     if ((e.nodeName === "transporter") && (container instanceof dia.Compartment)) {
                         this.parseTransporter(e, container);
@@ -360,7 +320,7 @@ export class Parser
     parseCompartment(element, container)
     /*================================*/
     {
-        const compartment = new dia.Compartment(container, element.attributes. this.stylesheet.style(element));
+        const compartment = new dia.Compartment(container, element.attributes, this.stylesheet.style(element));
         this.diagram.addCompartment(compartment);
         this.parseContainer(element, compartment);
     }
@@ -368,23 +328,21 @@ export class Parser
     parseQuantity(element, container)
     /*=============================*/
     {
-        const quantity = new dia.Quantity(container, element.attributes. this.stylesheet.style(element));
+        const quantity = new dia.Quantity(container, element.attributes, this.stylesheet.style(element));
         this.diagram.addQuantity(quantity);
     }
 
     parseTransporter(element, compartment)
     /*==================================*/
     {
-        const transporter = new dia.Transporter(compartment, element.attributes. this.stylesheet.style(element));
+        const transporter = new dia.Transporter(compartment, element.attributes, this.stylesheet.style(element));
         this.diagram.addTransporter(transporter);
     }
 
     parseBondGraph(element)
     /*===================*/
     {
-        for (var e, _pj_c = 0, _pj_a = new ElementChildren(element, this._stylesheets), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            e = _pj_a[_pj_c];
-            this._last_element = e;
+        for (let e of element.children) {
             if (e.nodeName === "potential") {
                 this.parsePotential(e);
             } else {
@@ -414,27 +372,23 @@ export class Parser
     {
         const flow = new bg.Flow(this.diagram, element.attributes, this.stylesheet.style(element));
         this.diagram.addElement(flow);
-
         let container = ((flow.transporter !== null) ? flow.transporter.container : null);
-        for (var e, _pj_c = 0, _pj_a = new ElementChildren(element, this._stylesheets), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            e = _pj_a[_pj_c];
-            this._last_element = e;
+        for (let e of element.children) {
             if (e.nodeName === "component") {
-                if (((! _pj.in_es6("from_", e.attributes)) || (! _pj.in_es6("to", e.attributes)))) {
+                if (!("from" in e.attributes && "to" in e.attributes)) {
                     throw new SyntaxError("Flow component requires 'from' and 'to' potentials.");
                 }
                 const component = new bg.FlowComponent(this.diagram, flow, e.attributes, this.stylesheet.style(e));
-                if ((flow.transporter === null)) {
-                    if ((container === null)) {
+                if (flow.transporter === null) {
+                    if (container === null) {
                         container = component.fromPotential.container;
                     } else {
-                        if ((container !== component.from_potential.container)) {
+                        if (container !== component.from_potential.container) {
                             throw new ValueError("All 'to' potentials must be in the same container.");
                         }
                     }
-                    for (var p, _pj_f = 0, _pj_d = component.to_potentials, _pj_e = _pj_d.length; (_pj_f < _pj_e); _pj_f += 1) {
-                        p = _pj_d[_pj_f];
-                        if ((container !== p.container)) {
+                    for (let p of component.to_potentials) {
+                        if (container !== p.container) {
                             throw new ValueError("All 'from' and 'to' potentials must be in the same container.");
                         }
                     }
@@ -458,6 +412,8 @@ export class Parser
         }
 
         const xmlroot = xmldoc.children[0];
+
+        // check xmlroot.attributes.xmlns.value (textContent) === CELLDL_NAMESPACE
         if (xmlroot.nodeName !== 'cell-diagram') {
             throw new SyntaxError("Root tag must be <cell-diagram>");
         }

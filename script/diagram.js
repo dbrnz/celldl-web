@@ -108,7 +108,7 @@ class Container extends PositionedElement {
 export class Compartment extends Container {
     constructor(container, attributes, style) {
         super(container, attributes, style, "Compartment");
-        this.size = new layout.Size(((this.style !== null) ? this.style.get("size", null) : null));
+        this.size = ('size' in this.style) ? new layout.Size(this.style.size) : null;
     }
 
     parse_geometry() {
@@ -120,7 +120,7 @@ export class Compartment extends Container {
         for (var token, _pj_c = 0, _pj_a = this._position_tokens, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
             token = _pj_a[_pj_c];
             if (((token.type === "() block") && (lengths === null))) {
-                lengths = parser.get_coordinates(new parser.StyleTokens(token.content));
+                lengths = parser.getCoordinates(new parser.StyleTokensIterator(token.content));
             } else {
                 if ((lengths !== null)) {
                     throw new SyntaxError("Position already defined.");
@@ -141,21 +141,22 @@ export class Compartment extends Container {
 export class Quantity extends PositionedElement {
     constructor(container, attributes, style) {
         super(container, attributes, style, "Quantity");
-        this._potential = null;
+        this.potential = null;
     }
 
-    set_potential(potential) {
-        this._potential = potential;
+    setPotential(potential) {
+        this.potential = potential;
     }
 
-    parse_geometry() {
-        PositionedElement.parse_geometry(this, {"default_offset": this.diagram.quantity_offset, "default_dependency": this._potential});
+    parseGeometry() {
+        // super() ??
+        PositionedElement.parseGeometry(this, {"default_offset": this.diagram.quantity_offset, "default_dependency": this._potential});
     }
 
     svg() {
         var h, svg, w, x, y;
-        svg = ["<g{}{}>".format(this.id_class(), this.display())];
-        if (this.position.has_coords) {
+        svg = ["<g{}{}>".format(this.idClass(), this.display())];
+        if (this.position.hasCoords) {
             [x, y] = this.coords;
             [w, h] = [layout.QUANTITY_WIDTH, layout.QUANTITY_HEIGHT];
             svg.append("  <rect rx=\"{}\" ry=\"{}\" x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" stroke=\"none\" fill=\"{}\"/>".format((0.375 * w), (0.375 * h), (x - (w / 2)), (y - (h / 2)), w, h, this.colour));
@@ -171,12 +172,12 @@ export class Quantity extends PositionedElement {
 export class Transporter extends PositionedElement {
     constructor(container, attributes, style) {
         super(container, attributes, style, "Transporter");
-        this._compartment_side = null;
-        this._flow = null;
-        this._width = [10, "x"];
+        this.compartmentSide = null;
+        this.flow = null;
+        this.width = [10, "x"];
     }
 
-    parse_geometry() {
+    parseGeometry() {
         /*
         * Transporter position: side of container along with offset from
         top-right as % of container -- `left 10%`, `top 20%`
@@ -187,17 +188,18 @@ export class Transporter extends PositionedElement {
         */
         var dependencies, offset, token, tokens;
         dependencies = [this.container];
-        tokens = this._position_tokens;
-        if ((tokens === null)) {
+
+        const tokens = this.positionTokens;
+        if (tokens.done())
             return;
-        }
+
         try {
-            token = tokens.next();
+            let token = tokens.next();
             if (((token.type !== "ident") || (! _pj.in_es6(token.lower_value, layout.COMPARTMENT_BOUNDARIES)))) {
                 throw new SyntaxError("Invalid compartment boundary.");
             }
             this._compartment_side = token.lower_value;
-            offset = parser.get_percentage(tokens);
+            offset = parser.getPercentage(tokens);
             token = tokens.peek();
             if ((token && (token.type === "hash"))) {
                 while ((token.type === "hash")) {
@@ -257,21 +259,21 @@ export class Diagram extends Container {
         this.layout = null;
         this.width = this.numberFromStyle("width", 0);
         this.height = this.numberFromStyle("height", 0);
-        this.flow_offset = this.lengthFromStyle("flow-offset", layout.FLOW_OFFSET);
+        this.flowOffset = this.lengthFromStyle("flow-offset", layout.FLOW_OFFSET);
         this.quantity_offset = this.lengthFromStyle("quantity-offset", layout.QUANTITY_OFFSET);
         this.bondGraph = null;
     }
 
     lengthFromStyle(name, defaultValue) {
         if (name in this.style) {
-            return parser.getLength(this.style[name]);
+            return parser.getLength(new parser.StyleTokensIterator(this.style[name]));
         }
         return defaultValue;
     }
 
     numberFromStyle(name, defaultValue) {
         if (name in this.style) {
-            return parser.getNumber(this.style[name]);
+            return parser.getNumber(new parser.StyleTokensIterator(this.style[name]));
         }
         return defaultValue;
     }
@@ -322,7 +324,7 @@ export class Diagram extends Container {
         other elements.
         */
         var dependency, g, id_or_name;
-        this.position.set_coords(new layout.Point());
+        this.position.setCoords(new layout.Point());
         g = new nx.DiGraph();
         for (var e, _pj_c = 0, _pj_a = this._elements, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
             e = _pj_a[_pj_c];

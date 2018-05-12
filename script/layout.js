@@ -150,7 +150,10 @@ export class Position {
         this.lengths = null;
         this.relationships = [];
         this.coords = null;
-        this.dependencies = new Set();
+        this.dependencies = new Set();  // Object equality...
+
+        // dependencies are Elements, so assign each elememt a unique `id`
+        // (index into global array/list of elements)
     }
 
     __bool__() {
@@ -162,15 +165,17 @@ export class Position {
     }
 
     get resolved() {
-        return ((this.coords !== null) && (! _pj.in_es6(null, this._coords)));
-    }
-
-    add_dependencies(dependencies) {
-        this._dependencies.update(dependencies);
+        return (this.coords !== null && this._coords.indexOf(null) < 0);
     }
 
     addDependency(dependency) {
         this.dependencies.add(dependency);
+    }
+
+    addDependencies(dependencies) {
+        for (let dependency of dependencies) {
+            this.dependencies.add(dependency);
+        }
     }
 
     addRelationship(offset, relation, dependencies) {
@@ -191,7 +196,7 @@ export class Position {
         for (var dependency, _pj_c = 0, _pj_a = dependencies, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
             dependency = _pj_a[_pj_c];
             if ((! dependency.position.resolved)) {
-                throw new ValueError("No position for '{}' element".format(dependency));
+                throw new ValueError("No position for '${dependency}' element");
             }
             coords += dependency.position.coords;
         }
@@ -199,35 +204,34 @@ export class Position {
         return coords;
     }
 
-    parse(tokens, default_offset, default_dependency) {
+    parse(tokens, defaultOffset, defaultDependency) {
         /*
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
         */
-        var constraints, dependencies, dependency, element_dependencies, lengths, offset, reln, seen_horizontal, seen_vertical, token, using_default;
-        element_dependencies = [];
-        token = tokens.peek();
+        let elementDependencies = [];
+        let token = tokens.peek();
         if ((token.type === "() block")) {
             tokens.next();
-            lengths = parser.get_coordinates(new parser.StyleTokens(token.content));
-            this.set_lengths(lengths);
+            const lengths = parser.getCoordinates(new parser.StyleTokensIterator(token.content));
+            this.setLengths(lengths);
         } else {
-            seen_horizontal = false;
-            seen_vertical = false;
-            constraints = 0;
+            let seenHorizontal = false;
+            let seenVertical = false;
+            let constraints = 0;
             while ((token !== null)) {
-                using_default = (! _pj.in_es6(token.type, ["number", "dimension", "percentage"]));
-                offset = parser.get_length(tokens, {"default": default_offset});
-                token = tokens.next();
+                let usingDefault = (["number", "dimension", "percentage"].indexOf(token.type) < 0);
+                let offset = parser.get_length(tokens, {"default": defaultOffset});
 
+                token = tokens.next();
                 if (token.type !== "ident" || POSITION_RELATIONS.indexOf(token.toLowerCase) < 0) {
                     throw new SyntaxError("Unknown relationship for position.");
                 }
-                reln = token.lower_value;
-                dependencies = [];
+                const reln = token.lower_value;
+                let dependencies = [];
                 token = tokens.peek();
-                if ((_pj.in_es6(token, [null, ","]) && (default_dependency !== null))) {
-                    dependencies.append(default_dependency);
+                if ((_pj.in_es6(token, [null, ","]) && (defaultDependency !== null))) {
+                    dependencies.append(defaultDependency);
                 } else {
                     if ((((token !== null) && (token.type !== "hash")) && (token !== ","))) {
                         throw new SyntaxError("Identifier(s) expected");
@@ -235,7 +239,7 @@ export class Position {
                         if ((token !== null)) {
                             tokens.next();
                             while (((token !== null) && (token.type === "hash"))) {
-                                dependency = this._element.diagram.find_element(("#" + token.value));
+                                const dependency = this._element.diagram.findElement(("#" + token.value));
                                 if ((dependency === null)) {
                                     throw new KeyError("Unknown element '#{}".format(token.value));
                                 }
@@ -247,17 +251,19 @@ export class Position {
                 }
                 if ((token === ",")) {
                     constraints += 1;
-                    if (((seen_horizontal && _pj.in_es6(reln, HORIZONTAL_RELATIONS)) || (seen_vertical && _pj.in_es6(reln, VERTICAL_RELATIONS)))) {
+                    if ((seenHorizontal && HORIZONTAL_RELATIONS.indexOf(reln) >= 0)
+                     || (seenVertical && VERTICAL_RELATIONS.indexOf(reln) >= 0)) {
                         throw new SyntaxError("Constraints must have different directions.");
                     }
                 }
                 if ((using_default && (constraints >= 1))) {
                     offset = null;
                 }
-                this.add_relationship(offset, reln, dependencies);
-                element_dependencies.extend(dependencies);
-                seen_horizontal = _pj.in_es6(reln, HORIZONTAL_RELATIONS);
-                seen_vertical = _pj.in_es6(reln, VERTICAL_RELATIONS);
+                this.addRelationship(offset, reln, dependencies);
+                elementDependencies.extend(dependencies);
+                seenHorizontal = (HORIZONTAL_RELATIONS.indexOf(reln) >= 0);
+                seenVertical = (VERTICAL_RELATIONS.indexOf(reln) >= 0);
+
                 if ((token === ",")) {
                     token = tokens.peek();
                     continue;
@@ -270,20 +276,19 @@ export class Position {
                 }
             }
         }
-        this.add_dependencies(element_dependencies);
+        this.addDependencies(elementDependencies);
     }
 
-    _resolve_point(unit_converter, offset, reln, dependencies) {
+    resolvePoint(unitConverter, offset, reln, dependencies) {
         /*
         :return: tuple(tuple(x, y), index) where index == 0 means
         horizontal and 1 means vertical.
         */
-        var adjust, coords, index;
-        coords = this.centroid(dependencies);
-        index = Position._orientation[reln];
-        if ((index >= 0)) {
-            adjust = unit_converter.pixels(offset, index, false);
-            if (_pj.in_es6(reln, ["left", "above"])) {
+        let coords = this.centroid(dependencies);
+        let index = Position.orientation[reln];
+        if (index >= 0) {
+            let adjust = unitConverter.pixels(offset, index, false);
+            if (["left", "above"].indexOf(reln) >= 0) {
                 coords[index] -= adjust;
             } else {
                 coords[index] += adjust;
@@ -314,8 +319,9 @@ export class Position {
         pos="top"  #                 } Centered in top, spaced evenly (`transporter-spacing`?)
         pos="top"  #                 }
         */
-        var _, coords, dependencies, dirn, index, offset, orientation, reln, unit_converter;
-        unit_converter = this._element.container.unit_converter;
+        var _, coords, dependencies, dirn, index, offset, orientation, reln,;
+
+        const unit_converter = this._element.container.unit_converter;
         if (this._lengths) {
             this._coords = unit_converter.pixel_pair(this._lengths);
         } else {
@@ -368,19 +374,19 @@ _pj.set_properties(Position, {"_orientation": {"centre": (- 1), "center": (- 1),
 
 export class Size {
     constructor(tokens) {
-        this._lengths = null;
-        for (var token, _pj_c = 0, _pj_a = new parser.StyleTokens(tokens), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
+        this.lengths = null;
+        for (var token, _pj_c = 0, _pj_a =
+
+            new parser.StyleTokensIterator(tokens)
+
+            , _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
             token = _pj_a[_pj_c];
             if ((token.type === "() block")) {
-                this._lengths = parser.get_coordinates(new parser.StyleTokens(token.content));
+                this._lengths = parser.get_coordinates(new parser.StyleTokensIterator(token.content));
             } else {
                 throw new SyntaxError("Parenthesised pair of lengths expected.");
             }
         }
-    }
-
-    get lengths() {
-        return this._lengths;
     }
 }
 
@@ -388,9 +394,9 @@ export class Size {
 
 export class Line {
     constructor(element, tokens) {
-        this._element = element;
-        this._tokens = tokens;
-        this._segments = [];
+        this.element = element;
+        this.tokens = tokens;
+        this.segments = [];
     }
 
     parse() {
@@ -402,11 +408,11 @@ export class Line {
 
         */
         var angle, constraint, dependencies, dependency, length, line_offset, offset, reln, token, tokens;
-        if ((this._tokens === null)) {
+        if ((this.tokens === null)) {
             return;
         }
         this._segments = [];
-        tokens = this._tokens;
+        const tokens = this.tokens;
         token = tokens.peek();
         while ((token !== null)) {
             angle = ((token.type === "number") ? parser.get_number(tokens) : null);
@@ -424,7 +430,7 @@ export class Line {
             constraint = ((token.lower_value === "until-x") ? (- 1) : ((token.lower_value === "until-y") ? 1 : 0));
             token = tokens.peek();
             if ((token.type === "() block")) {
-                offset = parser.get_coordinates(new parser.StyleTokens(token.content), {"allow_local": false});
+                offset = parser.get_coordinates(new parser.StyleTokensIterator(token.content), {"allow_local": false});
                 token = tokens.next();
                 if (((token.type !== "ident") || (token.lower_value !== "from"))) {
                     throw new SyntaxError("'from' expected.");
@@ -463,7 +469,7 @@ export class Line {
             if ((((token !== null) && (token.type === "ident")) && (token.lower_value === "offset"))) {
                 token = tokens.next();
                 if ((token.type === "() block")) {
-                    line_offset = parser.get_coordinates(new parser.StyleTokens(token.content), {"allow_local": false});
+                    line_offset = parser.get_coordinates(new parser.StyleTokensIterator(token.content), {"allow_local": false});
                     token = tokens.peek();
                 } else {
                     throw new SyntaxError("Offset expected.");
@@ -520,44 +526,41 @@ export class Line {
 //==============================================================================
 
 export class UnitConverter {
-    constructor(global_size, local_size, local_offset = [0, 0]) {
+    constructor(globalSize, localSize, localOffset = [0, 0]) {
         /*
-        :param global_size: tuple(width, height) of diagram, in pixels
-        :param local_size: tuple(width, height) of current container, in pixels
-        :param local_offset: tuple(x_pos, y_pos) of current container, in pixels
+        :param globalSize: tuple(width, height) of diagram, in pixels
+        :param localSize: tuple(width, height) of current container, in pixels
+        :param localOffset: tuple(x_pos, y_pos) of current container, in pixels
         */
-        this._global_size = global_size;
-        this._local_size = local_size;
-        this._local_offset = local_offset;
+        this.globalSize = globalSize;
+        this.localSize = localSize;
+        this.localOffset = localOffset;
     }
 
     toString() {
-        return "UC: global={}, local={}, offset={}".format(this._global_size, this._local_size, this._local_offset);
+        return "UC: global=${this.globalSize}, local=${this.localSize}, offset=${this.localOffset}";
     }
 
-    pixels(length, index, add_offset = true) {
-        var offset, units;
+    pixels(length, index, addOffset = true) {
         if ((length !== null)) {
-            units = length[1];
-            if (_pj.in_es6("x", units)) {
+            const units = length.unit;
+            if (units.indexOf('x') > = 0) {
                 index = 0;
-            } else {
-                if (_pj.in_es6("y", units)) {
-                    index = 1;
-                }
+            } else if (units.indexOf('y')) {
+                index = 1;
             }
             if (units.startswith("%")) {
-                offset = ((length[0] * this._local_size[index]) / 100.0);
-                return ((add_offset ? this._local_offset[index] : 0) + offset);
+                const offset = ((length[0] * this.localSize[index]) / 100.0);
+                return ((addOffset ? this.localOffset[index] : 0) + offset);
             } else {
-                return ((length[0] * this._global_size[index]) / 1000.0);
+                return ((length[0] * this.globalSize[index]) / 1000.0);
             }
         }
         return 0;
     }
 
-    pixel_pair(coords, add_offset = true) {
-        return new Point(this.pixels(coords[0], 0, add_offset), this.pixels(coords[1], 1, add_offset));
+    pixelPair(coords, addOffset = true) {
+        return new Point(this.pixels(coords[0], 0, addOffset), this.pixels(coords[1], 1, addOffset));
     }
 }
 
