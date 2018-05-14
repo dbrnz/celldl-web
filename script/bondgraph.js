@@ -30,8 +30,8 @@ import * as geo from 'shapely/geometry';
 import * as dia from './diagram.js';
 import * as layout from './layout.js';
 import * as parser from './parser.js';
-import {PositionedElement} from './element.js';
-import {svg_line} from './svg_elements.js';
+import {Element, PositionedElement} from './element.js';
+import {svgLine} from './svgElements.js';
 
 //==============================================================================
 
@@ -114,27 +114,27 @@ export class BondGraph extends Element {
 //==============================================================================
 
 export class Flow extends PositionedElement {
-    constructor(diagram, transporter = null, attributes, style) {
+    constructor(diagram, transporterId=null, attributes, style) {
         super(diagram, attributes, style, "Flow");
-        this.transporter = (transporter ? diagram.findElement(("#" + transporter), dia.Transporter) : null);
+        this.transporter = (transporterId ? diagram.findElement(("#" + transporterId), dia.Transporter) : null);
         this.components = [];
         this.componentOffsets = {};
     }
 
-    add_component(component) {
+    addComponent(component) {
         this.components.push(component);
-        this.componentOffsets[component] = new layout.Point();
+        this.componentOffsets[component] = new layout.Point();  // v's geo.Point ??
     }
 
     componentOffset(component) {
         return this.componentOffsets.get(component, new layout.Point());
     }
 
-    parseGeometry() {
-        PositionedElement.parse_geometry(this, {"default_offset": this.diagram.flow_offset, "default_dependency": this.transporter});
+    parsePosition() {
+        super.parsePosition(this, {"default_offset": this.diagram.flow_offset, "default_dependency": this.transporter});
     }
 
-    set_transporter_offsets() {
+    setTransporterOffsets() {
         var component_offset, index, n, num_components, offset, origin, p;
         if (((this.transporter !== null) && (this.components.length > 1))) {
             index = (_pj.in_es6(this.transporter.compartment_side, layout.VERTICAL_BOUNDARIES) ? 1 : 0);
@@ -179,7 +179,7 @@ export class Flow extends PositionedElement {
                 points.extend([(offset + transporter_end), (offset + this.coords)]);
             }
         } else {
-            points.append(this.coords);
+            points.push(this.coords);
         }
         return points;
     }
@@ -195,7 +195,7 @@ export class FlowComponent extends PositionedElement {
             var _pj_a = [], _pj_b = to.split();
             for (var _pj_c = 0, _pj_d = _pj_b.length; (_pj_c < _pj_d); _pj_c += 1) {
                 var name = _pj_b[_pj_c];
-                _pj_a.push(diagram.find_element(("#" + name), Potential));
+                _pj_a.push(diagram.findElement(("#" + name), Potential));
             }
             return _pj_a;
         }.call(this);
@@ -205,9 +205,8 @@ export class FlowComponent extends PositionedElement {
         this.flow = flow;
     }
 
-    parseGeometry() {
-        for (var line, _pj_c = 0, _pj_a = this._lines.values(), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            line = _pj_a[_pj_c];
+    parsePosition() {
+        for (let line of = this.lines.values()) {
             line.parse();
         }
     }
@@ -255,8 +254,8 @@ export class Potential extends PositionedElement {
         return this.quantity.id;
     }
 
-    parseGeometry() {
-        PositionedElement.parseGeometry(this, {"default_offset": this.diagram.quantity_offset, "default_dependency": this.quantity});
+    parsePosition() {
+        super.parsePosition(this, {"default_offset": this.diagram.quantity_offset, "default_dependency": this.quantity});
     }
 }
 

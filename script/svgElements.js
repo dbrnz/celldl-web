@@ -96,9 +96,9 @@ _pj.set_properties(DefinesStore, {"_defs": {}});
 //==============================================================================
 
 export class Gradient {
-    constructor(gradient, stop_colours) {
-        this._gradient = gradient;
-        this._stop_colours = stop_colours;
+    constructor(gradient, stopColours) {
+        this.gradient = gradient;
+        this.stopColours = stopColours;
     }
 
     __eq__(other) {
@@ -110,41 +110,39 @@ export class Gradient {
     }
 
     svg(id) {
-        var n, nstops, offset, stop, stops;
-        stops = [];
-        nstops = this._stop_colours.length;
-        for (var nstop, _pj_c = 0, _pj_a = enumerate(this._stop_colours), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            nstop = _pj_a[_pj_c];
-            [n, stop] = nstop;
-            if ((n > 0)) {
-                offset = " offset=\"{}%\"".format(((stop[1] !== null) ? stop[1] : ((n * 100.0) / (nstops - 1))));
+        let stops = [];
+        const nStops = this.stopColours.length;
+        let n = 0;
+        for (let stopcolour of this.stopColours) {
+            if (n > 0) {
+                offset = ' offset="${(stopcolour[1] !== null) ? stopcolour[1] : (100.0*n/(nStops - 1))}%"';
             } else {
-                offset = ((stop[1] !== null) ? " offset=\"{}%\"".format(stop[1]) : "");
+                offset = (stopcolour[1] !== null) ? ' offset="${stopcolour[1]}%"' : '';
             }
-            stops.append("<stop{} stop-color=\"{}\"/>".format(offset, stop[0]));
+            stops.push('<stop${offset} stop-color="${stopcolour[0]}"/>');
+            n += 1;
         }
-        return "<{gradient}Gradient id=\"{id}\">{stops}</{gradient}Gradient>".format({"gradient": this._gradient, "id": id, "stops": "/n".join(stops)});
+        return '<${this.gradient}Gradient id="${id}">${stops.join("\n")}</${this.gradient}Gradient>';
     }
 }
 
 //==============================================================================
 
 export class GradientStore {
-    static next_id() {
-        this._next_id += 1;
-        return "_GRADIENT_{}_".format(this._next_id);
+    static nextId() {
+        this.nextId += 1;
+        return '_GRADIENT_${this.nextId}_';
     }
 
-    static url(gradient, stop_colours) {
-        var g, id;
-        g = new Gradient(gradient, stop_colours);
-        id = this._gradients_to_id.get(g, null);
-        if ((id === null)) {
-            id = cls.next_id();
-            cls._gradients_to_id[g] = id;
+    static url(gradient, stopColours) {
+        const g = new Gradient(gradient, stopColours);
+        let id = this.gradients_to_id.get(g, null);
+        if (id === null) {
+            id = GradientStore.nextId();
+            GradientStore._gradients_to_id[g] = id;
             DefinesStore.add(id, g.svg(id));
         }
-        return "url(#{})".format(id);
+        return 'url(#${id})';
     }
 }
 
@@ -277,7 +275,7 @@ _pj.set_properties(CellMembrane, {"SVG_DEFS": "\n        <g id=\"{ID_BASE}_base_
 
 //==============================================================================
 
-class _TransporterElement extends SvgElement {
+class TransporterElement extends SvgElement {
     constructor(id, coords, rotation, height, defs, defined_height, id_base) {
         super(id, id_base);
         this._coords = coords;
@@ -304,7 +302,7 @@ class _TransporterElement extends SvgElement {
 
 //==============================================================================
 
-export class Channel extends _TransporterElement {
+export class Channel extends TransporterElement {
     constructor(id, coords, rotation, height = (0.6 * HEIGHT), id_base = "channel") {
         super(id, coords, rotation, height, this.SVG_DEFS, this.HEIGHT, id_base);
     }
@@ -315,7 +313,7 @@ _pj.set_properties(Channel, {"HEIGHT": 100, "SVG_DEFS": "\n        <linearGradie
 
 //==============================================================================
 
-class Exchanger_TO_FINISH extends _TransporterElement {
+class Exchanger_TO_FINISH extends TransporterElement {
     constructor(id, coords, rotation, height = 40, id_base = "exchanger") {
         super(id, coords, rotation, height, "", height, id_base);
     }
@@ -323,7 +321,7 @@ class Exchanger_TO_FINISH extends _TransporterElement {
 
 //==============================================================================
 
-export class PMRChannel extends _TransporterElement {
+export class PMRChannel extends TransporterElement {
     constructor(id, coords, rotation, height = (0.6 * HEIGHT), id_base = "pmr_channel") {
         super(id, coords, rotation, height, this.SVG_DEFS, this.HEIGHT, id_base);
     }
@@ -360,7 +358,7 @@ export class PMRChannelInOut extends PMRChannel {
 
 //==============================================================================
 
-class _ArrowDefine {
+class ArrowDefine {
     constructor(colour) {
         this._colour = colour;
     }
@@ -403,7 +401,7 @@ _pj.set_properties(Arrow, {"_arrows_to_id": {}, "_next_id": 0});
 
 //==============================================================================
 
-export function svg_line(line, colour, reverse = false, display = "", style = "") {
+export function svgLine(line, colour, reverse = false, display = "", style = "") {
     var dash, points;
     points = (reverse ? list(reversed(line.coords)) : line.coords);
     dash = ((style === "dashed") ? " stroke-dasharray=\"10,5\"" : "");

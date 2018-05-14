@@ -67,91 +67,38 @@ _pj_snippets(_pj);
 
 //==============================================================================
 
-const QUANTITY_OFFSET = [60, "x"];
-const FLOW_OFFSET = [60, "x"];
-const TRANSPORTER_EXTRA = [25, "x"];
-const ELEMENT_RADIUS = 15;
-const TRANSPORTER_RADIUS = 25;
-const QUANTITY_WIDTH = 50;
-const QUANTITY_HEIGHT = 35;
-const HORIZONTAL_RELATIONS = ["left", "right"];
-const VERTICAL_RELATIONS = ["above", "below"];
-const POSITION_RELATIONS = (HORIZONTAL_RELATIONS + VERTICAL_RELATIONS);
-const HORIZONTAL_BOUNDARIES = ["top", "bottom"];
-const VERTICAL_BOUNDARIES = ["left", "right"];
-const CORNER_BOUNDARIES = ["top-left", "top-right", "bottom-left", "bottom-right"];
-const COMPARTMENT_BOUNDARIES = (HORIZONTAL_BOUNDARIES + VERTICAL_BOUNDARIES);
+export const ELEMENT_RADIUS = 15;
 
-//==============================================================================
+export const FLOW_OFFSET = {value: 60, unit: 'x'};
 
-export class Point {
-    constructor(x = 0.0, y = 0.0) {
-        this._coords = [x, y];
-    }
+export const QUANTITY_OFFSET = {value: 60, unit: 'x'};
+export const QUANTITY_WIDTH = 50;
+export const QUANTITY_HEIGHT = 35;
 
-    get x() {
-        return this._coords[0];
-    }
+export const TRANSPORTER_RADIUS = 25;
+export const TRANSPORTER_EXTRA = {value: 25, unit: 'x'};
+export const TRANSPORTER_WIDTH = {value: 10, unit: 'x'};
 
-    get y() {
-        return this._coords[1];
-    }
+export const HORIZONTAL_RELATIONS = ['left', 'right'];
+export const VERTICAL_RELATIONS = ['above', 'below'];
+export const POSITION_RELATIONS = (HORIZONTAL_RELATIONS + VERTICAL_RELATIONS);
 
-    toString() {
-        return "<Point ({:g}, {:g})>".format(...this._coords);
-    }
-
-    get length() {
-        return 2;
-    }
-
-    __add__(other) {
-        return new Point((this.x + other.x), (this.y + other.y));
-    }
-
-    __sub__(other) {
-        return new Point((this.x - other.x), (this.y - other.y));
-    }
-
-    __mul__(other) {
-        return new Point((other * this.x), (other * this.y));
-    }
-
-    __rmul__(other) {
-        return new Point((other * this.x), (other * this.y));
-    }
-
-    __truediv__(other) {
-        return new Point((this.x / other), (this.y / other));
-    }
-
-    __itruediv__(other) {
-        return new Point((this.x / other), (this.y / other));
-    }
-
-    __getitem__(key) {
-        return this._coords[key];
-    }
-
-    __setitem__(key, value) {
-        this._coords[key] = value;
-    }
-
-    copy() {
-        return new Point(this.x, this.y);
-    }
-}
+export const HORIZONTAL_BOUNDARIES = ['top', 'bottom'];
+export const VERTICAL_BOUNDARIES = ['left', 'right'];
+export const CORNER_BOUNDARIES = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+export const COMPARTMENT_BOUNDARIES = (HORIZONTAL_BOUNDARIES + VERTICAL_BOUNDARIES);
 
 //==============================================================================
 
 export class Position {
     constructor(element) {
         this.element = element;
-        this.lengths = null;
+        this.lengths = null;             // Relative position as a pair of Lengths
         this.relationships = [];
-        this.coords = null;
-        this.dependencies = new Set();  // Object equality...
+        this.pixels = null;              // Resolved position in pixels
+        this.dependencies = new Set();
 
+// lengths v's coords??
         // dependencies are Elements, so assign each elememt a unique `id`
         // (index into global array/list of elements)
     }
@@ -191,15 +138,16 @@ export class Position {
     }
 
     static centroid(dependencies) {
-        var coords;
-        coords = new Point();
+        let coords = [0.0, 0.0];
         for (let dependency of dependencies) {
             if (!dependency.position.resolved) {
                 throw new ValueError("No position for '${dependency}' element");
             }
-            coords.sum(dependency.position.coords);
+            coords[0] += dependency.position.coords[0];
+            coords[1] += dependency.position.coords[1];
         }
-        coords /= dependencies.length;
+        coords[0] /= dependencies.length;
+        coords[1] /= dependencies.length;
         return coords;
     }
 
@@ -209,7 +157,7 @@ export class Position {
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
         */
 
-
+/* TODO
             "value": [
               {
                 "type": "SEQUENCE",
@@ -235,7 +183,7 @@ export class Position {
                 "unit": "x"
               }
             ]
-
+*/
         let elementDependencies = [];
         let token = tokens.peek();
         if ((token.type === "() block")) {
@@ -306,15 +254,15 @@ export class Position {
         this.addDependencies(elementDependencies);
     }
 
-    resolvePoint(unitConverter, offset, reln, dependencies) {
+    static resolvePoint(unitConverter, offset, reln, dependencies) {
         /*
         :return: tuple(tuple(x, y), index) where index == 0 means
         horizontal and 1 means vertical.
         */
-        let coords = this.centroid(dependencies);
+        let coords = Position.centroid(dependencies);
         let index = Position.orientation[reln];
         if (index >= 0) {
-            let adjust = unitConverter.pixels(offset, index, false);
+            let adjust = unitConverter.toPixels(offset, index, false);
             if (["left", "above"].indexOf(reln) >= 0) {
                 coords[index] -= adjust;
             } else {
@@ -346,47 +294,54 @@ export class Position {
         pos="top"  #                 } Centered in top, spaced evenly (`transporter-spacing`?)
         pos="top"  #                 }
         */
-        var _, coords, dependencies, dirn, index, offset, orientation, reln,;
 
-        const unit_converter = this._element.container.unit_converter;
-        if (this._lengths) {
-            this._coords = unit_converter.pixel_pair(this._lengths);
+        const unitConverter = this.element.container.unitConverter;
+
+        if (this.lengths) {
+            this.coords = unitConverter.pixelPair(this.lengths);
+
         } else {
-            if (((this._coords === null) && this._relationships)) {
-                this._coords = new Point();
-                if ((this._relationships.length === 1)) {
-                    offset = this._relationships[0][0];
-                    reln = this._relationships[0][1];
-                    dependencies = this._relationships[0][2];
-                    if ((this._element instanceof dia.Transporter)) {
-                        if (_pj.in_es6(reln, ["bottom", "right"])) {
-                            dirn = (_pj.in_es6(reln, ["top", "bottom"]) ? "below" : "right");
-                            [coords, orientation] = this._resolve_point(unit_converter, [100, "%"], dirn, [this._element.container]);
-                            this._coords[orientation] = coords[orientation];
+            if (((this.coords === null) && this.relationships)) {
+
+                this.coords = [0, 0];
+
+                if ((this.relationships.length === 1)) {
+                    const offset = this.relationships[0][0];
+                    const reln = this.relationships[0][1];
+                    const dependencies = this.relationships[0][2];
+
+                    if ((this.element instanceof dia.Transporter)) {
+                        if (["bottom", "right"].indexOf(reln) >= 0) {
+                            const dirn = (["top", "bottom"].indexOf(reln) >= 0) ? "below" : "right";
+                            [coords, orientation] = Position.resolvePoint(unitConverter, [100, "%"], dirn, [this._element.container]);
+                            this.coords[orientation] = coords[orientation];
                         }
-                        dirn = (_pj.in_es6(reln, ["top", "bottom"]) ? "right" : "below");
-                        [coords, orientation] = this._resolve_point(unit_converter, offset, dirn, [this._element.container]);
-                        if (_pj.in_es6(reln, ["bottom", "right"])) {
-                            this._coords[orientation] = coords[orientation];
+                        const dirn = (["top", "bottom"].indexOf(reln) >= 0) ? "right" : "below";
+                        [coords, orientation] = Position.resolvePoint(unitConverter, offset, dirn, [this.element.container]);
+                        if (["bottom", "right"].indexOf(reln) >= 0) {
+                            this.coords[orientation] = coords[orientation];
                         } else {
-                            this._coords = coords;
+                            this.coords = coords;
                         }
+
+
                     } else {
-                        [this._coords, _] = this._resolve_point(unit_converter, offset, reln, dependencies);
+                        this.coords = Position.resolvePoint(unitConverter, offset, reln, dependencies)[0];
                     }
                 } else {
-                    for (var relationship, _pj_c = 0, _pj_a = this._relationships, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-                        relationship = _pj_a[_pj_c];
-                        offset = relationship[0];
-                        reln = relationship[1];
-                        dependencies = relationship[2];
-                        if ((this._element instanceof dia.Transporter)) {
+                    for (let relationship of this.relationships) {
+                        const offset = relationship[0];
+                        const reln = relationship[1];
+                        const dependencies = relationship[2];
+
+                        if ((this.element instanceof dia.Transporter)) {
+                            // pass
                         } else {
-                            [coords, index] = this._resolve_point(unit_converter, offset, reln, dependencies);
-                            if ((offset === null)) {
-                                index = (index - 1);
+                            [coords, index] = Position.resolvePoint(unitConverter, offset, reln, dependencies);
+                            if (offset === null) {
+                                index -= 1;
                             }
-                            this._coords[index] = coords[index];
+                            this.coords[index] = coords[index];
                         }
                     }
                 }
@@ -395,24 +350,19 @@ export class Position {
     }
 }
 
-_pj.set_properties(Position, {"_orientation": {"centre": (- 1), "center": (- 1), "left": 0, "right": 0, "above": 1, "below": 1}});
+Position.prototype.orientation = {centre: -1, center: -1, left: 0, right: 0, above: 1, below: 1};
 
 //==============================================================================
 
 export class Size {
     constructor(tokens) {
-        this.lengths = null;
-        for (var token, _pj_c = 0, _pj_a =
-
-            new parser.StyleTokensIterator(tokens)
-
-            , _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            token = _pj_a[_pj_c];
-            if ((token.type === "() block")) {
-                this._lengths = parser.get_coordinates(new parser.StyleTokensIterator(token.content));
-            } else {
-                throw new SyntaxError("Parenthesised pair of lengths expected.");
+        this.size = []
+        if (tokens instanceof Array && tokens.length == 2) {
+            for (let token of tokens) {
+                this.size.push(parser.getLength(token));
             }
+        } else {
+            throw new SyntaxError("Pair of lengths expected.");
         }
     }
 }
@@ -435,10 +385,10 @@ export class Line {
 
         */
         var angle, constraint, dependencies, dependency, length, line_offset, offset, reln, token, tokens;
-        if ((this.tokens === null)) {
+        if (this.tokens === null) {
             return;
         }
-        this._segments = [];
+        this.segments = [];
         const tokens = this.tokens;
         token = tokens.peek();
         while ((token !== null)) {
@@ -568,15 +518,15 @@ export class UnitConverter {
         return "UC: global=${this.globalSize}, local=${this.localSize}, offset=${this.localOffset}";
     }
 
-    pixels(length, index, addOffset = true) {
-        if ((length !== null)) {
-            const units = length.unit;
-            if (units.indexOf('x') > = 0) {
+    toPixels(length, index, addOffset = true) {
+        if (length !== null) {
+            const unit = length.unit;
+            if (unit.indexOf('x') >= 0) {
                 index = 0;
-            } else if (units.indexOf('y')) {
+            } else if (unit.indexOf('y') >= 0) {
                 index = 1;
             }
-            if (units.startswith("%")) {
+            if (unit.startswith("%")) {
                 const offset = ((length[0] * this.localSize[index]) / 100.0);
                 return ((addOffset ? this.localOffset[index] : 0) + offset);
             } else {
@@ -586,8 +536,8 @@ export class UnitConverter {
         return 0;
     }
 
-    pixelPair(coords, addOffset = true) {
-        return new Point(this.pixels(coords[0], 0, addOffset), this.pixels(coords[1], 1, addOffset));
+    toPixelPair(coords, addOffset = true) {
+        return [this.toPixels(coords[0], 0, addOffset), this.toPixels(coords[1], 1, addOffset)];
     }
 }
 

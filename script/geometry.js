@@ -43,18 +43,70 @@ _pj_snippets(_pj);
 
 //==============================================================================
 
-class Length {
-    constructor(length = 0, units = "%") {
-        this._length = length;
-        this._units = units;
+export class Point {
+    constructor(x = 0.0, y = 0.0) {
+        this._coords = [x, y];
+    }
+
+    get x() {
+        return this._coords[0];
+    }
+
+    get y() {
+        return this._coords[1];
+    }
+
+    toString() {
+        return "<Point ({:g}, {:g})>".format(...this._coords);
     }
 
     get length() {
-        return this._length;
+        return 2;
     }
 
-    get units() {
-        return this._units;
+    __add__(other) {
+        return new Point((this.x + other.x), (this.y + other.y));
+    }
+
+    __sub__(other) {
+        return new Point((this.x - other.x), (this.y - other.y));
+    }
+
+    __mul__(other) {
+        return new Point((other * this.x), (other * this.y));
+    }
+
+    __rmul__(other) {
+        return new Point((other * this.x), (other * this.y));
+    }
+
+    __truediv__(other) {
+        return new Point((this.x / other), (this.y / other));
+    }
+
+    __itruediv__(other) {
+        return new Point((this.x / other), (this.y / other));
+    }
+
+    __getitem__(key) {
+        return this._coords[key];
+    }
+
+    __setitem__(key, value) {
+        this._coords[key] = value;
+    }
+
+    copy() {
+        return new Point(this.x, this.y);
+    }
+}
+
+//==============================================================================
+
+class Length {
+    constructor(length = 0, unit = "%") {
+        this.length = length;
+        this.units = unit;
     }
 
     static from_text(text) {
@@ -70,11 +122,11 @@ class Length {
                 throw new SyntaxError("Missing units: '%' or 'px' required");
             }
         }
-        return this(length, units);
+        return Lengtg(length, unit);
     }
 
     toString() {
-        if ((this.units === "%")) {
+        if ((this.unit === "%")) {
             return "{:g}%".format((100.0 * this.length));
         } else {
             return "{:g}px".format(this.length);
@@ -182,10 +234,10 @@ class Length {
 
 class LengthTuple {
     constructor(lengths) {
-        this._lengths = tuple(lengths);
+        this.lengths = lengths;
     }
 
-    static from_text(text) {
+    static fromText(text) {
         return this((text ? function () {
             var _pj_a = [], _pj_b = text.split();
             for (var _pj_c = 0, _pj_d = _pj_b.length; (_pj_c < _pj_d); _pj_c += 1) {

@@ -27,7 +27,7 @@ import * as SPECIFICITY from './specificity.js';
 
 import * as bg from './bondgraph.js';
 import * as dia from './diagram.js';
-import {GradientStore} from './svg_elements.js';
+import {GradientStore} from './svgElements.js';
 
 //==============================================================================
 
@@ -89,138 +89,93 @@ class StyleSheet {
 
 //==============================================================================
 
-export class StyleTokensIterator {
-    constructor(tokens) {
-        this.tokens = (tokens === null) ? []
-                    : (tokens.type === 'SEQUENCE') ? tokens.value
-                                                   : [tokens];
-        this.length = this.tokens.length;
-        this.position = 0;
-        }
-
-    next() {
-        if (this.position < this.length) {
-            const value = this.tokens[this.position];
-            this.position += 1;
-            return { value: value, done: false };
-        }
-        return { value: undefined, done: true };
-    }
-
-    done() {
-        return this.position >= this.length;
-    }
-
-    peek() {
-        if (this.position < this.length) {
-            return { value: this.tokens[this.position], done: false };
-        }
-        return { value: undefined, done: true };
-    }
-
-    reset() {
-        this.position = 0;
-    }
-
-    static fromStyleElement(style, name) {
-        return new StyleTokensIterator((name in style) ? style[name] : null);
-    }
-}
-
-//==============================================================================
-
-export function getNumber(tokens) {
-    const token = tokens.next();
-    if (token.done || token.value.type !== "NUMBER") {
+export function parseNumber(tokens) {
+    if (tokens.type !== "NUMBER") {
         throw new SyntaxError("Number expected.");
     } else {
-        return token.value.value;
+        return tokens.value;
     }
 }
 
 //==============================================================================
 
-export function getPercentage(tokens, defaultValue=null) {
+export function parsePercentageOffset(tokens, defaultValue=null) {
     /*
     :param tokens: `StyleTokens` of tokens
     :return: Length
     */
-    const token = tokens.peek();
-    if (token.done || token.value.type !== 'PERCENTAGE') {
+    if (tokens.type !== 'PERCENTAGE') {
         if (defaultValue !== null) {
             return defaultValue;
         } else {
             throw new SyntaxError("Percentage expected.");
         }
     }
-    const percentage = token.value.value;
-    const unit = token.value.unit;
+    const percentage = tokens.value;
+    const unit = tokens.unit;
     const modifier = unit.substring(1);
-    if (["", "x", "y"].indexOf(unit) < 0) {
-        throw new SyntaxError("Modifier (${unit}) must be 'x' or 'y'.");
+    if (["", "x", "y"].indexOf(modifier) < 0) {
+        throw new SyntaxError("Modifier (${modifier}) must be 'x' or 'y'.");
     }
-    tokens.next();
-    return {value: percentage, unit: unit};
+    return layout.Offset(percentage, unit);
 }
 
 //==============================================================================
 
-export function getLength(tokens, defaultValue=null) {
+export function parseOffset(tokens, defaultValue=null) {
     /*
     :param tokens: `StyleTokens` of tokens
     :return: Length
 
     `100`, `100x`, `100y`
     */
-    const token = tokens.peek();
-    if (!token.done && token.value.type === "PERCENTAGE") {
-        return getPercentage(tokens, defaultValue);
-    } else if (token.done || ["NUMBER", "DIMENSION"].indexOf(token.value.type) < 0) {
+    if (tokens.type === "PERCENTAGE") {
+        return parsePercentageOffset(tokens, defaultValue);
+    } else if (["NUMBER", "DIMENSION"].indexOf(tokens.type) < 0) {
         if (defaultValue !== null) {
             return defaultValue;
         } else {
             throw new SyntaxError("Length expected.");
         }
     }
-    const unit = (token.value.type === "DIMENSION") ? token.value.unit : "";
+    const unit = (tokens.type === "DIMENSION") ? tokens.unit : "";
     if (["", "x", "y"].indexOf(unit) < 0) {
         throw new SyntaxError("Modifier must be 'x' or 'y'.");
     }
-    tokens.next();
-    return {value: token.value.value, unit: unit};
+    return layout.Offset(tokens.value, unit};
 }
 
 //==============================================================================
 
-export function getCoordinates(tokens, allowLocal = true) {
+export function parseOffsetPair(tokens, allowLocal=true) {
     /*
     Get a coordinate pair.
 
     :param tokens: `StyleTokens` of tokens
     :return: tuple(Length, Length)
     */
-    let coords = [];
+    let offsets = [];
 
     if (tokens instanceof Array && tokens.length == 2) {
-        let (token of tokens) {
-            if (token.type ==== 'SEQUENCE') {
-                <offset> <reln> <id_list>
-            } else if (_pj.in_es6(token.type, ["dimension", "number"])
-                   || (allowLocal && token.type === "percentage")) {
-                <offset>
+        for (let token of tokens) {
+            if (token.type === 'SEQUENCE') {
+// TODO                <offset> <reln> <id_list>
+            } else if (["DIMENSION", "NUMBER"].indexOf(token.type) >= 0
+                   || (allowLocal && token.type === "PERCENTAGE")) {
+                offsets.push(parseOffset(token));
             } else {
                 throw new SyntaxError("Invalid syntax.");
             }
         }
     } else {
-        throw new SyntaxError("Expected cordinates.");
+        throw new SyntaxError("Expected pair of offsets.");
     }
-    return coords;
+    return offsets;
 }
 
 //==============================================================================
 
-export function getColour(tokens) {
+export function parseColour(tokens) {
     const token = tokens.peek();
     if (!token.done()) {
         const value = token.value;
@@ -244,7 +199,7 @@ export function getColour(tokens) {
             stop_colours = [];
             token = tokens.peek();
             while ((token !== null)) {
-                colour = get_colour_value(tokens);
+                colour = parseColourValue(tokens);
                 token = tokens.next();
                 if (((token !== null) && (token.type === "percentage"))) {
                     stop = token.value;
@@ -261,12 +216,12 @@ export function getColour(tokens) {
             return GradientStore.url(gradient, stop_colours);
         }
     }
-    return getColourValue(tokens);
+    return parseColourValue(tokens);
 }
 
 //==============================================================================
 
-export function getColourValue(tokens) {
+export function parseColourValue(tokens) {
     const token = tokens.next();
     if (!token.done()) {
         const value = token.value;
@@ -361,7 +316,8 @@ export class Parser
     parseFlow(element)
     /*==============*/
     {
-        const flow = new bg.Flow(this.diagram, element.attributes, this.stylesheet.style(element));
+        const transporterId = ('transporter' in element.attributes) ? element.attributes.transporter : null;
+        const flow = new bg.Flow(this.diagram, transporterId, element.attributes, this.stylesheet.style(element));
         this.diagram.addElement(flow);
         let container = ((flow.transporter !== null) ? flow.transporter.container : null);
         for (let e of element.children) {
@@ -448,7 +404,7 @@ export class Parser
 
         this.diagram.setBondGraph(this.bondGraph);
 
-        this.diagram.layout();
+        this.diagram.layoutElements();
 
         return this.diagram;
     }
