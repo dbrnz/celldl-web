@@ -31,6 +31,7 @@ export class List extends Array {
 
     append(element) {
         super.push(element);
+        return this;
     }
 
     contains(element) {
@@ -45,6 +46,7 @@ export class List extends Array {
                 super.push(element);
             }
         }
+        return this;
     }
 }
 

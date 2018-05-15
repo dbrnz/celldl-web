@@ -18,40 +18,14 @@ limitations under the License.
 
 ******************************************************************************/
 
-/*
-import * as math from 'math';
-*/
+'use strict';
 
 //==============================================================================
 
 import * as bg from './bondgraph.js';
 import * as dia from './diagram.js';
 import * as parser from './parser.js';
-
-//==============================================================================
-
-var _pj;
-function _pj_snippets(container) {
-    function set_properties(cls, props) {
-        var desc, value;
-        var _pj_a = props;
-        for (var p in _pj_a) {
-            if (_pj_a.hasOwnProperty(p)) {
-                value = props[p];
-                if (((((! ((value instanceof Map) || (value instanceof WeakMap))) && (value instanceof Object)) && ("get" in value)) && (value.get instanceof Function))) {
-                    desc = value;
-                } else {
-                    desc = {"value": value, "enumerable": false, "configurable": true, "writable": true};
-                }
-                Object.defineProperty(cls.prototype, p, desc);
-            }
-        }
-    }
-    container["set_properties"] = set_properties;
-    return container;
-}
-_pj = {};
-_pj_snippets(_pj);
+import {List} from './utils.js';
 
 //==============================================================================
 
@@ -67,14 +41,14 @@ export const TRANSPORTER_RADIUS = 25;
 export const TRANSPORTER_EXTRA = {value: 25, unit: 'x'};
 export const TRANSPORTER_WIDTH = {value: 10, unit: 'x'};
 
-export const HORIZONTAL_RELATIONS = ['left', 'right'];
-export const VERTICAL_RELATIONS = ['above', 'below'];
-export const POSITION_RELATIONS = (HORIZONTAL_RELATIONS + VERTICAL_RELATIONS);
+export const HORIZONTAL_RELATIONS = new List(['left', 'right']);
+export const VERTICAL_RELATIONS = new List(['above', 'below']);
+export const POSITION_RELATIONS = new List().extend(HORIZONTAL_RELATIONS).extend(VERTICAL_RELATIONS);
 
-export const HORIZONTAL_BOUNDARIES = ['top', 'bottom'];
-export const VERTICAL_BOUNDARIES = ['left', 'right'];
-export const CORNER_BOUNDARIES = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
-export const COMPARTMENT_BOUNDARIES = (HORIZONTAL_BOUNDARIES + VERTICAL_BOUNDARIES);
+export const HORIZONTAL_BOUNDARIES = new List(['top', 'bottom']);
+export const VERTICAL_BOUNDARIES = new List(['left', 'right']);
+export const CORNER_BOUNDARIES = new List(['top-left', 'top-right', 'bottom-left', 'bottom-right']);
+export const COMPARTMENT_BOUNDARIES = new List().extend(HORIZONTAL_BOUNDARIES).extend(VERTICAL_BOUNDARIES);
 
 //==============================================================================
 
@@ -96,8 +70,10 @@ export class Coords {
 
 //==============================================================================
 
-export class Position {
-    constructor(element) {
+export class Position
+{
+    constructor(element)
+    {
         this.element = element;
         this.lengths = null;             // Relative position as a pair of Lengths
         this.relationships = [];
@@ -109,41 +85,50 @@ export class Position {
         // (index into global array/list of elements)
     }
 
-    bool() {
+    bool()
+    {
         return (this.dependencies.length > 0 || this.lengths !== null);
     }
 
-    get hasCoords() {
+    get hasCoords()
+    {
         return (this.coords !== null);
     }
 
-    get resolved() {
+    get resolved()
+    {
         return (this.coords !== null && this.coords.indexOf(null) < 0);
     }
 
-    addDependency(dependency) {
+    addDependency(dependency)
+    {
         this.dependencies.add(dependency);
     }
 
-    addDependencies(dependencies) {
+    addDependencies(dependencies)
+    {
         for (let dependency of dependencies) {
             this.dependencies.add(dependency);
         }
     }
 
-    addRelationship(offset, relation, dependencies) {
+    addRelationship(offset, relation, dependencies)
+    {
         this.relationships.push({offset, relation, dependencies});
     }
 
-    setPixelCoords(pixelCoords) {
+    setPixelCoords(pixelCoords)
+    {
         this.pixelCoords = pixelCoords;
     }
 
-    setLengths(lengths) {
+    setLengths(lengths)
+    {
         this.lengths = lengths;
     }
 
-    static centroid(dependencies) {
+    static centroid(dependencies)
+    {
         let pixelCoords = [0.0, 0.0];
         for (let dependency of dependencies) {
             if (!dependency.position.resolved) {
@@ -157,58 +142,121 @@ export class Position {
         return pixelCoords;
     }
 
-    parse(tokens, defaultOffset, defaultDependency) {
+    parse(tokens, defaultOffset=null, defaultDependency=null)
+    {
         /*
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
         */
 
-/* TODO
-            "value": [
+//        if (tokens )
+/*
+// 20%, 10%
+// array.length == 2
+            [
+              {
+                "type": "PERCENTAGE",
+                "value": 20,
+                "unit": "%"
+              },
+              {
+                "type": "PERCENTAGE",
+                "value": 10,
+                "unit": "%"
+              }
+            ]
+
+// left
+              "type": "ID",
+              "value": "left"
+
+// 20% left
+              "type": "SEQUENCE",
+              "value": [
+                {
+                  "type": "PERCENTAGE",
+                  "value": 20,
+                  "unit": "%"
+                },
+                {
+                  "type": "ID",
+                  "value": "left"
+                }
+              ]
+
+// left, 10% above #q #f
+// array.length == 2
+            [
+              {
+                "type": "ID",
+                "value": "left"
+              },
               {
                 "type": "SEQUENCE",
                 "value": [
                   {
                     "type": "PERCENTAGE",
                     "value": 10,
-                    "unit": "%x"
+                    "unit": "%"
                   },
                   {
                     "type": "ID",
-                    "value": "left"
+                    "value": "above"
                   },
                   {
                     "type": "HASH",
-                    "value": "#w"
+                    "value": "#q"
+                  },
+                  {
+                    "type": "HASH",
+                    "value": "#f"
                   }
                 ]
               },
-              {
-                "type": "DIMENSION",
-                "value": 2,
-                "unit": "x"
-              }
             ]
+
 */
         let elementDependencies = [];
-        let token = tokens.peek();
-        if ((token.type === "() block")) {
-            tokens.next();
-            const lengths = parser.getCoordinates(new parser.StyleTokensIterator(token.content));
-            this.setLengths(lengths);
-        } else {
+        if (tokens.type === "FUNCTION") {
+            this.setLengths(parser.parseOffsetPair(tokens.parameters));
+        } else if (tokens.type === "SEQUENCE") {
             let seenHorizontal = false;
             let seenVertical = false;
             let constraints = 0;
-            while ((token !== null)) {
-                let usingDefault = (["number", "dimension", "percentage"].indexOf(token.type) < 0);
-                let offset = parser.get_length(tokens, {"default": defaultOffset});
-
-                token = tokens.next();
-                if (token.type !== "ident" || POSITION_RELATIONS.indexOf(token.toLowerCase) < 0) {
-                    throw new SyntaxError("Unknown relationship for position.");
+            let state = 0;
+            for (let token of tokens.value) {
+                switch (state) {
+                  case 0:
+                    if (token.type !== 'ID') {
+                        usingDefault = false;
+                        offset = parser.parseOffset(tokens, defaultOffset);
+                        state += 1;
+                        break;
+                    } else {
+                        usingDefault = true;
+                        // And fall through to get relationship
+                    }
+                  case 1:
+                    if (token.type !== "ID" || !POSITION_RELATIONS.contains(token.value.toLowerCase())) {
+                        throw new SyntaxError("Unknown relationship for position.");
+                    }
+                    reln = token.value.toLowerCase();
+                    state += 1;
+                    break;
+                  case 2:
+                    if (token.type !== 'HASH') {
+//                    if ((_pj.in_es6(token, [null, ","]) && (defaultDependency !== null))) {
+                    dependencies.append(defaultDependency);
+                    }
+                    else {
+                        const dependency = this.element.diagram.findElement(`#${token.value}`);
+                        if (dependency === null) {
+                            throw new KeyError(`Unknown element '#${token.value}`);
+                        }
+                        dependencies.append(dependency);
+                    }
                 }
-                const reln = token.lower_value;
+
                 let dependencies = [];
                 token = tokens.peek();
                 if ((_pj.in_es6(token, [null, ","]) && (defaultDependency !== null))) {
@@ -260,7 +308,8 @@ export class Position {
         this.addDependencies(elementDependencies);
     }
 
-    static resolvePoint(unitConverter, offset, reln, dependencies) {
+    static resolvePoint(unitConverter, offset, reln, dependencies)
+    {
         /*
         :return: tuple(tuple(x, y), index) where index == 0 means
         horizontal and 1 means vertical.
@@ -278,7 +327,8 @@ export class Position {
         return [pixelCoords, index];
     }
 
-    resolve() {
+    resolve()
+    {
         /*
         # Transporters are always on a compartment boundary
         pos="100 top"    ## x = x(compartment) + 100; y = y(compartment)
@@ -300,56 +350,26 @@ export class Position {
         pos="top"  #                 } Centered in top, spaced evenly (`transporter-spacing`?)
         pos="top"  #                 }
         */
-
         const unitConverter = this.element.container.unitConverter;
-
         if (this.lengths) {
             this.pixelCoords = unitConverter.pixelPair(this.lengths);
-
-        } else {
-            if (((this.coords === null) && this.relationships)) {
-
-                this.coords = [0, 0];
-
-                if ((this.relationships.length === 1)) {
-                    const offset = this.relationships[0][0];
-                    const reln = this.relationships[0][1];
-                    const dependencies = this.relationships[0][2];
-
-                    if ((this.element instanceof dia.Transporter)) {
-                        if (["bottom", "right"].indexOf(reln) >= 0) {
-                            const dirn = (["top", "bottom"].indexOf(reln) >= 0) ? "below" : "right";
-                            [coords, orientation] = Position.resolvePoint(unitConverter, [100, "%"], dirn, [this._element.container]);
-                            this.coords[orientation] = coords[orientation];
-                        }
-                        const dirn = (["top", "bottom"].indexOf(reln) >= 0) ? "right" : "below";
-                        [coords, orientation] = Position.resolvePoint(unitConverter, offset, dirn, [this.element.container]);
-                        if (["bottom", "right"].indexOf(reln) >= 0) {
-                            this.coords[orientation] = coords[orientation];
-                        } else {
-                            this.coords = coords;
-                        }
-
-
-                    } else {
-                        this.pixelCoords = Position.resolvePoint(unitConverter, offset, reln, dependencies)[0];
+        } else if (this.coords === null && this.relationships.length > 0) {
+            this.coords = [0, 0];
+            if (this.relationships.length === 1) {
+                const offset = this.relationships[0][0];
+                const reln = this.relationships[0][1];
+                const dependencies = this.relationships[0][2];
+                this.pixelCoords = Position.resolvePoint(unitConverter, offset, reln, dependencies)[0];
+            } else {
+                for (let relationship of this.relationships) {
+                    const offset = relationship[0];
+                    const reln = relationship[1];
+                    const dependencies = relationship[2];
+                    [pixelCoords, index] = Position.resolvePoint(unitConverter, offset, reln, dependencies);
+                    if (offset === null) {
+                        index -= 1;
                     }
-                } else {
-                    for (let relationship of this.relationships) {
-                        const offset = relationship[0];
-                        const reln = relationship[1];
-                        const dependencies = relationship[2];
-
-                        if ((this.element instanceof dia.Transporter)) {
-                            // pass
-                        } else {
-                            [pixelCoords, index] = Position.resolvePoint(unitConverter, offset, reln, dependencies);
-                            if (offset === null) {
-                                index -= 1;
-                            }
-                            this.pixelCoords[index] = pixelCoords[index];
-                        }
-                    }
+                    this.pixelCoords[index] = pixelCoords[index];
                 }
             }
         }

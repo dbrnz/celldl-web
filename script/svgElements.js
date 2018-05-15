@@ -27,7 +27,7 @@ import {List, format} from './utils.js';
 
 //==============================================================================
 
-LINE_WIDTH = 2;
+const LINE_WIDTH = 2;
 
 //==============================================================================
 
@@ -282,10 +282,7 @@ class TransporterElement extends SvgElement
     }
 
     svg() {
-        svg = ['<use xlink:href="#{ID_BASE}_element" transform="translate({X:g}, {Y:g})'
-
-        .format({'ID_BASE': this.idBase, 'X': this.coords[0], 'Y': this.coords[1]})];
-
+        svg = [`<use xlink:href="#${this.idBase}_element" transform="translate(${this.coords[0]}, ${this.coords[1]})"`]
         const scaling = (this.height / Number.parseFloat(this.definedHeight));
         if ((scaling !== 1.0)) {
             svg.append(` scale(${scaling})`);
@@ -294,7 +291,7 @@ class TransporterElement extends SvgElement
             svg.append(` rotate(${this.rotation})`);
         }
         svg.append('" />');
-        return '".join(svg);
+        return ''.join(svg);
     }
 }
 
@@ -308,7 +305,27 @@ export class Channel extends TransporterElement
 }
 
 Channel.HEIGHT = 100;
-Channel.SVG_DEFS = '\n        <linearGradient id="{ID_BASE}_fill">\n          <stop offset="0%"    stop-color="#57FAFF"/>\n          <stop offset="13.5%" stop-color="#45C8D2"/>\n          <stop offset="30.4%" stop-color="#328F9F"/>\n          <stop offset="46.8%" stop-color="#216175"/>\n          <stop offset="62.4%" stop-color="#153C54"/>\n          <stop offset="76.8%" stop-color="#0B223C"/>\n          <stop offset="89.8%" stop-color="#06132E"/>\n          <stop offset="100%"  stop-color="#040D29"/>\n        </linearGradient>\n        <path id="{ID_BASE}_sub_element" fill="url(#{ID_BASE}_fill)"\n          d="M0,0 a10,10 0 0 1 20,0 v80 a10,10 0 0 1 -20,0 v-80 z"/>\n        <g id="{ID_BASE}_element" transform="translate(-10, -40)">\n          <use opacity="0.85" xlink:href="#{ID_BASE}_sub_element" transform="translate(  0, -5)"/>\n          <use opacity="0.85" xlink:href="#{ID_BASE}_sub_element" transform="translate( 15,  0)" />\n          <use opacity="0.75" xlink:href="#{ID_BASE}_sub_element" transform="translate(-15,  0)" />\n          <use opacity="0.60" xlink:href="#{ID_BASE}_sub_element" transform="translate( -1,  5)" />\n        </g>', 'WIDTH': 50});
+Channel.WIDTH  =  50;
+Channel.SVG_DEFS = ['',
+                    '<linearGradient id="${ID_BASE}_fill">',
+                    '  <stop offset="0%"    stop-color="#57FAFF"/>',
+                    '  <stop offset="13.5%" stop-color="#45C8D2"/>',
+                    '  <stop offset="30.4%" stop-color="#328F9F"/>',
+                    '  <stop offset="46.8%" stop-color="#216175"/>',
+                    '  <stop offset="62.4%" stop-color="#153C54"/>',
+                    '  <stop offset="76.8%" stop-color="#0B223C"/>',
+                    '  <stop offset="89.8%" stop-color="#06132E"/>',
+                    '  <stop offset="100%"  stop-color="#040D29"/>',
+                    '</linearGradient>',
+                    '<path id="${ID_BASE}_sub_element" fill="url(#${ID_BASE}_fill)"',
+                    '  d="M0,0 a10,10 0 0 1 20,0 v80 a10,10 0 0 1 -20,0 v-80 z"/>',
+                    '<g id="${ID_BASE}_element" transform="translate(-10, -40)">',
+                    '  <use opacity="0.85" xlink:href="#${ID_BASE}_sub_element" transform="translate(  0, -5)"/>',
+                    '  <use opacity="0.85" xlink:href="#${ID_BASE}_sub_element" transform="translate( 15,  0)" />',
+                    '  <use opacity="0.75" xlink:href="#${ID_BASE}_sub_element" transform="translate(-15,  0)" />',
+                    '  <use opacity="0.60" xlink:href="#${ID_BASE}_sub_element" transform="translate( -1,  5)" />',
+                    '</g>'].join('\n      ');
+
 
 
 //==============================================================================
@@ -330,7 +347,36 @@ export class PMRChannel extends TransporterElement
 }
 
 PMRChannel.HEIGHT = 80;
-PMRChannel.SVG_DEFS': '\n        <radialGradient id="{ID_BASE}_fill">\n            <stop offset="0%"     stop-color="#FBFAE2"/>\n            <stop offset="12.03%" stop-color="#FCFADD"/>\n            <stop offset="26.62%" stop-color="#FFF9CD"/>\n            <stop offset="42.55%" stop-color="#FCF6B4"/>\n            <stop offset="59.43%" stop-color="#FDEF90"/>\n            <stop offset="77.06%" stop-color="#FEE863"/>\n            <stop offset="95.06%" stop-color="#FEE12A"/>\n            <stop offset="100%"   stop-color="#FEDE12"/>\n        </radialGradient>\n        <path id="{ID_BASE}_element" fill="url(#{ID_BASE}_fill)"  transform="scale(1.1) translate(-22, -25)"\n            stroke="#010101" stroke-width="2" stroke-linejoin="miter"\n            d="M0,0 c0,-25 15,-30 22,-12 c7,-18 22,-13 22,12 v50 c0,25 -15,30 -22,12 c-7,18 -22,13 -22,-12 v-50 z"/>\n        <marker id="{ID_BASE}_arrow" orient="auto" style="overflow: visible">\n            <path fill="010101" transform="rotate(90) translate(0, 0) scale(0.5)"\n                  d="M0,0l5,3.1l0.1-0.2l-3.3-8.2l-1.9-8.6l-1.9,8.6l-3.3,8.2l0.1,0.2l5-3.1z"/>\n        </marker>\n        <g id="{ID_BASE}_in_element">\n          <path stroke="#010101" stroke-width="2" d="M0,-65 v130" marker-end="url(#{ID_BASE}_arrow)"/>\n          <use xlink:href="#{ID_BASE}_element"/>\n        </g>\n        <g id="{ID_BASE}_out_element">\n          <use xlink:href="#{ID_BASE}_in_element" transform="rotate(180)"/>\n        </g>\n        <g id="{ID_BASE}_inout_element">\n          <use xlink:href="#{ID_BASE}_in_element"/>\n          <use xlink:href="#{ID_BASE}_in_element" transform="rotate(180)"/>\n        </g>', 'WIDTH': 44});
+PMRChannel.WIDTH  = 44;
+PMRChannel.SVG_DEFS = ['',
+                       '<radialGradient id="${ID_BASE}_fill">',
+                       '  <stop offset="0%"     stop-color="#FBFAE2"/>',
+                       '  <stop offset="12.03%" stop-color="#FCFADD"/>',
+                       '  <stop offset="26.62%" stop-color="#FFF9CD"/>',
+                       '  <stop offset="42.55%" stop-color="#FCF6B4"/>',
+                       '  <stop offset="59.43%" stop-color="#FDEF90"/>',
+                       '  <stop offset="77.06%" stop-color="#FEE863"/>',
+                       '  <stop offset="95.06%" stop-color="#FEE12A"/>',
+                       '  <stop offset="100%"   stop-color="#FEDE12"/>',
+                       '</radialGradient>',
+                       '<path id="${ID_BASE}_element" fill="url(#${ID_BASE}_fill)"  transform="scale(1.1) translate(-22, -25)"',
+                       '  stroke="#010101" stroke-width="2" stroke-linejoin="miter"',
+                       '  d="M0,0 c0,-25 15,-30 22,-12 c7,-18 22,-13 22,12 v50 c0,25 -15,30 -22,12 c-7,18 -22,13 -22,-12 v-50 z"/>',
+                       '<marker id="${ID_BASE}_arrow" orient="auto" style="overflow: visible">',
+                       '  <path fill="010101" transform="rotate(90) translate(0, 0) scale(0.5)"',
+                       '     d="M0,0l5,3.1l0.1-0.2l-3.3-8.2l-1.9-8.6l-1.9,8.6l-3.3,8.2l0.1,0.2l5-3.1z"/>',
+                       '</marker>',
+                       '<g id="${ID_BASE}_in_element">',
+                       '  <path stroke="#010101" stroke-width="2" d="M0,-65 v130" marker-end="url(#${ID_BASE}_arrow)"/>',
+                       '  <use xlink:href="#${ID_BASE}_element"/>',
+                       '</g>',
+                       '<g id="${ID_BASE}_out_element">',
+                       '  <use xlink:href="#${ID_BASE}_in_element" transform="rotate(180)"/>',
+                       '</g>',
+                       '<g id="${ID_BASE}_inout_element">',
+                       '  <use xlink:href="#${ID_BASE}_in_element"/>',
+                       '  <use xlink:href="#${ID_BASE}_in_element" transform="rotate(180)"/>',
+                       '</g>'].join('\n      ');
 
 //==============================================================================
 
@@ -392,30 +438,21 @@ class Arrow
     }
 }
 
-Arrow.ColourToId[colour] = {};
+Arrow.ColourToId = {};
 Arrow._nextId = 0;
 
 //==============================================================================
 
-export function svgLine(line, colour, reverse = false, display = '', style = '')
+export function svgLine(line, colour, reverse=false, display='', style='')
 {
-
     const points = (reverse ? list(reversed(line.coords)) : line.coords);
-
     const dash = (style === 'dashed') ? ' stroke-dasharray="10,5"' : '';
-
-
+    let pointLocations = [];
+    for (let point of points.slice(1)) {
+        pointLocations.push(`L${point[0]},${point[1]}`);
+    }
     return `<path fill="none" stroke="${colour}" stroke-width="${LINE_WIDTH}" ${display} ${dash} marker-end="${Arrow.url(colour)}"
- d="M${points[0][0]},${points[0][1]} {:s}"/>`;
-
-    ' '.join(function () {
-        var _pj_a = [], _pj_b = points.slice(1);
-        for (var _pj_c = 0, _pj_d = _pj_b.length; (_pj_c < _pj_d); _pj_c += 1) {
-            var point = _pj_b[_pj_c];
-            _pj_a.push('L{:g},{:g}'.format(...point));
-        }
-        return _pj_a;
-    }.call(this)));
+  d="M${points[0][0]},${points[0][1]} ${pointLocations}"/>`;
 }
 
 //==============================================================================
@@ -433,8 +470,7 @@ export class Text
         [w, h, va] = [(6 * Number.parseFloat(size[0].slice(0, (-2)))),
                       (6 * Number.parseFloat(size[1].slice(0, (-2)))),
                       (6 * Number.parseFloat(size[2].slice(0, (-2))))];
-        return '<g transform="translate({}, {}) scale(0.015)">{}</g>'
-        .format((x - (w / 2)), ((y + (h / 2)) + va), svg);
+        return `<g transform="translate(${x - w/2}, ${y + h/2}) scale(0.015)">${svg}</g>`;
     }
 }
 

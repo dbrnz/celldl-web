@@ -18,82 +18,29 @@ limitations under the License.
 
 ******************************************************************************/
 
+'use strict';
+
+//==============================================================================
+
 import * as dia from './diagram.js';
 
 //==============================================================================
 
-var _pj;
-function _pj_snippets(container) {
-    function in_es6(left, right) {
-        if (((right instanceof Array) || ((typeof right) === "string"))) {
-            return (right.indexOf(left) > (- 1));
-        } else {
-            if (((right instanceof Map) || (right instanceof Set) || (right instanceof WeakMap) || (right instanceof WeakSet))) {
-                return right.has(left);
-            } else {
-                return (left in right);
-            }
-        }
-    }
-    container["in_es6"] = in_es6;
-    return container;
-}
-_pj = {};
-_pj_snippets(_pj);
-
-//==============================================================================
-
 export class Point {
-    constructor(x = 0.0, y = 0.0) {
-        this._coords = [x, y];
+    constructor(x=0.0, y=0.0) {
+        this.coords = [x, y];
     }
 
     get x() {
-        return this._coords[0];
+        return this.coords[0];
     }
 
     get y() {
-        return this._coords[1];
+        return this.coords[1];
     }
 
     toString() {
-        return "<Point ({:g}, {:g})>".format(...this._coords);
-    }
-
-    get length() {
-        return 2;
-    }
-
-    __add__(other) {
-        return new Point((this.x + other.x), (this.y + other.y));
-    }
-
-    __sub__(other) {
-        return new Point((this.x - other.x), (this.y - other.y));
-    }
-
-    __mul__(other) {
-        return new Point((other * this.x), (other * this.y));
-    }
-
-    __rmul__(other) {
-        return new Point((other * this.x), (other * this.y));
-    }
-
-    __truediv__(other) {
-        return new Point((this.x / other), (this.y / other));
-    }
-
-    __itruediv__(other) {
-        return new Point((this.x / other), (this.y / other));
-    }
-
-    __getitem__(key) {
-        return this._coords[key];
-    }
-
-    __setitem__(key, value) {
-        this._coords[key] = value;
+        return `<Point (${this.coords[0]}, ${this.coords[1]})>`;
     }
 
     copy() {
@@ -104,7 +51,7 @@ export class Point {
 //==============================================================================
 
 class Length {
-    constructor(length = 0, unit = "%") {
+    constructor(length=0, unit="%") {
         this.length = length;
         this.units = unit;
     }

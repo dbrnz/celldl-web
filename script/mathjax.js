@@ -18,11 +18,7 @@ limitations under the License.
 
 ******************************************************************************/
 
-/*
-import {etree} from 'lxml';
-import * as json from 'json';
-import {HTTPClient, HTTPError, HTTPRequest} from 'tornado/httpclient';
-*/
+'use strict';
 
 //==============================================================================
 

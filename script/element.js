@@ -18,6 +18,10 @@ limitations under the License.
 
 ******************************************************************************/
 
+'use strict';
+
+//==============================================================================
+
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
 import * as parser from './parser.js';

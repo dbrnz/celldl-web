@@ -166,92 +166,52 @@ export class Transporter extends PositionedElement {
 // TODO: first check we actually have positionTokens
         if (this.positionTokens.type === 'SEQUENCE') {
             const tokens = this.positionTokens.value;
-            let n = 0;
+            let offset = null;
+            let state = 0;
             for (let token of tokens) {
-                switch (n) {
-                    case 0:
-                }
-                if (token.type !== "ID" || layout.COMPARTMENT_BOUNDARIES.indexOf(token.value.toLowerCase()) < 0) {
-                    throw new SyntaxError("Invalid compartment boundary.");
-                }
-                this.compartmentSide = token.value.toLowerCase();
-                n += 1;
-            }
-        }
-
-        let offset = 0;  // TODO
-/*
-             "type": "SEQUENCE",
-              "value": [
-                {
-                  "type": "ID",
-                  "value": "left"
-                },
-                {
-                  "type": "PERCENTAGE",
-                  "value": 10,
-                  "unit": "%"
-                },
-                {
-                  "type": "ID",
-                  "value": "below"
-                },
-                {
-                  "type": "HASH",
-                  "value": "#t1"
-                }
-              ]
-            }
-*/
-
-/* TODO
-        try {
-
-            offset = parser.getPercentage(tokens);
-            token = tokens.peek();
-
-
-            if ((token && (token.type === "hash"))) {
-                while ((token.type === "hash")) {
-                    try {
-                        token = tokens.next();
-                        dependencies.append(("#" + token.value));
-                    } catch(e) {
-                        if ((e instanceof StopIteration)) {
-                            break;
-                        } else {
-                            throw e;
-                        }
+                switch (state) {
+                  case 0:
+                    if (token.type !== "ID" || !layout.COMPARTMENT_BOUNDARIES.contains(token.value.toLowerCase())) {
+                        throw new SyntaxError("Invalid compartment boundary.");
                     }
+                    this.compartmentSide = token.value.toLowerCase();
+                    state += 1;
+                    break;
+                  case 1:
+                    offset = parser.parsePercentageOffset(token);
+                    state += 1;
+                    break;
+                  case 2:
+                    if (token.type === 'HASH') {
+                        dependencies.append(`#${token.value}`);
+                    }
+                    break;
                 }
             }
-*/
-
-        this.position.addRelationship(offset, this.compartmentSide, dependencies);
+            this.position.addRelationship(offset, this.compartmentSide, dependencies);
+        }
         this.position.addDependencies(dependencies);
     }
 
-
     resolvePosition() {
         const unitConverter = this.container.unitConverter;
-        const position = self.position;
-
+        const position = this.position;
         if (position.coords === null && position.relationships.length === 1) {
-            const offset = this.relationships[0][0];
-            const reln = this.relationships[0][1];
-            const dependencies = this.relationships[0][2];
-            this.coords = [0, 0];
+            const offset = position.relationships[0][0];
+            const reln = position.relationships[0][1];
+            const dependencies = position.relationships[0][2];
+            position.coords = [0, 0];
             if (["bottom", "right"].indexOf(reln) >= 0) {
                 const dirn = (["top", "bottom"].indexOf(reln) >= 0) ? "below" : "right";
-                [coords, orientation] = this.resolvePoint(unitConverter, [100, "%"], dirn, [this._element.container]);
-                this.coords[orientation] = coords[orientation];
+                [coords, orientation] = layout.Position.resolvePoint(unitConverter, [100, "%"], dirn, [this.container]);
+                position.coords[orientation] = coords[orientation];
             }
             const dirn = (["top", "bottom"].indexOf(reln) >= 0) ? "right" : "below";
-            [coords, orientation] = this.resolvePoint(unitConverter, offset, dirn, [this.element.container]);
+            [coords, orientation] = layout.Position.resolvePoint(unitConverter, offset, dirn, [this.container]);
             if (["bottom", "right"].indexOf(reln) >= 0) {
-                this.coords[orientation] = coords[orientation];
+                position.coords[orientation] = coords[orientation];
             } else {
-                this.coords = coords;
+                position.coords = coords;
             }
         }
     }
@@ -264,7 +224,7 @@ export class Transporter extends PositionedElement {
             svg.append('<g${this.idClass()}${this.display()}>');
             const id = this.id ? this.id.substring(1) : "";
             const element = svgElements[elementClass](id, this.coords,
-                (layout.HORIZONTAL_BOUNDARIES.indexOf(this.compartmentSide) >= 0) ? 0 : 90);
+                layout.HORIZONTAL_BOUNDARIES.contains(this.compartmentSide) ? 0 : 90);
             svg.append(element.svg());
             svg.append('</g>');
             radius = layout.ELEMENT_RADIUS;

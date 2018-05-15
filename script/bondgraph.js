@@ -18,12 +18,7 @@ limitations under the License.
 
 ******************************************************************************/
 
-/*
-import * as operator from 'operator';
-import {OrderedDict} from 'collections';
-import * as math from 'math';
-import * as geo from 'shapely/geometry';
-*/
+'use strict';
 
 //==============================================================================
 
@@ -32,28 +27,6 @@ import * as layout from './layout.js';
 import * as parser from './parser.js';
 import {Element, PositionedElement} from './element.js';
 import {svgLine} from './svgElements.js';
-
-//==============================================================================
-
-var _pj;
-
-function _pj_snippets(container) {
-    function in_es6(left, right) {
-        if (((right instanceof Array) || ((typeof right) === "string"))) {
-            return (right.indexOf(left) > (- 1));
-        } else {
-            if (((right instanceof Map) || (right instanceof Set) || (right instanceof WeakMap) || (right instanceof WeakSet))) {
-                return right.has(left);
-            } else {
-                return (left in right);
-            }
-        }
-    }
-    container["in_es6"] = in_es6;
-    return container;
-}
-_pj = {};
-_pj_snippets(_pj);
 
 //==============================================================================
 
