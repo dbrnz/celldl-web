@@ -32,17 +32,6 @@ import * as parser from './parser.js';
 
 var _pj;
 function _pj_snippets(container) {
-    function in_es6(left, right) {
-        if (((right instanceof Array) || ((typeof right) === "string"))) {
-            return (right.indexOf(left) > (- 1));
-        } else {
-            if (((right instanceof Map) || (right instanceof Set) || (right instanceof WeakMap) || (right instanceof WeakSet))) {
-                return right.has(left);
-            } else {
-                return (left in right);
-            }
-        }
-    }
     function set_properties(cls, props) {
         var desc, value;
         var _pj_a = props;
@@ -58,7 +47,6 @@ function _pj_snippets(container) {
             }
         }
     }
-    container["in_es6"] = in_es6;
     container["set_properties"] = set_properties;
     return container;
 }
@@ -90,12 +78,30 @@ export const COMPARTMENT_BOUNDARIES = (HORIZONTAL_BOUNDARIES + VERTICAL_BOUNDARI
 
 //==============================================================================
 
+export class Offset {
+    constructor(offset, unit) {
+        this.offset = offset;
+        this.unit = unit;
+    }
+}
+
+//==============================================================================
+
+export class Coords {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
+//==============================================================================
+
 export class Position {
     constructor(element) {
         this.element = element;
         this.lengths = null;             // Relative position as a pair of Lengths
         this.relationships = [];
-        this.pixels = null;              // Resolved position in pixels
+        this.pixelCoords = null;              // Resolved position in pixels
         this.dependencies = new Set();
 
 // lengths v's coords??
@@ -129,8 +135,8 @@ export class Position {
         this.relationships.push({offset, relation, dependencies});
     }
 
-    setCoords(coords) {
-        this.coords = coords;
+    setPixelCoords(pixelCoords) {
+        this.pixelCoords = pixelCoords;
     }
 
     setLengths(lengths) {
@@ -138,17 +144,17 @@ export class Position {
     }
 
     static centroid(dependencies) {
-        let coords = [0.0, 0.0];
+        let pixelCoords = [0.0, 0.0];
         for (let dependency of dependencies) {
             if (!dependency.position.resolved) {
                 throw new ValueError("No position for '${dependency}' element");
             }
-            coords[0] += dependency.position.coords[0];
-            coords[1] += dependency.position.coords[1];
+            pixelCoords[0] += dependency.position.pixelCoords[0];
+            pixelCoords[1] += dependency.position.pixelCoords[1];
         }
-        coords[0] /= dependencies.length;
-        coords[1] /= dependencies.length;
-        return coords;
+        pixelCoords[0] /= dependencies.length;
+        pixelCoords[1] /= dependencies.length;
+        return pixelCoords;
     }
 
     parse(tokens, defaultOffset, defaultDependency) {
@@ -259,17 +265,17 @@ export class Position {
         :return: tuple(tuple(x, y), index) where index == 0 means
         horizontal and 1 means vertical.
         */
-        let coords = Position.centroid(dependencies);
+        let pixelCoords = Position.centroid(dependencies);
         let index = Position.orientation[reln];
         if (index >= 0) {
             let adjust = unitConverter.toPixels(offset, index, false);
             if (["left", "above"].indexOf(reln) >= 0) {
-                coords[index] -= adjust;
+                pixelCoords[index] -= adjust;
             } else {
-                coords[index] += adjust;
+                pixelCoords[index] += adjust;
             }
         }
-        return [coords, index];
+        return [pixelCoords, index];
     }
 
     resolve() {
@@ -298,7 +304,7 @@ export class Position {
         const unitConverter = this.element.container.unitConverter;
 
         if (this.lengths) {
-            this.coords = unitConverter.pixelPair(this.lengths);
+            this.pixelCoords = unitConverter.pixelPair(this.lengths);
 
         } else {
             if (((this.coords === null) && this.relationships)) {
@@ -326,7 +332,7 @@ export class Position {
 
 
                     } else {
-                        this.coords = Position.resolvePoint(unitConverter, offset, reln, dependencies)[0];
+                        this.pixelCoords = Position.resolvePoint(unitConverter, offset, reln, dependencies)[0];
                     }
                 } else {
                     for (let relationship of this.relationships) {
@@ -337,11 +343,11 @@ export class Position {
                         if ((this.element instanceof dia.Transporter)) {
                             // pass
                         } else {
-                            [coords, index] = Position.resolvePoint(unitConverter, offset, reln, dependencies);
+                            [pixelCoords, index] = Position.resolvePoint(unitConverter, offset, reln, dependencies);
                             if (offset === null) {
                                 index -= 1;
                             }
-                            this.coords[index] = coords[index];
+                            this.pixelCoords[index] = pixelCoords[index];
                         }
                     }
                 }
@@ -359,7 +365,7 @@ export class Size {
         this.size = []
         if (tokens instanceof Array && tokens.length == 2) {
             for (let token of tokens) {
-                this.size.push(parser.getLength(token));
+                this.size.push(parser.parseOffset(token));
             }
         } else {
             throw new SyntaxError("Pair of lengths expected.");

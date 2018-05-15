@@ -22,7 +22,7 @@ limitations under the License.
 
 //==============================================================================
 
-import './jsnetworkx.js';
+import '../thirdparty/jsnetworkx.js';
 
 //==============================================================================
 
@@ -30,6 +30,7 @@ import * as layout from './layout.js';
 import * as parser from './parser.js';
 import * as svgElements from './svgElements.js';
 import {Element, PositionedElement} from './element.js';
+import {List} from './utils.js';
 
 //==============================================================================
 
@@ -62,22 +63,22 @@ class Container extends PositionedElement {
     }
 
     svg() {
-        let svg = ['<g${this.idClass()}${this.display()}>'];
+        let svg = new List(['<g${this.idClass()}${this.display()}>']);
         if (this.position.hasCoords) {
-            svg.push('<g transform="translate(${this.position.coords.x}, ${this.position.coords.y})">');
+            svg.append('<g transform="translate(${this.position.coords.x}, ${this.position.coords.y})">');
             const elementClass = this.get_style_as_string("svg-element");
             if (elementClass in svgElements) {
                 const id = this.id ? this.id.substring(1) : "";
                 const element = svgElements[elementClass](id, this.width, this.height);
-                svg.push(element.svg());
+                svg.append(element.svg());
             } else {
                 if (!(this instanceof Diagram)) {
-                    svg.push('<path fill="#eeeeee" stroke="#222222" stroke-width="2.0" opacity="0.6" d="M0,0 L${this.width},0 L${this.width},${this.height} L0,${this.height} z"/>');
+                    svg.append('<path fill="#eeeeee" stroke="#222222" stroke-width="2.0" opacity="0.6" d="M0,0 L${this.width},0 L${this.width},${this.height} L0,${this.height} z"/>');
                 }
             }
-            svg.push("</g>");
+            svg.append("</g>");
         }
-        svg.push("</g>");
+        svg.append("</g>");
         return svg;
     }
 }
@@ -102,7 +103,7 @@ export class Compartment extends Container {
         /*
         * Compartment size/position: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         */
-        const lengths = parser.getLengthPair(this.positionTokens);
+        const lengths = parser.parseOffsetPair(this.positionTokens);
         this.position.setLengths(lengths);
         this.position.addDependency(this.container);
     }
@@ -125,14 +126,14 @@ export class Quantity extends PositionedElement {
     }
 
     svg() {
-        let svg = ['<g${this.idClass()}${this.display()}>'];
+        let svg = new list('<g${this.idClass()}${this.display()}>');
         if (this.position.hasCoords) {
             const [x, y] = this.PixelCoords;
             const [w, h] = [layout.QUANTITY_WIDTH, layout.QUANTITY_HEIGHT];
-            svg.push('  <rect rx="${0.375 * w}" ry="${0.375 * h}" x="${x - w/2}" y="${y - h/2}" width="${w}" height="${h}" stroke="none" fill="${this.colour}"/>');
-            svg.push(this.labelAsSvg());
+            svg.append('  <rect rx="${0.375 * w}" ry="${0.375 * h}" x="${x - w/2}" y="${y - h/2}" width="${w}" height="${h}" stroke="none" fill="${this.colour}"/>');
+            svg.append(this.labelAsSvg());
         }
-        svg.push('</g>');
+        svg.append('</g>');
         return svg;
     }
 }
@@ -231,55 +232,41 @@ export class Transporter extends PositionedElement {
     }
 
 
-    positionResolved()
-
     resolvePosition() {
-
-
         const unitConverter = this.container.unitConverter;
+        const position = self.position;
 
-# this = self.position
-        if (this.lengths) {
-            this.coords = unitConverter.pixelPair(this.lengths);
-
-        } else {
-            if (((this.coords === null) && this.relationships)) {
-
-                this.coords = [0, 0];
-
-                if ((this.relationships.length === 1)) {
-                    const offset = this.relationships[0][0];
-                    const reln = this.relationships[0][1];
-                    const dependencies = this.relationships[0][2];
-
-
-
-
-                        if (["bottom", "right"].indexOf(reln) >= 0) {
-                            const dirn = (["top", "bottom"].indexOf(reln) >= 0) ? "below" : "right";
-                            [coords, orientation] = this.resolvePoint(unitConverter, [100, "%"], dirn, [this._element.container]);
-                            this.coords[orientation] = coords[orientation];
-                        }
-                        const dirn = (["top", "bottom"].indexOf(reln) >= 0) ? "right" : "below";
-                        [coords, orientation] = this.resolvePoint(unitConverter, offset, dirn, [this.element.container]);
-                        if (["bottom", "right"].indexOf(reln) >= 0) {
-                            this.coords[orientation] = coords[orientation];
-                        } else {
-                            this.coords = coords;
-                        }
-                    }
+        if (position.coords === null && position.relationships.length === 1) {
+            const offset = this.relationships[0][0];
+            const reln = this.relationships[0][1];
+            const dependencies = this.relationships[0][2];
+            this.coords = [0, 0];
+            if (["bottom", "right"].indexOf(reln) >= 0) {
+                const dirn = (["top", "bottom"].indexOf(reln) >= 0) ? "below" : "right";
+                [coords, orientation] = this.resolvePoint(unitConverter, [100, "%"], dirn, [this._element.container]);
+                this.coords[orientation] = coords[orientation];
+            }
+            const dirn = (["top", "bottom"].indexOf(reln) >= 0) ? "right" : "below";
+            [coords, orientation] = this.resolvePoint(unitConverter, offset, dirn, [this.element.container]);
+            if (["bottom", "right"].indexOf(reln) >= 0) {
+                this.coords[orientation] = coords[orientation];
+            } else {
+                this.coords = coords;
+            }
+        }
+    }
 
     svg() {
         var element, element_class, id, radius, svg;
-        let svg = [];
+        let svg = new List();
         const elementClass = this.getStyleAsString("svg-element");
         if (elementClass in svgElements) {
-            svg.push('<g${this.idClass()}${this.display()}>');
+            svg.append('<g${this.idClass()}${this.display()}>');
             const id = this.id ? this.id.substring(1) : "";
             const element = svgElements[elementClass](id, this.coords,
                 (layout.HORIZONTAL_BOUNDARIES.indexOf(this.compartmentSide) >= 0) ? 0 : 90);
-            svg.push(element.svg());
-            svg.push('</g>');
+            svg.append(element.svg());
+            svg.append('</g>');
             radius = layout.ELEMENT_RADIUS;
         } else {
             radius = layout.TRANSPORTER_RADIUS;
@@ -310,14 +297,14 @@ export class Diagram extends Container {
 
     lengthFromStyle(name, defaultValue) {
         if (name in this.style) {
-            return parser.getLength(this.style[name]);
+            return parser.parseOffset(this.style[name]);
         }
         return defaultValue;
     }
 
     numberFromStyle(name, defaultValue) {
         if (name in this.style) {
-            return parser.getNumber(this.style[name]);
+            return parser.parseNumber(this.style[name]);
         }
         return defaultValue;
     }
@@ -368,7 +355,7 @@ export class Diagram extends Container {
         other elements.
         */
 
-        this.position.setCoords(new layout.Point());
+        this.position.setPixelCoords(new layout.Coords(0, 0));
 
         let g = new jsnx.DiGraph();
 
@@ -415,8 +402,8 @@ export class Diagram extends Container {
         Transporter SVG elements need to generate SVG from super class (Exchanger, Channel, etc)
         with <defs> only once for each superclass...
         */
-        let svg = ['<?xml version=\"1.0\" encoding=\"UTF-8\"?>'];
-        svg.push('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="${this.width}" height="${this.height}" viewBox="0 0 ${this.width} ${this.height}">');
+        let svg = new List(['<?xml version=\"1.0\" encoding=\"UTF-8\"?>']);
+        svg.append('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="${this.width}" height="${this.height}" viewBox="0 0 ${this.width} ${this.height}">');
         for (let c of this.compartments) {
             svg.extend(c.svg());
         }
@@ -427,10 +414,10 @@ export class Diagram extends Container {
         for (let t of this.transporters) {
             svg.extend(t.svg());
         }
-        svg.push('<defs>');
+        svg.append('<defs>');
         svg.extend(svg_elements.DefinesStore.defines());
-        svg.push('</defs>');
-        svg.push('</svg>');
+        svg.append('</defs>');
+        svg.append('</svg>');
         return svg.join('\n');
     }
 }

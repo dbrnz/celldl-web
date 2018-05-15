@@ -206,7 +206,7 @@ export class FlowComponent extends PositionedElement {
     }
 
     parsePosition() {
-        for (let line of = this.lines.values()) {
+        for (let line of this.lines.values()) {
             line.parse();
         }
     }
