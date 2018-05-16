@@ -108,8 +108,8 @@ export class PositionedElement extends Element {
     }
 
     get geometry() {
-        if (this.cachedGeometry === null && this.position.resolved) {
-            this.cachedGeometry = geo.Point(this.position.pixels);
+        if (this.cachedGeometry === null && this.position.hasPixelCoords) {
+            this.cachedGeometry = geo.Point(this.position.pixelCoords);
         }
         return this.cachedGeometry;
     }
@@ -118,12 +118,12 @@ export class PositionedElement extends Element {
         return this.position.pixelCoords;
     }
 
-    get positionResolved() {
-        return this.position.resolved();
+    get hasPixelCoords() {
+        return this.position.hasPixelCoords;
     }
 
-    resolvePosition() {
-        this.position.resolve();
+    resolvePixelCoords() {
+        this.position.resolvePixelCoords();
     }
 
     parsePosition(defaultOffset=null, defaultDependency=null) {
@@ -138,22 +138,22 @@ export class PositionedElement extends Element {
 
     labelAsSvg() {
         const [x, y] = this.position.pixelCoords;
-        if (this.label.startswith("$")) {
+        if (this.label.startswith('$')) {
             const rotation = Number.parseFloat(this.getStyleAsString("text-rotation", "0"));
             return svgElements.Text.typeset(this.label, x, y, rotation);
         } else {
-            return '  <text text-anchor="middle" dominant-baseline="central" x="${x}" y="${y}">${this.label}</text>';
+            return `  <text text-anchor="middle" dominant-baseline="central" x="${x}" y="${y}">${this.label}</text>`;
         }
     }
 
     svg(radius=layout.ELEMENT_RADIUS) {
-        svg = ['<g${this.idClass()}${this.display()}>'];
-        if (this.position.resolved) {
+        svg = List([`<g${this.idClass()}${this.display()}>`]);
+        if (this.position.hasPixelCoords) {
             const [x, y] = this.position.pixelCoords;
-            svg.push('  <circle r="${radius}" cx="${x}" cy=$"{y}" stroke="${this.stroke}" stroke-width="${this.strokeWidth}" fill="${this.colour}"/>');
-            svg.push(this.labelAsSvg());
+            svg.append(`  <circle r="${radius}" cx="${x}" cy=$"{y}" stroke="${this.stroke}" stroke-width="${this.strokeWidth}" fill="${this.colour}"/>`);
+            svg.append(this.labelAsSvg());
         }
-        svg.push("</g>");
+        svg.append('</g>');
         return svg;
     }
 }

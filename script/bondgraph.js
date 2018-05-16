@@ -168,13 +168,13 @@ export class FlowComponent extends PositionedElement {
             var _pj_a = [], _pj_b = to.split();
             for (var _pj_c = 0, _pj_d = _pj_b.length; (_pj_c < _pj_d); _pj_c += 1) {
                 var name = _pj_b[_pj_c];
-                _pj_a.push(diagram.findElement(("#" + name), Potential));
+                _pj_a.push(diagram.findElement(name, Potential));
             }
             return _pj_a;
         }.call(this);
         this.count = Number.parseInt(count);
         this.lines = { start: new layout.Line(this, parser.StyleTokensIterator.fromStyleElement(this.style, "line-start")),
-                       end:   new layout.Line(this, parser.StyleTokensIterator.fromStyleElement(this._style, "line-end"))};
+                       end:   new layout.Line(this, parser.StyleTokensIterator.fromStyleElement(this.style, "line-end"))};
         this.flow = flow;
     }
 
@@ -187,7 +187,7 @@ export class FlowComponent extends PositionedElement {
     svg() {
         var component_points, line, line_style, offset, points, svg;
         svg = [];
-        component_points = this._lines["start"].points(this.from_potential.coords, {"flow": this._flow});
+        component_points = this._lines["start"].points(this.from_potential.coords, {"flow": this.flow});
         component_points.extend(this._flow.get_flow_line(this));
         for (var to, _pj_c = 0, _pj_a = this.to_potentials, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
             to = _pj_a[_pj_c];

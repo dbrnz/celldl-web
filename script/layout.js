@@ -90,14 +90,9 @@ export class Position
         return (this.dependencies.length > 0 || this.lengths !== null);
     }
 
-    get hasCoords()
+    get hasPixelCoords()
     {
-        return (this.coords !== null);
-    }
-
-    get resolved()
-    {
-        return (this.coords !== null && this.coords.indexOf(null) < 0);
+        return (this.pixelCoords !== null && this.pixelCoords.indexOf(null) < 0);
     }
 
     addDependency(dependency)
@@ -131,7 +126,7 @@ export class Position
     {
         let pixelCoords = [0.0, 0.0];
         for (let dependency of dependencies) {
-            if (!dependency.position.resolved) {
+            if (!dependency.position.hasPixelCoords) {
                 throw new ValueError("No position for '${dependency}' element");
             }
             pixelCoords[0] += dependency.position.pixelCoords[0];
@@ -142,6 +137,69 @@ export class Position
         return pixelCoords;
     }
 
+    parseComponent(tokens, previousDirn)
+    {
+        let offset = null;
+        let usingDefaultOffset = false;
+        let reln = null;
+        let dependencies = new List();
+        let state = 0;
+        for (let token of tokens.value) {
+            switch (state) {
+              case 0:
+                if (token.type !== 'ID') {
+                    offset = parser.parseOffset(tokens, defaultOffset);
+                    state = 1;
+                    break;
+                } else {
+                    usingDefaultOffset = true;
+                    // Fall through to parse relationship
+                }
+              case 1:
+                if (token.type !== "ID" || !POSITION_RELATIONS.contains(token.value.toLowerCase())) {
+                    throw new SyntaxError("Unknown relationship for position.");
+                }
+                reln = token.value.toLowerCase();
+                state = 2;
+                break;
+              case 2:
+                if (token.type === 'HASH') {
+                    const dependency = this.element.diagram.findElement(token.value);
+                    if (dependency === null) {
+                        throw new KeyError(`Unknown element ${token.value}`);
+                    }
+                    dependencies.append(dependency);
+                } else {
+                    throw new SyntaxError("Element ID expected.");
+                }
+            }
+        }
+        if (state === 2 && dependencies.length === 0) {
+            if (defaultDependency !== null) {
+                dependencies.append(defaultDependency);
+            } else {
+                throw new SyntaxError("Element IDs expected.");
+            }
+        }
+
+        let constraints = 0;
+        if (previousDirn !== null) {
+            constraints += 1;
+            if (previousDirn === 'H' && HORIZONTAL_RELATIONS.contains(reln)
+             || previousDirn === 'V' && VERTICAL_RELATIONS.contains(reln)) {
+                throw new SyntaxError("Constraints must have different directions.");
+            }
+        }
+        if (usingDefaultOffset && constraints >= 1) {
+            offset = null;
+        }
+
+        this.addRelationship(offset, reln, dependencies);
+        this.addDependencies(dependencies);
+
+        return HORIZONTAL_RELATIONS.contains(reln) ? 'H' : 'V';
+    }
+
     parse(tokens, defaultOffset=null, defaultDependency=null)
     {
         /*
@@ -149,7 +207,22 @@ export class Position
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
         */
 
-//        if (tokens )
+        if (tokens instanceof Array) {
+            if (tokens.length === 2) {
+                if (['ID', 'SEQUENCE'].indexOf(tokens[0].type) < 0) {
+                    this.setLengths(parser.parseOffsetPair(tokens.parameters));
+                } else {
+                    const dirn = this.parseComponent(tokens[0], null);
+                    this.parseComponent(tokens[1], dirn);
+                }
+            } else {
+                throw new SyntaxError("Position can't have more than two components.")
+            }
+        } else {
+            this.parseComponent(tokens, null);
+        }
+    }
+
 /*
 // 20%, 10%
 // array.length == 2
@@ -216,97 +289,6 @@ export class Position
             ]
 
 */
-        let elementDependencies = [];
-        if (tokens.type === "FUNCTION") {
-            this.setLengths(parser.parseOffsetPair(tokens.parameters));
-        } else if (tokens.type === "SEQUENCE") {
-            let seenHorizontal = false;
-            let seenVertical = false;
-            let constraints = 0;
-            let state = 0;
-            for (let token of tokens.value) {
-                switch (state) {
-                  case 0:
-                    if (token.type !== 'ID') {
-                        usingDefault = false;
-                        offset = parser.parseOffset(tokens, defaultOffset);
-                        state += 1;
-                        break;
-                    } else {
-                        usingDefault = true;
-                        // And fall through to get relationship
-                    }
-                  case 1:
-                    if (token.type !== "ID" || !POSITION_RELATIONS.contains(token.value.toLowerCase())) {
-                        throw new SyntaxError("Unknown relationship for position.");
-                    }
-                    reln = token.value.toLowerCase();
-                    state += 1;
-                    break;
-                  case 2:
-                    if (token.type !== 'HASH') {
-//                    if ((_pj.in_es6(token, [null, ","]) && (defaultDependency !== null))) {
-                    dependencies.append(defaultDependency);
-                    }
-                    else {
-                        const dependency = this.element.diagram.findElement(`#${token.value}`);
-                        if (dependency === null) {
-                            throw new KeyError(`Unknown element '#${token.value}`);
-                        }
-                        dependencies.append(dependency);
-                    }
-                }
-
-                let dependencies = [];
-                token = tokens.peek();
-                if ((_pj.in_es6(token, [null, ","]) && (defaultDependency !== null))) {
-                    dependencies.append(defaultDependency);
-                } else {
-                    if ((((token !== null) && (token.type !== "hash")) && (token !== ","))) {
-                        throw new SyntaxError("Identifier(s) expected");
-                    } else {
-                        if ((token !== null)) {
-                            tokens.next();
-                            while (((token !== null) && (token.type === "hash"))) {
-                                const dependency = this._element.diagram.findElement(("#" + token.value));
-                                if ((dependency === null)) {
-                                    throw new KeyError("Unknown element '#{}".format(token.value));
-                                }
-                                dependencies.append(dependency);
-                                token = tokens.next();
-                            }
-                        }
-                    }
-                }
-                if ((token === ",")) {
-                    constraints += 1;
-                    if ((seenHorizontal && HORIZONTAL_RELATIONS.indexOf(reln) >= 0)
-                     || (seenVertical && VERTICAL_RELATIONS.indexOf(reln) >= 0)) {
-                        throw new SyntaxError("Constraints must have different directions.");
-                    }
-                }
-                if ((using_default && (constraints >= 1))) {
-                    offset = null;
-                }
-                this.addRelationship(offset, reln, dependencies);
-                elementDependencies.extend(dependencies);
-                seenHorizontal = (HORIZONTAL_RELATIONS.indexOf(reln) >= 0);
-                seenVertical = (VERTICAL_RELATIONS.indexOf(reln) >= 0);
-
-                if ((token === ",")) {
-                    token = tokens.peek();
-                    continue;
-                } else {
-                    if ((tokens.peek() === null)) {
-                        break;
-                    } else {
-                        throw new SyntaxError("Invalid syntax");
-                    }
-                }
-            }
-        }
-        this.addDependencies(elementDependencies);
-    }
 
     static resolvePoint(unitConverter, offset, reln, dependencies)
     {
@@ -327,7 +309,7 @@ export class Position
         return [pixelCoords, index];
     }
 
-    resolve()
+    resolvePixelCoords()
     {
         /*
         # Transporters are always on a compartment boundary
@@ -353,8 +335,8 @@ export class Position
         const unitConverter = this.element.container.unitConverter;
         if (this.lengths) {
             this.pixelCoords = unitConverter.pixelPair(this.lengths);
-        } else if (this.coords === null && this.relationships.length > 0) {
-            this.coords = [0, 0];
+        } else if (this.pixelCoords === null && this.relationships.length > 0) {
+            this.pixelCoords = [0, 0];
             if (this.relationships.length === 1) {
                 const offset = this.relationships[0][0];
                 const reln = this.relationships[0][1];
@@ -410,6 +392,9 @@ export class Line {
         <relative-point> ::= <id-list> | [ <offset> <reln> ] <id-list>
 
         */
+
+        // TODO
+
         var angle, constraint, dependencies, dependency, length, line_offset, offset, reln, token, tokens;
         if (this.tokens === null) {
             return;

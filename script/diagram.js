@@ -47,7 +47,7 @@ class Container extends PositionedElement {
     }
 
     get geometry() {
-        if (this.cachedGeometry === null && this.positionResolved) {
+        if (this.cachedGeometry === null && this.hasPixelCoords) {
             const [posX, posY] = this.pixelCoords;
             this.cachedGeometry = geo.box(posX, posY, posX + this.width, posY + this.height);
         }
@@ -63,22 +63,22 @@ class Container extends PositionedElement {
     }
 
     svg() {
-        let svg = new List(['<g${this.idClass()}${this.display()}>']);
-        if (this.position.hasCoords) {
-            svg.append('<g transform="translate(${this.position.coords.x}, ${this.position.coords.y})">');
-            const elementClass = this.get_style_as_string("svg-element");
+        let svg = new List([`<g${this.idClass()}${this.display()}>`]);
+        if (this.position.hasPixelCoords) {
+            svg.append(`<g transform="translate(${this.position.coords.x}, ${this.position.coords.y})">`);
+            const elementClass = this.getStyleAsString("svg-element");
             if (elementClass in svgElements) {
                 const id = this.id ? this.id.substring(1) : "";
                 const element = svgElements[elementClass](id, this.width, this.height);
                 svg.append(element.svg());
             } else {
                 if (!(this instanceof Diagram)) {
-                    svg.append('<path fill="#eeeeee" stroke="#222222" stroke-width="2.0" opacity="0.6" d="M0,0 L${this.width},0 L${this.width},${this.height} L0,${this.height} z"/>');
+                    svg.append(`<path fill="#eeeeee" stroke="#222222" stroke-width="2.0" opacity="0.6" d="M0,0 L${this.width},0 L${this.width},${this.height} L0,${this.height} z"/>`);
                 }
             }
-            svg.append("</g>");
+            svg.append('</g>');
         }
-        svg.append("</g>");
+        svg.append('</g>');
         return svg;
     }
 }
@@ -87,7 +87,7 @@ class Container extends PositionedElement {
 
 export class Compartment extends Container {
     constructor(container, attributes, style) {
-        super(container, attributes, style, "Compartment");
+        super(container, attributes, style, 'Compartment');
         this.size = ('size' in this.style) ? new layout.Size(this.style.size) : null;
     }
 
@@ -126,11 +126,11 @@ export class Quantity extends PositionedElement {
     }
 
     svg() {
-        let svg = new list('<g${this.idClass()}${this.display()}>');
-        if (this.position.hasCoords) {
+        let svg = new list(`<g${this.idClass()}${this.display()}>`);
+        if (this.position.hasPixelCoords) {
             const [x, y] = this.PixelCoords;
             const [w, h] = [layout.QUANTITY_WIDTH, layout.QUANTITY_HEIGHT];
-            svg.append('  <rect rx="${0.375 * w}" ry="${0.375 * h}" x="${x - w/2}" y="${y - h/2}" width="${w}" height="${h}" stroke="none" fill="${this.colour}"/>');
+            svg.append(`  <rect rx="${0.375 * w}" ry="${0.375 * h}" x="${x - w/2}" y="${y - h/2}" width="${w}" height="${h}" stroke="none" fill="${this.colour}"/>`);
             svg.append(this.labelAsSvg());
         }
         svg.append('</g>');
@@ -142,7 +142,7 @@ export class Quantity extends PositionedElement {
 
 export class Transporter extends PositionedElement {
     constructor(compartment, attributes, style) {
-        super(compartment, attributes, style, "Transporter");
+        super(compartment, attributes, style, 'Transporter');
         this.compartmentSide = null;
         this.flow = null;
         this.width = layout.TRANSPORTER_WIDTH;
@@ -171,19 +171,19 @@ export class Transporter extends PositionedElement {
             for (let token of tokens) {
                 switch (state) {
                   case 0:
-                    if (token.type !== "ID" || !layout.COMPARTMENT_BOUNDARIES.contains(token.value.toLowerCase())) {
+                    if (token.type !== 'ID' || !layout.COMPARTMENT_BOUNDARIES.contains(token.value.toLowerCase())) {
                         throw new SyntaxError("Invalid compartment boundary.");
                     }
                     this.compartmentSide = token.value.toLowerCase();
-                    state += 1;
+                    state = 1;
                     break;
                   case 1:
                     offset = parser.parsePercentageOffset(token);
-                    state += 1;
+                    state = 2;
                     break;
                   case 2:
                     if (token.type === 'HASH') {
-                        dependencies.append(`#${token.value}`);
+                        dependencies.append(token.value);
                     }
                     break;
                 }
@@ -193,7 +193,7 @@ export class Transporter extends PositionedElement {
         this.position.addDependencies(dependencies);
     }
 
-    resolvePosition() {
+    resolvePixelCoords() {
         const unitConverter = this.container.unitConverter;
         const position = this.position;
         if (position.coords === null && position.relationships.length === 1) {
@@ -221,7 +221,7 @@ export class Transporter extends PositionedElement {
         let svg = new List();
         const elementClass = this.getStyleAsString("svg-element");
         if (elementClass in svgElements) {
-            svg.append('<g${this.idClass()}${this.display()}>');
+            svg.append(`<g${this.idClass()}${this.display()}>`);
             const id = this.id ? this.id.substring(1) : "";
             const element = svgElements[elementClass](id, this.coords,
                 layout.HORIZONTAL_BOUNDARIES.contains(this.compartmentSide) ? 0 : 90);
@@ -292,7 +292,7 @@ export class Diagram extends Container {
         this.elements.push(element);
         if (element.id !== null) {
             if (element.id in this.elementsById) {
-                throw new KeyError("Duplicate 'id': ${element.id}");
+                throw new KeyError(`Duplicate 'id': ${element.id}`);
             }
             this.elementsById[element.id] = element;
         }
@@ -326,13 +326,13 @@ export class Diagram extends Container {
             }
         }
 
-        for (let e of list(g)) {
+        for (let e of g.nodes()) {
             for (let d of e.position.dependencies) {
                 let dependency = d;
                 if (d instanceof String) {
                     dependency = this.findElement(d);
                     if (dependency === null) {
-                        throw new KeyError("Unknown element: ${d}");
+                        throw new KeyError(`Unknown element: ${d}`);
                     }
                 }
                 g.addEdge(dependency, e);
@@ -341,8 +341,8 @@ export class Diagram extends Container {
 
         this.setUnitConverter(new layout.UnitConverter(this.pixelSize, this.pixelSize));
         for (let e of jsnx.topologicalSort(g)) {
-            if (e !== this && !e.positionResolved) {
-                e.resolvePosition();
+            if (e !== this && !e.hasPixelCoords) {
+                e.resolvePixelCoords();
                 if (e instanceof Compartment) {
                     e.setPixelSize(e.container.unitConverter.pixelPair(e.size.lengths, false));
                     e.setUnitConverter(new layout.UnitConverter(this.pixelSize, e.pixelSize, e.position.pixels));
@@ -362,12 +362,14 @@ export class Diagram extends Container {
         Transporter SVG elements need to generate SVG from super class (Exchanger, Channel, etc)
         with <defs> only once for each superclass...
         */
-        let svg = new List(['<?xml version=\"1.0\" encoding=\"UTF-8\"?>']);
-        svg.append('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="${this.width}" height="${this.height}" viewBox="0 0 ${this.width} ${this.height}">');
+        let svg = new List(['<?xml version="1.0" encoding="UTF-8"?>']);
+        svg.append(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+  version="1.1" width="${this.width}" height="${this.height}"
+  viewBox="0 0 ${this.width} ${this.height}">`);
         for (let c of this.compartments) {
             svg.extend(c.svg());
         }
-        svg.extend(this.bond_graph.svg());
+        svg.extend(this.bondGraph.svg());
         for (let q of this.quantities) {
             svg.extend(q.svg());
         }
