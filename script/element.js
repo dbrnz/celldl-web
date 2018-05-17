@@ -52,7 +52,7 @@ export class Element {
     toString() {
         let s = [this.className];
         if (this.id !== null) {
-            s.push('(${this.id}');
+            s.push(`(${this.id})`);
         }
         return s.join(' ');
     }
@@ -83,15 +83,15 @@ export class Element {
 
     display() {
         const d = this.getStyleAsString("display");
-        return d ? ' display="${d}"' : '';
+        return d ? ` display="${d}"` : '';
     }
 
     idClass() {
         let s = [''];
         if (this.id !== null)
-            s.push('id="${this.id.substr(1)}"');
+            s.push(`id="${this.id.substr(1)}"`);
         if (this.classes)
-            s.push('class="${this.classes.join(" ")}"');
+            s.push(`class="${this.classes.join(" ")}"`);
         return s.join(' ');
     }
 }
@@ -138,7 +138,7 @@ export class PositionedElement extends Element {
 
     labelAsSvg() {
         const [x, y] = this.position.pixelCoords;
-        if (this.label.startswith('$')) {
+        if (this.label.startsWith('$')) {
             const rotation = Number.parseFloat(this.getStyleAsString("text-rotation", "0"));
             return svgElements.Text.typeset(this.label, x, y, rotation);
         } else {

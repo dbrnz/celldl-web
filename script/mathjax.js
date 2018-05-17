@@ -38,7 +38,7 @@ function suffix_ids(xml, attribute, id_base, new_attrib = null) {
 
 function clean_svg(svg, id_base) {
     var h, s, title, va, vb, w, xml;
-    if ((! svg.startswith("<svg "))) {
+    if ((! svg.startsWith("<svg "))) {
         throw new ValueError(svg);
     }
     xml = etree.fromstring(svg);
@@ -62,7 +62,7 @@ function clean_svg(svg, id_base) {
 
 export function typeset(latex, id_base) {
     var headers, http_client, mathjax, request, response, svg;
-    if ((latex.startswith("$") && latex.endswith("$"))) {
+    if ((latex.startsWith("$") && latex.endswith("$"))) {
         latex = latex.slice(1, (- 1));
     }
     mathjax = json.dumps({"format": "TeX", "math": latex, "svg": true, "width": 10000, "linebreaks": false});

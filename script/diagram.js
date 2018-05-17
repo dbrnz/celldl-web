@@ -59,7 +59,7 @@ class Container extends PositionedElement {
     }
 
     setUnitConverter(unitConverter) {
-        this.UnitConverter = unitConverter;
+        this.unitConverter = unitConverter;
     }
 
     svg() {
@@ -196,22 +196,23 @@ export class Transporter extends PositionedElement {
     resolvePixelCoords() {
         const unitConverter = this.container.unitConverter;
         const position = this.position;
-        if (position.coords === null && position.relationships.length === 1) {
-            const offset = position.relationships[0][0];
-            const reln = position.relationships[0][1];
-            const dependencies = position.relationships[0][2];
-            position.coords = [0, 0];
+        if (position.pixelCoords === null && position.relationships.length === 1) {
+            const offset = position.relationships[0].offset;
+            const reln = position.relationships[0].relationship;
+            const dependencies = position.relationships[0].dependencies;
+            let coords, orientation;
+            position.pixelCoords = [0, 0];
             if (["bottom", "right"].indexOf(reln) >= 0) {
                 const dirn = (["top", "bottom"].indexOf(reln) >= 0) ? "below" : "right";
                 [coords, orientation] = layout.Position.resolvePoint(unitConverter, [100, "%"], dirn, [this.container]);
-                position.coords[orientation] = coords[orientation];
+                position.pixelCoords[orientation] = coords[orientation];
             }
             const dirn = (["top", "bottom"].indexOf(reln) >= 0) ? "right" : "below";
             [coords, orientation] = layout.Position.resolvePoint(unitConverter, offset, dirn, [this.container]);
             if (["bottom", "right"].indexOf(reln) >= 0) {
-                position.coords[orientation] = coords[orientation];
+                position.pixelCoords[orientation] = coords[orientation];
             } else {
-                position.coords = coords;
+                position.pixelCoords = coords;
             }
         }
     }
@@ -339,15 +340,24 @@ export class Diagram extends Container {
             }
         }
 
+jsnx.draw(g, {
+    element: '#canvas',
+    withLabels: true,
+    stickyDrag: true
+    }
+);
+
         this.setUnitConverter(new layout.UnitConverter(this.pixelSize, this.pixelSize));
         for (let e of jsnx.topologicalSort(g)) {
             if (e !== this && !e.hasPixelCoords) {
+console.log(e);
                 e.resolvePixelCoords();
                 if (e instanceof Compartment) {
-                    e.setPixelSize(e.container.unitConverter.pixelPair(e.size.lengths, false));
+                    e.setPixelSize(e.container.unitConverter.toPixelPair(e.size.size, false));
                     e.setUnitConverter(new layout.UnitConverter(this.pixelSize, e.pixelSize, e.position.pixels));
                 }
             }
+
         }
         this.bondGraph.setOffsets();
     }

@@ -87,7 +87,7 @@ export class Position
 
     bool()
     {
-        return (this.dependencies.length > 0 || this.lengths !== null);
+        return (this.dependencies.size > 0 || this.lengths !== null);
     }
 
     get hasPixelCoords()
@@ -127,7 +127,7 @@ export class Position
         let pixelCoords = [0.0, 0.0];
         for (let dependency of dependencies) {
             if (!dependency.position.hasPixelCoords) {
-                throw new ValueError("No position for '${dependency}' element");
+                throw new ReferenceError(`No position for '${dependency}' element`);
             }
             pixelCoords[0] += dependency.position.pixelCoords[0];
             pixelCoords[1] += dependency.position.pixelCoords[1];
@@ -334,19 +334,19 @@ export class Position
         */
         const unitConverter = this.element.container.unitConverter;
         if (this.lengths) {
-            this.pixelCoords = unitConverter.pixelPair(this.lengths);
+            this.pixelCoords = unitConverter.toPixelPair(this.lengths);
         } else if (this.pixelCoords === null && this.relationships.length > 0) {
             this.pixelCoords = [0, 0];
             if (this.relationships.length === 1) {
-                const offset = this.relationships[0][0];
-                const reln = this.relationships[0][1];
-                const dependencies = this.relationships[0][2];
+                const offset = this.relationships[0].offset;
+                const reln = this.relationships[0].relationship;
+                const dependencies = this.relationships[0].dependencies;
                 this.pixelCoords = Position.resolvePoint(unitConverter, offset, reln, dependencies)[0];
             } else {
                 for (let relationship of this.relationships) {
-                    const offset = relationship[0];
-                    const reln = relationship[1];
-                    const dependencies = relationship[2];
+                    const offset = relationship.offset;
+                    const reln = relationship.relationship;
+                    const dependencies = relationship.dependencies;
                     [pixelCoords, index] = Position.resolvePoint(unitConverter, offset, reln, dependencies);
                     if (offset === null) {
                         index -= 1;
@@ -358,7 +358,7 @@ export class Position
     }
 }
 
-Position.prototype.orientation = {centre: -1, center: -1, left: 0, right: 0, above: 1, below: 1};
+Position.orientation = {centre: -1, center: -1, left: 0, right: 0, above: 1, below: 1};
 
 //==============================================================================
 
@@ -537,7 +537,7 @@ export class UnitConverter {
             } else if (unit.indexOf('y') >= 0) {
                 index = 1;
             }
-            if (unit.startswith("%")) {
+            if (unit.startsWith("%")) {
                 const offset = ((length[0] * this.localSize[index]) / 100.0);
                 return ((addOffset ? this.localOffset[index] : 0) + offset);
             } else {

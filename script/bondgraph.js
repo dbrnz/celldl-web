@@ -49,10 +49,9 @@ export class BondGraph extends Element {
         this.potentials[potential] = potential.quantity;
     }
 
-    set_offsets() {
-        for (var flow, _pj_c = 0, _pj_a = this.flows, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            flow = _pj_a[_pj_c];
-            flow.set_transporter_offsets();
+    setOffsets() {
+        for (let flow of this.flows) {
+            flow.setTransporterOffsets();
         }
     }
 
