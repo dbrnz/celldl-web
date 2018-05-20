@@ -58,11 +58,11 @@ class Length {
 
     static from_text(text) {
         var length, units;
-        if (text.endswith("%")) {
+        if (text.endsWith("%")) {
             length = (Number.parseFloat(text.slice(0, (- 1))) / 100.0);
             units = "%";
         } else {
-            if (text.endswith("px")) {
+            if (text.endsWith("px")) {
                 length = Number.parseFloat(text.slice(0, (- 2)));
                 units = "px";
             } else {

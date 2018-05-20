@@ -64,12 +64,13 @@ class Container extends PositionedElement {
 
     svg() {
         let svg = new List([`<g${this.idClass()}${this.display()}>`]);
-        if (this.position.hasPixelCoords) {
-            svg.append(`<g transform="translate(${this.position.coords.x}, ${this.position.coords.y})">`);
+        if (this.hasPixelCoords) {
+            const coords = this.pixelCoords;
+            svg.append(`<g transform="translate(${coords[0]}, ${coords[1]})">`);
             const elementClass = this.getStyleAsString("svg-element");
             if (elementClass in svgElements) {
                 const id = this.id ? this.id.substring(1) : "";
-                const element = svgElements[elementClass](id, this.width, this.height);
+                const element = new svgElements[elementClass](id, this.width, this.height);
                 svg.append(element.svg());
             } else {
                 if (!(this instanceof Diagram)) {
@@ -127,7 +128,7 @@ export class Quantity extends PositionedElement {
 
     svg() {
         let svg = new list(`<g${this.idClass()}${this.display()}>`);
-        if (this.position.hasPixelCoords) {
+        if (this.hasPixelCoords) {
             const [x, y] = this.PixelCoords;
             const [w, h] = [layout.QUANTITY_WIDTH, layout.QUANTITY_HEIGHT];
             svg.append(`  <rect rx="${0.375 * w}" ry="${0.375 * h}" x="${x - w/2}" y="${y - h/2}" width="${w}" height="${h}" stroke="none" fill="${this.colour}"/>`);
@@ -218,13 +219,13 @@ export class Transporter extends PositionedElement {
     }
 
     svg() {
-        var element, element_class, id, radius, svg;
         let svg = new List();
         const elementClass = this.getStyleAsString("svg-element");
+        let radius = null;
         if (elementClass in svgElements) {
             svg.append(`<g${this.idClass()}${this.display()}>`);
             const id = this.id ? this.id.substring(1) : "";
-            const element = svgElements[elementClass](id, this.coords,
+            const element = new svgElements[elementClass](id, this.pixelCoords,
                 layout.HORIZONTAL_BOUNDARIES.contains(this.compartmentSide) ? 0 : 90);
             svg.append(element.svg());
             svg.append('</g>');
@@ -316,7 +317,7 @@ export class Diagram extends Container {
         other elements.
         */
 
-        this.position.setPixelCoords(new layout.Coords(0, 0));
+        this.setPixelCoords([0, 0]);
 
         let g = new jsnx.DiGraph();
 
@@ -380,14 +381,14 @@ console.log(e);
             svg.extend(c.svg());
         }
         svg.extend(this.bondGraph.svg());
-        for (let q of this.quantities) {
-            svg.extend(q.svg());
+        for (let quantity of this.quantities) {
+            svg.extend(quantity.svg());
         }
-        for (let t of this.transporters) {
-            svg.extend(t.svg());
+        for (let transporter of this.transporters) {
+            svg.extend(transporter.svg());
         }
         svg.append('<defs>');
-        svg.extend(svg_elements.DefinesStore.defines());
+        svg.extend(svgElements.DefinesStore.defines());
         svg.append('</defs>');
         svg.append('</svg>');
         return svg.join('\n');

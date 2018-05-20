@@ -26,6 +26,7 @@ import * as geo from './geometry.js';
 import * as layout from './layout.js';
 import * as parser from './parser.js';
 import * as svgElements from './svgElements.js';
+import {List} from './utils.js';
 
 //==============================================================================
 
@@ -34,7 +35,7 @@ export class Element {
         this.id = ('id' in attributes) ? ('#' + attributes.id.textContent) : null;
         const name = ('name' in attributes) ? attributes.name.textContent
                    : ((this.id !== null) ? this.id : '');
-        this.localName = name;
+        this.name = name;
         this.container = container;
         if (container === null) {
             this.diagram = this;
@@ -44,7 +45,7 @@ export class Element {
             this.fullName = container.fullName + '/' + name;
         }
         this.className = className;
-        this.classes = ('class' in attributes) ? attributes.class.textContent.split(/\s*/) : [];
+        this.classes = ('class' in attributes) ? attributes.class.textContent.split(/\s+/) : [];
         this.label = ('label' in attributes) ? attributes.label.textContent : name;
         this.style = style;
     }
@@ -73,6 +74,18 @@ export class Element {
         return this.getStyleAsString('stroke-width', '1');
     }
 
+    getStyleAsString(name, defaultValue='') {
+        if (name in this.style) {
+            const tokens = this.style[name];
+            if (['ID', 'HASH', 'NUMBER'].indexOf(tokens.type) >= 0) {
+                return tokens.value;
+            } else if (['DIMENSION', 'PERCENTAGE'].indexOf(tokens.type) >= 0) {
+                return `${tokens.value}${tokens.unit}`;
+            }
+        }
+        return defaultValue;
+    }
+
     isClass(name) {
         return this.classes.indexOf(name) >= 0;
     }
@@ -90,7 +103,7 @@ export class Element {
         let s = [''];
         if (this.id !== null)
             s.push(`id="${this.id.substr(1)}"`);
-        if (this.classes)
+        if (this.classes.length > 0)
             s.push(`class="${this.classes.join(" ")}"`);
         return s.join(' ');
     }
@@ -108,8 +121,8 @@ export class PositionedElement extends Element {
     }
 
     get geometry() {
-        if (this.cachedGeometry === null && this.position.hasPixelCoords) {
-            this.cachedGeometry = geo.Point(this.position.pixelCoords);
+        if (this.cachedGeometry === null && this.pixelCoords) {
+            this.cachedGeometry = geo.Point(this.pixelCoords);
         }
         return this.cachedGeometry;
     }
@@ -126,6 +139,10 @@ export class PositionedElement extends Element {
         this.position.resolvePixelCoords();
     }
 
+    setPixelCoords(pixelCoords) {
+        this.position.pixelCoords = pixelCoords;
+    }
+
     parsePosition(defaultOffset=null, defaultDependency=null) {
         /*
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
@@ -137,20 +154,21 @@ export class PositionedElement extends Element {
     }
 
     labelAsSvg() {
-        const [x, y] = this.position.pixelCoords;
+        const [x, y] = this.pixelCoords;
         if (this.label.startsWith('$')) {
-            const rotation = Number.parseFloat(this.getStyleAsString("text-rotation", "0"));
-            return svgElements.Text.typeset(this.label, x, y, rotation);
+            return `  <text text-anchor="middle" dominant-baseline="central" x="${x}" y="${y}">${this.name}</text>`;
+//            const rotation = Number.parseFloat(this.getStyleAsString("text-rotation", "0"));
+//            return svgElements.Text.typeset(this.label, x, y, rotation);
         } else {
             return `  <text text-anchor="middle" dominant-baseline="central" x="${x}" y="${y}">${this.label}</text>`;
         }
     }
 
     svg(radius=layout.ELEMENT_RADIUS) {
-        svg = List([`<g${this.idClass()}${this.display()}>`]);
-        if (this.position.hasPixelCoords) {
-            const [x, y] = this.position.pixelCoords;
-            svg.append(`  <circle r="${radius}" cx="${x}" cy=$"{y}" stroke="${this.stroke}" stroke-width="${this.strokeWidth}" fill="${this.colour}"/>`);
+        let svg = new List([`<g${this.idClass()}${this.display()}>`]);
+        if (this.hasPixelCoords) {
+            const [x, y] = this.pixelCoords;
+            svg.append(`  <circle r="${radius}" cx="${x}" cy="${y}" stroke="${this.stroke}" stroke-width="${this.strokeWidth}" fill="${this.colour}"/>`);
             svg.append(this.labelAsSvg());
         }
         svg.append('</g>');

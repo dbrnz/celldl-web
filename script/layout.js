@@ -112,11 +112,6 @@ export class Position
         this.relationships.push({offset, relation, dependencies});
     }
 
-    setPixelCoords(pixelCoords)
-    {
-        this.pixelCoords = pixelCoords;
-    }
-
     setLengths(lengths)
     {
         this.lengths = lengths;
@@ -126,11 +121,11 @@ export class Position
     {
         let pixelCoords = [0.0, 0.0];
         for (let dependency of dependencies) {
-            if (!dependency.position.hasPixelCoords) {
+            if (!dependency.hasPixelCoords) {
                 throw new ReferenceError(`No position for '${dependency}' element`);
             }
-            pixelCoords[0] += dependency.position.pixelCoords[0];
-            pixelCoords[1] += dependency.position.pixelCoords[1];
+            pixelCoords[0] += dependency.pixelCoords[0];
+            pixelCoords[1] += dependency.pixelCoords[1];
         }
         pixelCoords[0] /= dependencies.length;
         pixelCoords[1] /= dependencies.length;
@@ -473,7 +468,7 @@ export class Line {
         }
     }
 
-    points(start_pos, flow = null, reverse = false) {
+    points(start_pos, flow=null, reverse=false) {
         var angle, dx, dy, end_pos, last_pos, line_offset, offset, points, trans_coords;
         last_pos = start_pos;
         points = [start_pos];
@@ -514,7 +509,7 @@ export class Line {
 //==============================================================================
 
 export class UnitConverter {
-    constructor(globalSize, localSize, localOffset = [0, 0]) {
+    constructor(globalSize, localSize, localOffset=[0, 0]) {
         /*
         :param globalSize: tuple(width, height) of diagram, in pixels
         :param localSize: tuple(width, height) of current container, in pixels
@@ -529,7 +524,7 @@ export class UnitConverter {
         return "UC: global=${this.globalSize}, local=${this.localSize}, offset=${this.localOffset}";
     }
 
-    toPixels(length, index, addOffset = true) {
+    toPixels(length, index, addOffset=true) {
         if (length !== null) {
             const unit = length.unit;
             if (unit.indexOf('x') >= 0) {
@@ -538,16 +533,16 @@ export class UnitConverter {
                 index = 1;
             }
             if (unit.startsWith("%")) {
-                const offset = ((length[0] * this.localSize[index]) / 100.0);
-                return ((addOffset ? this.localOffset[index] : 0) + offset);
+                const offset = length.offset*this.localSize[index]/ 100.0;
+                return (addOffset ? this.localOffset[index] : 0) + offset;
             } else {
-                return ((length[0] * this.globalSize[index]) / 1000.0);
+                return length.offset*this.globalSize[index]/1000.0;
             }
         }
         return 0;
     }
 
-    toPixelPair(coords, addOffset = true) {
+    toPixelPair(coords, addOffset=true) {
         return [this.toPixels(coords[0], 0, addOffset), this.toPixels(coords[1], 1, addOffset)];
     }
 }

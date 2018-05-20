@@ -22,7 +22,7 @@ limitations under the License.
 
 //==============================================================================
 
-import * as mathjax from './mathjax.js';
+//import * as mathjax from './mathjax.js';
 import {List, format} from './utils.js';
 
 //==============================================================================
@@ -173,7 +173,7 @@ export class CellMembrane extends SvgElement
             count = this.innerMarkers;
         }
         transform.append(`translate(0, ${R})`);
-        let path = new util.List(['M0,0']);
+        let path = new List(['M0,0']);
         let t = 0;
         for (var n = 0, _pj_a = (count + 1); (n < _pj_a); n += 1) {
             path.append(`a0,0 0 0,0 ${R*(Math.sin(t + dt) - Math.sin(t))},${R*(Math.cos(t + dt) - Math.cos(t))}`);
@@ -188,10 +188,16 @@ export class CellMembrane extends SvgElement
     corner(position) {
         const outerRadius = this.outerRadius;
         const outerPath = this.cornerPath(true);
-        const rotation = ((position === 'top_left') ? 180 : ((position === 'top_right') ? 270 : ((position === 'bottom_left') ? 90 : 0)));
-        const translation = ((position === 'top_left') ? [0, 0] : ((position === 'top_right') ? [0, this.innerWidth] : ((position === 'bottom_left') ? [this.innerHeight, 0] : [this.innerWidth, this.innerHeight])));
-        svg = new List();
-        svg.append(('<g id="{}_{}"'.format(this.idBase, position) + ' transform="translate({:g}, {:g}) rotate({:g}) translate({:g}, {:g})">'.format(outerRadius, outerRadius, rotation, ...translation)));
+        const rotation = (position === 'top_left') ? 180
+                       : (position === 'top_right') ? 270
+                       : (position === 'bottom_left') ? 90
+                       : 0;
+        const translation = (position === 'top_left') ? [0, 0]
+                          : (position === 'top_right') ? [0, this.innerWidth]
+                          : (position === 'bottom_left') ? [this.innerHeight, 0]
+                          : [this.innerWidth, this.innerHeight];
+        let svg = new List();
+        svg.append(`<g id="${this.idBase}_${position}" transform="translate(${outerRadius}, ${outerRadius}) rotate(${rotation}) translate(${translation[0]}, ${translation[1]})">`);
         svg.append(outerPath);
         svg.append(this.cornerPath(false));
         svg.append('</g>');
@@ -201,12 +207,12 @@ export class CellMembrane extends SvgElement
     side(orientation) {
         let path = [];
         if (['top', 'bottom'].indexOf(orientation) >= 0) {
-            path.push('M{:g},{:g}'.format(this.outerRadius, (this.lineWidth / 2.0)));
+            path.push(`M${this.outerRadius},${this.lineWidth/2.0}`);
             for (let n = 0; n < this.horizontalMarkers; n += 1) {
                 path.push(`l${this.markerWidth},0`);
             }
         } else {
-            path.push('M{:g},{:g}'.format((this.lineWidth / 2.0), this.outerRadius));
+            path.push(`M${this.lineWidth/2.0},${this.outerRadius}`);
             for (let n = 0; n < this.verticalMarkers; n += 1) {
                 path.push(`l0,${this.markerWidth}`);
             }
@@ -216,15 +222,15 @@ export class CellMembrane extends SvgElement
                           : (orientation === 'bottom') ? [this.markerWidth/2.0, this.height]
                           : (orientation === 'left') ?   [0, this.markerWidth/2.0]
                           :                              [this.width, 0];
-        return new util.List([`
-      <g id="${this.idBase}_{orientation}" transform="translate(${translation[0]}, ${translation[1]})">
+        return new List([`
+      <g id="${this.idBase}_${orientation}" transform="translate(${translation[0]}, ${translation[1]})">
         <path stroke="#FFFFFF" fill="none"  d="${path.join(' ')}"
               marker-start="url(#${markerId})" marker-mid="url(#${markerId})"/>
       </g>`]);
     }
 
     svg(outline = false) {
-        svg = new List();
+        let svg = new List();
         svg.append(`<g transform="translate(${-this.lineWidth/2.0},${-this.lineWidth/2.0})">`);
         svg.extend(this.corner('top_left'));
         svg.extend(this.corner('top_right'));
@@ -282,7 +288,7 @@ class TransporterElement extends SvgElement
     }
 
     svg() {
-        svg = [`<use xlink:href="#${this.idBase}_element" transform="translate(${this.coords[0]}, ${this.coords[1]})"`]
+        let svg = new List([`<use xlink:href="#${this.idBase}_element" transform="translate(${this.coords[0]}, ${this.coords[1]})`]);
         const scaling = (this.height / Number.parseFloat(this.definedHeight));
         if ((scaling !== 1.0)) {
             svg.append(` scale(${scaling})`);
@@ -291,7 +297,7 @@ class TransporterElement extends SvgElement
             svg.append(` rotate(${this.rotation})`);
         }
         svg.append('" />');
-        return ''.join(svg);
+        return svg.join('');
     }
 }
 
@@ -464,12 +470,11 @@ export class Text
         return `_TEXT_${Text._nextId}_`;
     }
 
-    static typeset(s, x, y, rotation = 0) {
-        var h, size, va, w;
-        [svg, size] = mathjax.typeset(s, Text.nextId());
-        [w, h, va] = [(6 * Number.parseFloat(size[0].slice(0, (-2)))),
-                      (6 * Number.parseFloat(size[1].slice(0, (-2)))),
-                      (6 * Number.parseFloat(size[2].slice(0, (-2))))];
+    static typeset(s, x, y, rotation=0) {
+        const [svg, size] = mathjax.typeset(s, Text.nextId());
+        const [w, h, va] = [(6 * Number.parseFloat(size[0].slice(0, (-2)))),
+                            (6 * Number.parseFloat(size[1].slice(0, (-2)))),
+                            (6 * Number.parseFloat(size[2].slice(0, (-2))))];
         return `<g transform="translate(${x - w/2}, ${y + h/2}) scale(0.015)">${svg}</g>`;
     }
 }

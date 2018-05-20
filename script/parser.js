@@ -224,12 +224,8 @@ export function parseColour(tokens)
 
 export function parseColourValue(tokens)
 {
-    const token = tokens.next();
-    if (!token.done()) {
-        const value = token.value;
-        if (['HASH', 'ID'].indexOf(value.type) >= 0) {
-            return value.value;
-        }
+    if (['HASH', 'ID'].indexOf(tokens.type) >= 0) {
+        return tokens.value;
     }
     throw new SyntaxError("Colour expected.");
 }

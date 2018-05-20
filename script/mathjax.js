@@ -22,6 +22,10 @@ limitations under the License.
 
 //==============================================================================
 
+const MathJaxPath = ./thirdparty/Mathjax/Mathjax.js';
+
+//==============================================================================
+
 function suffix_ids(xml, attribute, id_base, new_attrib = null) {
     for (var e, _pj_c = 0, _pj_a = xml.findall(".//*[@{}]".format(attribute)), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
         e = _pj_a[_pj_c];
@@ -60,9 +64,52 @@ function clean_svg(svg, id_base) {
 
 //==============================================================================
 
+
+// Based on answer at https://stackoverflow.com/questions/34924033
+
+window.MathJax = {
+  jax: ["input/TeX", "output/SVG"],
+  extensions: ["tex2jax.js"],
+  showMathMenu: false,
+  showProcessingMessages: false,
+  messageStyle: "none",
+  SVG: {
+    useGlobalCache: false
+  },
+  TeX: {
+    extensions: ["AMSmath.js", "AMSsymbols.js", "autoload-all.js"]
+  },
+  AuthorInit: function() {
+    MathJax.Hub.Register.StartupHook("End", function() {
+      var mj2img = function(texstring, callback) {
+        var input = texstring;
+        var wrapper = document.createElement("div");
+        wrapper.innerHTML = input;
+        MathJax.Hub.Queue(["Typeset", MathJax.Hub, wrapper]);
+        MathJax.Hub.Queue(function() {
+          var mjOut = wrapper.getElementsByTagName("svg")[0];
+          mjOut.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+          callback(mjOut.outerHTML);
+        });
+      }
+      mj2img("\\[f: X \\to Y\\]", function(svg){
+        document.getElementById("target").innerText = svg;
+      });
+    });
+  }
+};
+
+//  Load MathJax into the DOM
+function StartMathJax() {
+  let script = document.createElement("script");
+  script.src = MathJaxPath;
+  document.head.appendChild(script);
+}
+
+
 export function typeset(latex, id_base) {
     var headers, http_client, mathjax, request, response, svg;
-    if ((latex.startsWith("$") && latex.endswith("$"))) {
+    if ((latex.startsWith("$") && latex.endsWith("$"))) {
         latex = latex.slice(1, (- 1));
     }
     mathjax = json.dumps({"format": "TeX", "math": latex, "svg": true, "width": 10000, "linebreaks": false});
