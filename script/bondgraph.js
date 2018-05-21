@@ -166,7 +166,7 @@ export class FlowComponent extends PositionedElement {
             }
             return _pj_a;
         }.call(this);
-        this.count = Number.parseInt(count);
+        this.count = count;
         this.lines = { start: new layout.Line(this, parser.StyleTokensIterator.fromStyleElement(this.style, "line-start")),
                        end:   new layout.Line(this, parser.StyleTokensIterator.fromStyleElement(this.style, "line-end"))};
         this.flow = flow;

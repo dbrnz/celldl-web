@@ -121,19 +121,19 @@ export class CellMembrane extends SvgElement
         this.strokeWidth = strokeWidth;
         this.strokeColour = strokeColour;
         this.fillColour = fillColour;
-        this.markerWidth = ((2.0 * markerRadius) + this.strokeWidth);
-        this.outerMarkerAngle = (90 / this.outerMarkers);
-        this.outerRadius = (this.markerWidth / (2 * Math.asin((Math.pi / (4 * this.outerMarkers)))));
-        this.innerMarkerAngle = (90 / this.innerMarkers);
-        this.innerRadius = (this.markerWidth / (2 * Math.asin((Math.pi / (4 * this.innerMarkers)))));
-        this.lineWidth = (this.outerRadius - this.innerRadius);
-        this.markerTail = (0.9 * ((this.lineWidth - this.markerRadius) - this.strokeWidth));
-        this.horizontalMarkers = Number.parseInt((0.5 + (((width - (this.lineWidth / 2.0)) - (3 * this.innerRadius)) / this.markerWidth)));
-        this.verticalMarkers = Number.parseInt((0.5 + (((height - (this.lineWidth / 2.0)) - (3 * this.innerRadius)) / this.markerWidth)));
-        this.innerWidth = (this.markerWidth * this.horizontalMarkers);
-        this.innerHeight = (this.markerWidth * this.verticalMarkers);
-        this.outerWidth = (this.innerWidth + (2 * this.outerRadius));
-        this.outerHeight = (this.innerHeight + (2 * this.outerRadius));
+        this.markerWidth = 2.0*markerRadius + this.strokeWidth;
+        this.outerMarkerAngle = 90/this.outerMarkers;
+        this.outerRadius = this.markerWidth/(2*Math.asin(Math.PI/(4*this.outerMarkers)));
+        this.innerMarkerAngle = 90/this.innerMarkers;
+        this.innerRadius = this.markerWidth/(2*Math.asin(Math.PI/(4*this.innerMarkers)));
+        this.lineWidth = this.outerRadius - this.innerRadius;
+        this.markerTail = 0.9*(this.lineWidth - this.markerRadius - this.strokeWidth);
+        this.horizontalMarkers = Math.round(0.5 + (width - this.lineWidth/2.0 - 3*this.innerRadius)/this.markerWidth);
+        this.verticalMarkers = Math.round(0.5 + (height - this.lineWidth/2.0 - 3 * this.innerRadius)/this.markerWidth);
+        this.innerWidth = this.markerWidth * this.horizontalMarkers;
+        this.innerHeight = this.markerWidth * this.verticalMarkers;
+        this.outerWidth = this.innerWidth + 2*this.outerRadius;
+        this.outerHeight = this.innerHeight + 2*this.outerRadius;
         // Add our definitions
         DefinesStore.add(idBase, format(CellMembrane.SVG_DEFS,
             {'RADIUS': markerRadius, 'TAIL': this.markerTail, 'WIDTH': strokeWidth,
@@ -162,20 +162,20 @@ export class CellMembrane extends SvgElement
 
         if (outerPath) {
             R = this.outerRadius;
-            dt = this.outerMarkerAngle*Math.pi/180;
+            dt = this.outerMarkerAngle*Math.PI/180;
             markerId = `${this.idBase}_inward_marker`;
             count = this.outerMarkers;
             transform.append(`rotate(${this.outerMarkerAngle/2.0})`);
         } else {
             R = this.innerRadius;
-            dt = this.innerMarkerAngle*Math.pi/180;
+            dt = this.innerMarkerAngle*Math.PI/180;
             markerId = `${this.idBase}_outward_marker`;
             count = this.innerMarkers;
         }
         transform.append(`translate(0, ${R})`);
         let path = new List(['M0,0']);
         let t = 0;
-        for (var n = 0, _pj_a = (count + 1); (n < _pj_a); n += 1) {
+        for (let n = 0; n <= count; n += 1) {
             path.append(`a0,0 0 0,0 ${R*(Math.sin(t + dt) - Math.sin(t))},${R*(Math.cos(t + dt) - Math.cos(t))}`);
             t += dt;
         }
@@ -229,7 +229,7 @@ export class CellMembrane extends SvgElement
       </g>`]);
     }
 
-    svg(outline = false) {
+    svg(outline=true) {
         let svg = new List();
         svg.append(`<g transform="translate(${-this.lineWidth/2.0},${-this.lineWidth/2.0})">`);
         svg.extend(this.corner('top_left'));

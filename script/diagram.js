@@ -340,18 +340,17 @@ export class Diagram extends Container {
                 g.addEdge(dependency, e);
             }
         }
-
+/*
 jsnx.draw(g, {
     element: '#canvas',
     withLabels: true,
     stickyDrag: true
     }
 );
-
+*/
         this.setUnitConverter(new layout.UnitConverter(this.pixelSize, this.pixelSize));
         for (let e of jsnx.topologicalSort(g)) {
             if (e !== this && !e.hasPixelCoords) {
-console.log(e);
                 e.resolvePixelCoords();
                 if (e instanceof Compartment) {
                     e.setPixelSize(e.container.unitConverter.toPixelPair(e.size.size, false));

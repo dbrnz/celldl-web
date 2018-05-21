@@ -3,8 +3,11 @@
         <meta charset="utf-8"/>
     </head>
     <body>
+<!--
         <div id="canvas" style="height: 100%;"></div>
         <script src="./thirdparty/d3.v3.js"></script>
+-->
+        <div id="svg_diagram" style="height: 100%;"></div>
         <script type="module">
             import {Parser} from './script/parser.js';
 
@@ -17,6 +20,9 @@
                 const diagram = parser.parse(xmldoc);
                 const svg = diagram.svg();
                 console.log(svg);
+
+                const svgDiagram = document.getElementById('svg_diagram');
+                svgDiagram.innerHTML = svg;
             }
 
             xhr.onerror = function() {
