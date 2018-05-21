@@ -19,8 +19,7 @@
                 const parser = new Parser();
                 const diagram = parser.parse(xmldoc);
                 const svg = diagram.svg();
-                console.log(svg);
-
+//                console.log(svg);
                 const svgDiagram = document.getElementById('svg_diagram');
                 svgDiagram.innerHTML = svg;
             }

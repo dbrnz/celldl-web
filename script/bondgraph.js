@@ -98,7 +98,7 @@ export class Flow extends PositionedElement {
     }
 
     parsePosition() {
-        super.parsePosition(this, {"default_offset": this.diagram.flow_offset, "default_dependency": this.transporter});
+        super.parsePosition(this.diagram.flowOffset, this.transporter);
     }
 
     setTransporterOffsets() {
@@ -223,7 +223,7 @@ export class Potential extends PositionedElement {
     }
 
     parsePosition() {
-        super.parsePosition(this, this.diagram.quantity_offset, this.quantity);
+        super.parsePosition(this.diagram.quantityOffset, this.quantity);
     }
 }
 

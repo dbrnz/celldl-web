@@ -199,13 +199,13 @@ export class Transporter extends PositionedElement {
         const position = this.position;
         if (position.pixelCoords === null && position.relationships.length === 1) {
             const offset = position.relationships[0].offset;
-            const reln = position.relationships[0].relationship;
+            const reln = position.relationships[0].relation;
             const dependencies = position.relationships[0].dependencies;
             let coords, orientation;
             position.pixelCoords = [0, 0];
             if (["bottom", "right"].indexOf(reln) >= 0) {
                 const dirn = (["top", "bottom"].indexOf(reln) >= 0) ? "below" : "right";
-                [coords, orientation] = layout.Position.resolvePoint(unitConverter, [100, "%"], dirn, [this.container]);
+                [coords, orientation] = layout.Position.resolvePoint(unitConverter, new layout.Offset(100, "%"), dirn, [this.container]);
                 position.pixelCoords[orientation] = coords[orientation];
             }
             const dirn = (["top", "bottom"].indexOf(reln) >= 0) ? "right" : "below";

@@ -132,7 +132,7 @@ export class Position
         return pixelCoords;
     }
 
-    parseComponent(tokens, previousDirn)
+    parseComponent(tokens, previousDirn, defaultOffset, defaultDependency)
     {
         let offset = null;
         let usingDefaultOffset = false;
@@ -147,6 +147,7 @@ export class Position
                     state = 1;
                     break;
                 } else {
+                    offset = defaultOffset;
                     usingDefaultOffset = true;
                     // Fall through to parse relationship
                 }
@@ -208,13 +209,13 @@ export class Position
                     this.setLengths(parser.parseOffsetPair(tokens.parameters));
                 } else {
                     const dirn = this.parseComponent(tokens[0], null);
-                    this.parseComponent(tokens[1], dirn);
+                    this.parseComponent(tokens[1], dirn, defaultOffset, defaultDependency);
                 }
             } else {
                 throw new SyntaxError("Position can't have more than two components.")
             }
         } else {
-            this.parseComponent(tokens, null);
+            this.parseComponent(tokens, null, defaultOffset, defaultDependency);
         }
     }
 
@@ -334,13 +335,13 @@ export class Position
             this.pixelCoords = [0, 0];
             if (this.relationships.length === 1) {
                 const offset = this.relationships[0].offset;
-                const reln = this.relationships[0].relationship;
+                const reln = this.relationships[0].relation;
                 const dependencies = this.relationships[0].dependencies;
                 this.pixelCoords = Position.resolvePoint(unitConverter, offset, reln, dependencies)[0];
             } else {
                 for (let relationship of this.relationships) {
                     const offset = relationship.offset;
-                    const reln = relationship.relationship;
+                    const reln = relationship.relation;
                     const dependencies = relationship.dependencies;
                     [pixelCoords, index] = Position.resolvePoint(unitConverter, offset, reln, dependencies);
                     if (offset === null) {

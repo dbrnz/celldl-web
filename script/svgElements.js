@@ -229,7 +229,7 @@ export class CellMembrane extends SvgElement
       </g>`]);
     }
 
-    svg(outline=true) {
+    svg(outline=false) {
         let svg = new List();
         svg.append(`<g transform="translate(${-this.lineWidth/2.0},${-this.lineWidth/2.0})">`);
         svg.extend(this.corner('top_left'));
