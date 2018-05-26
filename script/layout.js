@@ -61,15 +61,6 @@ export class Offset {
 
 //==============================================================================
 
-export class Coords {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-}
-
-//==============================================================================
-
 export class Position
 {
     constructor(element)
@@ -286,7 +277,7 @@ export class Position
 
 */
 
-    static resolvePoint(unitConverter, offset, reln, dependencies)
+    static resolveCoords(unitConverter, offset, reln, dependencies)
     {
         /*
         :return: tuple(tuple(x, y), index) where index == 0 means
@@ -337,13 +328,13 @@ export class Position
                 const offset = this.relationships[0].offset;
                 const reln = this.relationships[0].relation;
                 const dependencies = this.relationships[0].dependencies;
-                this.pixelCoords = Position.resolvePoint(unitConverter, offset, reln, dependencies)[0];
+                this.pixelCoords = Position.resolveCoords(unitConverter, offset, reln, dependencies)[0];
             } else {
                 for (let relationship of this.relationships) {
                     const offset = relationship.offset;
                     const reln = relationship.relation;
                     const dependencies = relationship.dependencies;
-                    [pixelCoords, index] = Position.resolvePoint(unitConverter, offset, reln, dependencies);
+                    [pixelCoords, index] = Position.resolveCoords(unitConverter, offset, reln, dependencies);
                     if (offset === null) {
                         index -= 1;
                     }
@@ -391,7 +382,7 @@ export class Line {
 
         // TODO
 
-        var angle, constraint, dependencies, dependency, length, line_offset, offset, reln, token, tokens;
+        var angle, constraint, dependencies, dependency, length, line_offset, offset, reln, token;
         if (this.tokens === null) {
             return;
         }

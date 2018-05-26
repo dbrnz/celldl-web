@@ -23,6 +23,7 @@ limitations under the License.
 //==============================================================================
 
 import * as dia from './diagram.js';
+import * as geo from './geometry.js';
 import * as layout from './layout.js';
 import * as parser from './parser.js';
 import {Element, PositionedElement} from './element.js';
@@ -81,16 +82,16 @@ export class BondGraph extends Element {
 //==============================================================================
 
 export class Flow extends PositionedElement {
-    constructor(diagram, transporterId=null, attributes, style) {
+    constructor(diagram, attributes, style, transporterId=null) {
         super(diagram, attributes, style, "Flow");
-        this.transporter = (transporterId ? diagram.findElement(("#" + transporterId), dia.Transporter) : null);
+        this.transporter = transporterId ? diagram.findElement(transporterId, dia.Transporter) : null;
         this.components = [];
-        this.componentOffsets = {};
+        this.componentOffsets = [];
     }
 
     addComponent(component) {
         this.components.push(component);
-        this.componentOffsets[component] = new layout.Point();  // v's geo.Point ??
+        this.componentOffsets[component] = new geo.Point();
     }
 
     componentOffset(component) {
@@ -102,51 +103,62 @@ export class Flow extends PositionedElement {
     }
 
     setTransporterOffsets() {
-        var component_offset, index, n, num_components, offset, origin, p;
-        if (((this.transporter !== null) && (this.components.length > 1))) {
-            index = (_pj.in_es6(this.transporter.compartment_side, layout.VERTICAL_BOUNDARIES) ? 1 : 0);
-            origin = this.transporter.coords[index];
-            component_offset = {};
-            num_components = this.components.length;
-            for (var component, _pj_c = 0, _pj_a = this.components, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-                component = _pj_a[_pj_c];
-                offset = (component.from_potential.coords[index] - origin);
-                for (var to, _pj_f = 0, _pj_d = component.to_potentials, _pj_e = _pj_d.length; (_pj_f < _pj_e); _pj_f += 1) {
-                    to = _pj_d[_pj_f];
-                    offset += (to.coords[index] - origin);
+        if (this.transporter !== null && this.components.length > 1) {
+            const index = layout.VERTICAL_BOUNDARIES.contains(this.transporter.compartmentSide) ? 1 : 0;
+            const origin = this.transporter.pixelCoords[index];
+            let componentOffsets = [];
+            const numComponents = this.components.length;
+
+
+            for (let component of this.components) {
+                const offset = component.fromPotential.pixelCoords[index] - origin;
+                for (let to of component.toPotentials) {
+                    offset += (to.pixelCoords[index] - origin);
                 }
-                component_offset[component] = (offset / Number.parseFloat((1 + component.to_potentials.length)));
+                componentOffsets.push({component: component, offset: offset/(1 + component.toPotentials.length)});
             }
-            for (var np, _pj_c = 0, _pj_a = enumerate(sorted(component_offset.items(), {"key": operator.itemgetter(1)})), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
+            componentOffsets.sort((a, b) ==> a.offset - b.offset);
+
+            for n, p in enumerate(sorted(component_offset.items(), key=operator.itemgetter(1))):
+                w = self.diagram.unitConverter.pixels(self.transporter.width, index, add_offset=False)
+
+
+                self._component_offsets[p[0]][index] = w*(-0.5 + n/float(num_components - 1))
+
+
+            for (var np, _pj_c = 0, _pj_a = enumerate(sorted(componentOffset.items(), {"key": operator.itemgetter(1)})), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
+                const w = this.diagram.unitConverter.toPixels(this.transporter.width, index, false);
+
+
                 np = _pj_a[_pj_c];
                 [n, p] = np;
-                this._component_offsets[p[0]][index] = (((- 0.5) + (n / Number.parseFloat((num_components - 1)))) * this.diagram.unit_converter.pixels(this.transporter.width, index, {"add_offset": false}));
+                this.componentOffsets.push({component: [index] = w*(-0.5 + n/(num_components - 1));
             }
         }
     }
 
     getFlowLine(component) {
-        var compartment, index, offset, points, side, sign, transporter_end;
-        points = [];
+        let points = new List();
         if ((this.transporter !== null)) {
-            compartment = this.transporter.container.geometry;
-            side = this.transporter.compartment_side;
-            index = (_pj.in_es6(side, layout.VERTICAL_BOUNDARIES) ? 0 : 1);
-            if (compartment.contains(this.geometry)) {
-                sign = (_pj.in_es6(side, ["top", "left"]) ? (- 1) : 1);
+            const compartment = this.transporter.container.geometry;
+            const side = this.transporter.compartmentSide;
+            const index = layout.VERTICAL_BOUNDARIES.contains(side) ? 0 : 1;
+            const sign = compartment.contains(this.geometry)
+                       ? ((["top", "left"].indexOf(side) >= 0) ? -1 : 1)
+                       : ((["top", "left"].indexOf(side) >= 0) ? 1 : -1);
+
+            let transporterEnd = this.transporter.coords.copy();
+            transporterEnd[index] += (sign * this.diagram.unitConverter.toPixels(layout.TRANSPORTER_EXTRA, index, false));
+
+            const self.componentOffsets.find(co ==> co.component === component).offset;
+
+            if ((compartment.contains(this.geometry) === compartment.contains(component.fromPotential.geometry))) {
+                points.extend([(offset + this.pixelCoords), (offset + transporterEnd)]);
             } else {
-                sign = (_pj.in_es6(side, ["top", "left"]) ? 1 : (- 1));
-            }
-            transporter_end = this.transporter.coords.copy();
-            transporter_end[index] += (sign * this.diagram.unit_converter.pixels(layout.TRANSPORTER_EXTRA, index, {"add_offset": false}));
-            offset = this._component_offsets[component];
-            if ((compartment.contains(this.geometry) === compartment.contains(component.from_potential.geometry))) {
-                points.extend([(offset + this.coords), (offset + transporter_end)]);
-            } else {
-                points.extend([(offset + transporter_end), (offset + this.coords)]);
+                points.extend([(offset + transporterEnd), (offset + this.pixelCoords)]);
             }
         } else {
-            points.push(this.coords);
+            points.append(this.pixelCoords);
         }
         return points;
     }
@@ -155,17 +167,13 @@ export class Flow extends PositionedElement {
 //==============================================================================
 
 export class FlowComponent extends PositionedElement {
-    constructor(diagram, flow, from_ = null, to = null, count = 1, line = null, attributes, style) {
+    constructor(diagram, flow, attributes, style, from=null, to=null, count=1, line=null) {
         super(diagram, attributes, style, "FlowComponent");
         this.fromPotential = diagram.find_element(("#" + from), Potential);
-        this.toPotentials = function () {
-            var _pj_a = [], _pj_b = to.split();
-            for (var _pj_c = 0, _pj_d = _pj_b.length; (_pj_c < _pj_d); _pj_c += 1) {
-                var name = _pj_b[_pj_c];
-                _pj_a.push(diagram.findElement(name, Potential));
+        this.toPotentials = [];
+        for (let id of to.split(/\s+/)) {
+            this.toPotentials.push(diagram.findElement(id, Potential));
             }
-            return _pj_a;
-        }.call(this);
         this.count = count;
         this.lines = { start: new layout.Line(this, parser.StyleTokensIterator.fromStyleElement(this.style, "line-start")),
                        end:   new layout.Line(this, parser.StyleTokensIterator.fromStyleElement(this.style, "line-end"))};
@@ -211,7 +219,7 @@ export class FlowComponent extends PositionedElement {
 //==============================================================================
 
 export class Potential extends PositionedElement {
-    constructor(diagram, quantityId = null, attributes, style) {
+    constructor(diagram, attributes, style, quantityId=null) {
         const quantity = diagram.findElement(quantityId, dia.Quantity);
         super(quantity.container, attributes, style, "Quantity");
         this.quantity = quantity;

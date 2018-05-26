@@ -314,31 +314,31 @@ export class Parser
     /*==============*/
     {
         const transporterId = ('transporter' in element.attributes) ? element.attributes.transporter : null;
-        const flow = new bg.Flow(this.diagram, transporterId, element.attributes, this.stylesheet.style(element));
+        const flow = new bg.Flow(this.diagram, element.attributes, this.stylesheet.style(element), transporterId);
         this.diagram.addElement(flow);
-        let container = ((flow.transporter !== null) ? flow.transporter.container : null);
+        let container = (flow.transporter !== null) ? flow.transporter.container : null;
         for (let e of element.children) {
             if (e.nodeName === "component") {
                 if (!("from" in e.attributes && "to" in e.attributes)) {
                     throw new SyntaxError("Flow component requires 'from' and 'to' potentials");
                 }
-                const component = new bg.FlowComponent(this.diagram, flow, e.attributes, this.stylesheet.style(e));
+                const component = new bg.FlowComponent(this.diagram, e.attributes, this.stylesheet.style(e), flow);
                 if (flow.transporter === null) {
                     if (container === null) {
                         container = component.fromPotential.container;
                     } else {
-                        if (container !== component.from_potential.container) {
+                        if (container !== component.fromPotential.container) {
                             throw new ValueError("All 'to' potentials must be in the same container");
                         }
                     }
-                    for (let p of component.to_potentials) {
+                    for (let p of component.toPotentials) {
                         if (container !== p.container) {
                             throw new ValueError("All 'from' and 'to' potentials must be in the same container");
                         }
                     }
                 }
                 component.setContainer(container);
-                this.diagram.add_element(component);
+                this.diagram.addElement(component);
                 flow.addComponent(component);
             } else {
                 throw SyntaxError;

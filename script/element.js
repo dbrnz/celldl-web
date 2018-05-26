@@ -32,9 +32,10 @@ import {List} from './utils.js';
 
 export class Element {
     constructor(container, attributes, style, className='Element') {
-        this.id = ('id' in attributes) ? ('#' + attributes.id.textContent) : null;
+        this.id = ('id' in attributes) ? `#${attributes.id.textContent}` : null;
         const name = ('name' in attributes) ? attributes.name.textContent
-                   : ((this.id !== null) ? this.id : '');
+                   : (this.id !== null) ? this.id.substr(1)
+                   : '';
         this.name = name;
         this.container = container;
         if (container === null) {
