@@ -99,7 +99,7 @@ class StyleSheet
 export function parseNumber(tokens)
 {
     if (tokens.type !== "NUMBER") {
-        throw new SyntaxError("Number expected.");
+        throw new SyntaxError("Number expected");
     } else {
         return tokens.value;
     }
@@ -117,14 +117,14 @@ export function parsePercentageOffset(tokens, defaultValue=null)
         if (defaultValue !== null) {
             return defaultValue;
         } else {
-            throw new SyntaxError("Percentage expected.");
+            throw new SyntaxError("Percentage expected");
         }
     }
     const percentage = tokens.value;
     const unit = tokens.unit;
     const modifier = unit.substring(1);
     if (["", "x", "y"].indexOf(modifier) < 0) {
-        throw new SyntaxError("Modifier (${modifier}) must be 'x' or 'y'.");
+        throw new SyntaxError("Modifier (${modifier}) must be 'x' or 'y'");
     }
     return new layout.Offset(percentage, unit);
 }
@@ -150,7 +150,7 @@ export function parseOffset(tokens, defaultValue=null)
     }
     const unit = (tokens.type === "DIMENSION") ? tokens.unit : "";
     if (["", "x", "y"].indexOf(unit) < 0) {
-        throw new SyntaxError("Modifier must be 'x' or 'y'.");
+        throw new SyntaxError("Modifier must be 'x' or 'y'");
     }
     return new layout.Offset(tokens.value, unit);
 }
@@ -175,11 +175,11 @@ export function parseOffsetPair(tokens, allowLocal=true)
                    || (allowLocal && token.type === "PERCENTAGE")) {
                 offsets.push(parseOffset(token));
             } else {
-                throw new SyntaxError("Invalid syntax.");
+                throw new SyntaxError("Invalid syntax");
             }
         }
     } else {
-        throw new SyntaxError("Expected pair of offsets.");
+        throw new SyntaxError("Expected pair of offsets");
     }
     return offsets;
 }
@@ -191,7 +191,7 @@ export function parseColour(tokens)
     if (tokens.type === "FUNCTION") {
         const name = tokens.name.value;
         if (["radial-gradient", "linear-gradient"].indexOf(name) < 0) {
-            throw new SyntaxError("Unknown colour gradient.");
+            throw new SyntaxError("Unknown colour gradient");
         }
         const gradientType = name.substr(0, 6);
         let stopColours = [];
@@ -205,7 +205,7 @@ export function parseColour(tokens)
                         if (token.value[1].type === "PERCENTAGE") {
                             stop = token.value[1].value;
                         } else {
-                            throw new SyntaxError("Gradient stop percentage expected.");
+                            throw new SyntaxError("Gradient stop percentage expected");
                         }
                     } else {
                         colour = parseColourValue(token);
@@ -227,7 +227,7 @@ export function parseColourValue(tokens)
     if (['HASH', 'ID'].indexOf(tokens.type) >= 0) {
         return tokens.value;
     }
-    throw new SyntaxError("Colour expected.");
+    throw new SyntaxError("Colour expected");
 }
 
 //==============================================================================
@@ -253,7 +253,7 @@ export class Parser
                     if ((e.nodeName === "transporter") && (container instanceof dia.Compartment)) {
                         this.parseTransporter(e, container);
                     } else {
-                        throw new SyntaxError("Unexpected XML element <${e.nodeName}>");
+                        throw new SyntaxError(`Unexpected XML element <${e.nodeName}>`);
                     }
                 }
             }
@@ -303,7 +303,7 @@ export class Parser
     {
         let potential = new bg.Potential(this.diagram, element.attributes, this.stylesheet.style(element));
         if (potential.quantity === null) {
-            throw new SyntaxError("Missing or unknown quantity.");
+            throw new SyntaxError("Missing or unknown quantity");
         }
         potential.setContainer(potential.quantity.container);
         this.diagram.addElement(potential);
@@ -320,7 +320,7 @@ export class Parser
         for (let e of element.children) {
             if (e.nodeName === "component") {
                 if (!("from" in e.attributes && "to" in e.attributes)) {
-                    throw new SyntaxError("Flow component requires 'from' and 'to' potentials.");
+                    throw new SyntaxError("Flow component requires 'from' and 'to' potentials");
                 }
                 const component = new bg.FlowComponent(this.diagram, flow, e.attributes, this.stylesheet.style(e));
                 if (flow.transporter === null) {
@@ -328,12 +328,12 @@ export class Parser
                         container = component.fromPotential.container;
                     } else {
                         if (container !== component.from_potential.container) {
-                            throw new ValueError("All 'to' potentials must be in the same container.");
+                            throw new ValueError("All 'to' potentials must be in the same container");
                         }
                     }
                     for (let p of component.to_potentials) {
                         if (container !== p.container) {
-                            throw new ValueError("All 'from' and 'to' potentials must be in the same container.");
+                            throw new ValueError("All 'from' and 'to' potentials must be in the same container");
                         }
                     }
                 }
