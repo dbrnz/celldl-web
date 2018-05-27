@@ -25,6 +25,7 @@ limitations under the License.
 //import * as bg from './bondgraph.js';
 //import * as dia from './diagram.js';
 import * as stylesheet from './stylesheet.js';
+import {cellDiagram} from './cellDiagram.js';
 import {List} from './utils.js';
 
 //==============================================================================
@@ -142,7 +143,7 @@ export class Position
             switch (state) {
               case 0:
                 if (token.type !== 'ID') {
-                    offset = stylesheet.parseOffset(tokens, defaultOffset);
+                    offset = stylesheet.parseOffset(token, defaultOffset);
                     state = 1;
                     break;
                 } else {
@@ -159,9 +160,9 @@ export class Position
                 break;
               case 2:
                 if (token.type === 'HASH') {
-                    const dependency = this.element.diagram.findElement(token.value);
+                    const dependency = cellDiagram.findElement(token.value);
                     if (dependency === null) {
-                        throw new KeyError(`Unknown element ${token.value}`);
+                        throw new Error(`Unknown element ${token.value}`);
                     }
                     dependencies.append(dependency);
                 } else {
@@ -206,7 +207,7 @@ export class Position
         if (tokens instanceof Array) {
             if (tokens.length === 2) {
                 if (['ID', 'SEQUENCE'].indexOf(tokens[0].type) < 0) {
-                    this.setLengths(stylesheet.parseOffsetPair(tokens.parameters));
+                    this.setLengths(stylesheet.parseOffsetPair(tokens));
                 } else {
                     const dirn = this.parseComponent(tokens[0], null);
                     this.parseComponent(tokens[1], dirn, defaultOffset, defaultDependency);
@@ -448,9 +449,9 @@ export class Line
             }
             dependencies = [];
             while (((token !== null) && (token.type === "hash"))) {
-                dependency = this._element.diagram.find_element(("#" + token.value));
+                dependency = cellDiagram.findElement(token.value);
                 if ((dependency === null)) {
-                    throw new KeyError("Unknown element '#{}".format(token.value));
+                    throw new Error(`Unknown element ${token.value}`);
                 }
                 dependencies.append(dependency);
                 token = tokens.next();

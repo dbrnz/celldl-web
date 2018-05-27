@@ -181,7 +181,7 @@ export class Parser
     parseDocument(xmlDocument)
     /*======================*/
     {
-        if (xmlDocument.children.length != 1) {
+        if (xmlDocument === null || xmlDocument.children.length != 1) {
             throw new SyntaxError("Invalid XML document");
         }
 
