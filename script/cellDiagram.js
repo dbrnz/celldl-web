@@ -216,14 +216,14 @@ class CellDiagram {
         this._elementsById[element.id] = element;
     }
 
-    elements(elementClass=Element)
-    /*==========================*/
+    elements(elementClass=DiagramElement)
+    /*=================================*/
     {
         return this._elements.filter(e => e instanceof elementClass);
     }
 
-    findElement(id, elementClass=Element)
-    /*=================================*/
+    findElement(id, elementClass=DiagramElement)
+    /*========================================*/
     {
         const e = (id in this._elementsById) ? this._elementsById[id] : null;
         return (e instanceof elementClass) ? e : null;

@@ -30,14 +30,29 @@
     <style src="./styles/colours.css"/>
 
     <style>
-        diagram {
+        cell-diagram {
             width: 1600;           /* SVG `pixel` units */
             height:1000;           /* SVG `pixel` units */
             flow-offset: 30x;      /* From its transporter */
             quantity-offset: 37x;  /* From its potential   */
         }
 
-        #u1 { position: 15%, 35% }
+        #q1 { position: 15%x above #u1; }
+        #u1 { position: 20%, 35%; }
+
+        #v1 { position: 15% right #u1; }
+        #I_Kp { position: 15% right #v1; }
+        #v2 { position: 15% right #I_Kp; }
+
+        #q2 { position: 15%x above #u2; }
+        #u2 { position: 15% right #v2; }
+
+        #u3 { position: 15%x below #v1; }
+        #zF { position: 15%x below #u3; }
+        #u_E { position: 15%x below #zF; }
+
+        #q4 { position: 12%x above #u4; }
+        #u4 { position: 15%x above #I_Kp; }
 
     </style>
 
