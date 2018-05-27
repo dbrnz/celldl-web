@@ -25,6 +25,7 @@ limitations under the License.
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
 import * as parser from './parser.js';
+import * as stylesheet from './stylesheet.js';
 import * as svgElements from './svgElements.js';
 import {List} from './utils.js';
 
@@ -64,7 +65,7 @@ export class Element {
                   : ('color' in this.style) ? 'color'
                   : null;
         return (key === null) ? '#808080'
-                              : parser.parseColour(this.style[key]);
+                              : stylesheet.parseColour(this.style[key]);
     }
 
     get stroke() {

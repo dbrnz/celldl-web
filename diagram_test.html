@@ -3,34 +3,16 @@
         <meta charset="utf-8"/>
     </head>
     <body>
-<!--
+
         <div id="canvas" style="height: 100%;"></div>
         <script src="./thirdparty/d3.v3.js"></script>
+
+<!--        <div id="cell_diagram" style="height: 100%;"></div>
 -->
-        <div id="svg_diagram" style="height: 100%;"></div>
         <script type="module">
-            import {Parser} from './script/parser.js';
+            import main from './script/main.js';
 
-            let xhr = new XMLHttpRequest();
-
-            xhr.onload = function() {
-                let xmldoc = xhr.responseXML;
-
-                const parser = new Parser();
-                const diagram = parser.parse(xmldoc);
-                const svg = diagram.svg();
-//                console.log(svg);
-                const svgDiagram = document.getElementById('svg_diagram');
-                svgDiagram.innerHTML = svg;
-            }
-
-            xhr.onerror = function() {
-                console.log("Error while getting xml");
-            }
-
-            xhr.open("GET", "http://localhost:8080/svg/noble_1962_celldl.xml");
-            xhr.responseType = "document";
-            xhr.send();
+            main('http://localhost:8080/svg/web/ion_channel.xml', 'cell_diagram');
         </script>
     </body>
 </html>

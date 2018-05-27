@@ -22,86 +22,86 @@ limitations under the License.
 
 //==============================================================================
 
-import * as dia from './diagram.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
-import * as parser from './parser.js';
-import {Element, PositionedElement} from './element.js';
+
+import {cellDiagram, DiagramElement} from './cellDiagram.js';
 import {List} from './utils.js';
 import {svgLine} from './svgElements.js';
 
 //==============================================================================
 
-const LINE_OFFSET = 3.5;
+const LINE_OFFSET = 3.5;  // TODO: Initial/default value from CSS
 
 //==============================================================================
 
-export class BondGraph extends Element {
-    constructor(diagram, attributes, style) {
-        super(diagram, attributes, style, "BondGraph");
-        this.flows = [];
-        this.potentials = []
-    }
-
-    addFlow(flow) {
-        this.flows.push(flow);
-    }
-
-    addPotential(potential) {
-        this.potentials.push(potential);
-    }
-
-    setOffsets() {
-        for (let flow of this.flows) {
-            flow.setTransporterOffsets();
-        }
-    }
-
-    svg() {
-        let svg = new List();
-        for (let potential of this.potentials) {
-            const quantity = potential.quantity;
-            svg.append(svgLine(new geo.LineString([potential.pixelCoords, quantity.pixelCoords]),
-                (quantity.stroke !== "none") ? quantity.stroke : "#808080", this.display()));
-        }
-        for (let flow of this.flows) {
-            for (let component of flow.components) {
-                svg.extend(component.svg());
-            }
-        }
-        for (let potential of this.potentials) {
-            svg.extend(potential.svg());
-        }
-        for (let flow of this.flows) {
-            svg.extend(flow.svg());
-        }
-        return svg;
+export class Node extends DiagramElement
+{
+    constructor(attributes, style, className='Node')
+    {
+        super(attributes, style, className);
     }
 }
 
 //==============================================================================
 
-export class Flow extends PositionedElement {
-    constructor(diagram, attributes, style, transporterId=null) {
-        super(diagram, attributes, style, "Flow");
-        this.transporter = transporterId ? diagram.findElement(transporterId, dia.Transporter) : null;
-        this.components = [];
-        this.componentOffsets = [];
+export function generateSvg()
+{
+    const flows = cellDiagram.elements(Flow);
+    const potentials = cellDiagram.elements(Potential);
+
+    let svg = new List();
+    for (let potential of potentails) {
+        const quantity = potential.quantity;
+        // TODO: Default stroke colour from CSS
+        generateSvg.append(svgLine(new geo.LineString([potential.pixelCoords, quantity.pixelCoords]),
+                                   (quantity.stroke !== "none") ? quantity.stroke : "#808080",
+                                   this.display()));
+    }
+    for (let flow of flows) {
+        for (let component of flow.components) {
+            svg.extend(component.generateSvg());
+        }
+    }
+    for (let potential of potentials) {
+        svg.extend(potential.generateSvg());
+    }
+    for (let flow of flows) {
+        svg.extend(flow.generateSvg());
+    }
+    for (let quantity of cellDiagram.elements(Quantity)) {
+        svg.extend(quantity.generateSvg());
     }
 
-    addComponent(component) {
+    return svg;
+}
+
+//==============================================================================
+
+export class Flow extends Node
+{
+    constructor(attributes, style)
+    {
+        super(attributes, style, "Flow");
+        this.components = [];
+        this.componentOffsets = [];
+//        this.transporter = DiagramElement.fromAttribute(attributes, 'transporter', diagram.Transporter)
+    }
+
+    addComponent(component)
+    /*===================*/
+    {
         this.components.push(component);
         this.componentOffsets[component] = new geo.Point();
     }
 
-    componentOffset(component) {
-        return this.componentOffsets.get(component, new layout.Point());
+    componentOffset(component)
+    /*======================*/
+    {
+        return this.componentOffsets.get(component, new geo.Point());
     }
 
-    parsePosition() {
-        super.parsePosition(this.diagram.flowOffset, this.transporter);
-    }
-
+/*
     setTransporterOffsets() {
         if (this.transporter !== null && this.components.length > 1) {
             const index = layout.VERTICAL_BOUNDARIES.contains(this.transporter.compartmentSide) ? 1 : 0;
@@ -117,7 +117,7 @@ export class Flow extends PositionedElement {
                 }
                 componentOffsets.push({component: component, offset: offset/(1 + component.toPotentials.length)});
             }
-            componentOffsets.sort((a, b) ==> a.offset - b.offset);
+            componentOffsets.sort((a, b) => a.offset - b.offset);
 
             for n, p in enumerate(sorted(component_offset.items(), key=operator.itemgetter(1))):
                 w = self.diagram.unitConverter.pixels(self.transporter.width, index, add_offset=False)
@@ -136,8 +136,10 @@ export class Flow extends PositionedElement {
             }
         }
     }
-
-    getFlowLine(component) {
+*/
+    getFlowLine(component)
+    /*==================*/
+    {
         let points = new List();
         if ((this.transporter !== null)) {
             const compartment = this.transporter.container.geometry;
@@ -147,10 +149,10 @@ export class Flow extends PositionedElement {
                        ? ((["top", "left"].indexOf(side) >= 0) ? -1 : 1)
                        : ((["top", "left"].indexOf(side) >= 0) ? 1 : -1);
 
-            let transporterEnd = this.transporter.coords.copy();
+            const transporterEnd = this.transporter.coords.copy();
             transporterEnd[index] += (sign * this.diagram.unitConverter.toPixels(layout.TRANSPORTER_EXTRA, index, false));
 
-            const self.componentOffsets.find(co ==> co.component === component).offset;
+            const offset = self.componentOffsets.find(co => co.component === component).offset;
 
             if ((compartment.contains(this.geometry) === compartment.contains(component.fromPotential.geometry))) {
                 points.extend([(offset + this.pixelCoords), (offset + transporterEnd)]);
@@ -166,27 +168,29 @@ export class Flow extends PositionedElement {
 
 //==============================================================================
 
-export class FlowComponent extends PositionedElement {
-    constructor(diagram, flow, attributes, style, from=null, to=null, count=1, line=null) {
-        super(diagram, attributes, style, "FlowComponent");
-        this.fromPotential = diagram.find_element(("#" + from), Potential);
-        this.toPotentials = [];
-        for (let id of to.split(/\s+/)) {
-            this.toPotentials.push(diagram.findElement(id, Potential));
-            }
-        this.count = count;
-        this.lines = { start: new layout.Line(this, parser.StyleTokensIterator.fromStyleElement(this.style, "line-start")),
-                       end:   new layout.Line(this, parser.StyleTokensIterator.fromStyleElement(this.style, "line-end"))};
+export class FlowComponent
+{
+    constructor(attributes, style, flow)
+    {
         this.flow = flow;
+        this.input = DiagramElement.fromAttribute(attributes, 'input', Potential)
+        this.output = DiagramElement.fromAttribute(attributes, 'output', Potential)
+        this.count = ('count' in attributes) ? Number(attributes.count.textContent) : 1;
     }
 
-    parsePosition() {
+    parsePosition()
+    /*===========*/
+    {
+        this.lines = { start: new layout.Line(this, this.style["line-start"]),
+                       end:   new layout.Line(this, this.style["line-end"])};
         for (let line of this.lines.values()) {
             line.parse();
         }
     }
 
-    svg() {
+    generateSvg()
+    /*=========*/
+    {
         var component_points, line, line_style, offset, points, svg;
         svg = [];
         component_points = this._lines["start"].points(this.from_potential.coords, {"flow": this.flow});
@@ -218,20 +222,74 @@ export class FlowComponent extends PositionedElement {
 
 //==============================================================================
 
-export class Potential extends PositionedElement {
-    constructor(diagram, attributes, style, quantityId=null) {
-        const quantity = diagram.findElement(quantityId, dia.Quantity);
-        super(quantity.container, attributes, style, "Quantity");
-        this.quantity = quantity;
-        this.quantity.setPotential(this);
+export class Gyrator extends DiagramElement
+{
+    constructor(attributes, style)
+    {
+        super(attributes, style, 'Gyrator');
+        this.input = DiagramElement.fromAttribute(attributes, 'input', Flow)
+        this.output = DiagramElement.fromAttribute(attributes, 'output', Flow)
+    }
+}
+
+//==============================================================================
+
+export class Potential extends Node
+{
+    constructor(attributes, style)
+    {
+        super(attributes, style, 'Potential');
+        this.quantity = DiagramElement.fromAttribute(attributes, 'quantity', Quantity)
+        if (this.quantity !== null) {
+            this.quantity.setPotential(this);
+        }
     }
 
-    get quantityId() {
-        return this.quantity.id;
+    get quantityId()
+    /*============*/
+    {
+        return this.quantity ? this.quantity.id : '';
+    }
+}
+
+//==============================================================================
+
+export class Quantity extends DiagramElement
+{
+    constructor(attributes, style) {
+        super(attributes, style, 'Quantity');
+        this.potential = null;
     }
 
-    parsePosition() {
-        super.parsePosition(this.diagram.quantityOffset, this.quantity);
+    setPotential(potential)
+    /*===================*/
+    {
+        this.potential = potential;
+    }
+}
+
+//==============================================================================
+
+export class Reaction extends DiagramElement
+{
+    constructor(attributes, style)
+    {
+        super(attributes, style, 'Reaction');
+        this.input = DiagramElement.fromAttribute(attributes, 'input', Node)
+        this.output = DiagramElement.fromAttribute(attributes, 'output', Node)
+        this.modulator = DiagramElement.fromAttribute(attributes, 'modulator', Potential)
+    }
+}
+
+//==============================================================================
+
+export class Transformer extends DiagramElement
+{
+    constructor(attributes, style)
+    {
+        super(attributes, style, 'Transformer');
+        this.input = DiagramElement.fromAttribute(attributes, 'input', Potential)
+        this.output = DiagramElement.fromAttribute(attributes, 'output', Potential)
     }
 }
 

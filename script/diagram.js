@@ -28,6 +28,7 @@ import '../thirdparty/jsnetworkx.js';
 
 import * as layout from './layout.js';
 import * as parser from './parser.js';
+import * as stylesheet from './stylesheet.js';
 import * as svgElements from './svgElements.js';
 import {Element, PositionedElement} from './element.js';
 import {List} from './utils.js';
@@ -104,7 +105,7 @@ export class Compartment extends Container {
         /*
         * Compartment size/position: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         */
-        const lengths = parser.parseOffsetPair(this.positionTokens);
+        const lengths = stylesheet.parseOffsetPair(this.positionTokens);
         this.position.setLengths(lengths);
         this.position.addDependency(this.container);
     }
@@ -179,7 +180,7 @@ export class Transporter extends PositionedElement {
                     state = 1;
                     break;
                   case 1:
-                    offset = parser.parsePercentageOffset(token);
+                    offset = stylesheet.parsePercentageOffset(token);
                     state = 2;
                     break;
                   case 2:
@@ -259,14 +260,14 @@ export class Diagram extends Container {
 
     lengthFromStyle(name, defaultValue) {
         if (name in this.style) {
-            return parser.parseOffset(this.style[name]);
+            return stylesheet.parseOffset(this.style[name]);
         }
         return defaultValue;
     }
 
     numberFromStyle(name, defaultValue) {
         if (name in this.style) {
-            return parser.parseNumber(this.style[name]);
+            return stylesheet.parseNumber(this.style[name]);
         }
         return defaultValue;
     }

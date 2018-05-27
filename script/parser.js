@@ -27,10 +27,9 @@ import * as SPECIFICITY from '../thirdparty/specificity.js';
 
 //==============================================================================
 
-import * as bg from './bondgraph.js';
-import * as dia from './diagram.js';
-import * as layout from './layout.js';
-import {Gradients} from './svgElements.js';
+import * as bondgraph from './bondgraph.js';
+//import * as dia from './diagram.js';
+import {StyleSheet} from './stylesheet.js';
 
 //==============================================================================
 
@@ -38,333 +37,166 @@ var CELLDL_NAMESPACE = "http://www.cellml.org/celldl/1.0#";
 
 //==============================================================================
 
-class StyleSheet
-{
-    constructor() {
-        this.stylesheet = [];
-        this._order = 0;
-        this._parser = new cssparser.Parser();
-    }
-
-    addStyle(styleElement)
-    /*==================*/
-    {
-        const css = styleElement.textContent;
-        const ast = this._parser.parse(css);
-        const rules = ast._props_.value;
-        for (let rule of rules) {
-            let selectors = cssparser.toSimple(rule._props_.selectors);
-            let styling = cssparser.toAtomic(rule._props_.value);
-            for (let selector of selectors) {
-                this.stylesheet.push({selector: selector,
-                                style: styling,
-                                specificity: SPECIFICITY.calculate(selector)[0]['specificityArray'],
-                                order: this._order});
-                this._order += 1;
-            }
-        }
-
-        this.stylesheet.sort(function(a, b) {
-            const order = SPECIFICITY.compare(a.specificity, b.specificity);
-            if (order != 0) {
-                return order;
-            } else {
-                return (a.order > b.order) ?  1
-                     : (a.order < b.order) ? -1
-                     :  0;
-            }
-        });
-    }
-
-    style(element)
-    /*==========*/
-    {
-        let styling = {};
-        for (let rule of this.stylesheet) {
-            if (element.matches(rule.selector)) {
-                const style = rule.style;
-                if (style.type === 'DECLARATION_LIST') {
-                    for (let declaration of style.value) {
-                        styling[declaration.property.value] = declaration.value;
-                    }
-                }
-            }
-        }
-        return styling;
-    }
-}
-
-//==============================================================================
-
-export function parseNumber(tokens)
-{
-    if (tokens.type !== "NUMBER") {
-        throw new SyntaxError("Number expected");
-    } else {
-        return tokens.value;
-    }
-}
-
-//==============================================================================
-
-export function parsePercentageOffset(tokens, defaultValue=null)
-{
-    /*
-    :param tokens: `StyleTokens` of tokens
-    :return: Length
-    */
-    if (tokens.type !== 'PERCENTAGE') {
-        if (defaultValue !== null) {
-            return defaultValue;
-        } else {
-            throw new SyntaxError("Percentage expected");
-        }
-    }
-    const percentage = tokens.value;
-    const unit = tokens.unit;
-    const modifier = unit.substring(1);
-    if (["", "x", "y"].indexOf(modifier) < 0) {
-        throw new SyntaxError("Modifier (${modifier}) must be 'x' or 'y'");
-    }
-    return new layout.Offset(percentage, unit);
-}
-
-//==============================================================================
-
-export function parseOffset(tokens, defaultValue=null)
-{
-    /*
-    :param tokens: `StyleTokens` of tokens
-    :return: Length
-
-    `100`, `100x`, `100y`
-    */
-    if (tokens.type === "PERCENTAGE") {
-        return parsePercentageOffset(tokens, defaultValue);
-    } else if (["NUMBER", "DIMENSION"].indexOf(tokens.type) < 0) {
-        if (defaultValue !== null) {
-            return defaultValue;
-        } else {
-            throw new SyntaxError("Length expected.");
-        }
-    }
-    const unit = (tokens.type === "DIMENSION") ? tokens.unit : "";
-    if (["", "x", "y"].indexOf(unit) < 0) {
-        throw new SyntaxError("Modifier must be 'x' or 'y'");
-    }
-    return new layout.Offset(tokens.value, unit);
-}
-
-//==============================================================================
-
-export function parseOffsetPair(tokens, allowLocal=true)
-{
-    /*
-    Get a coordinate pair.
-
-    :param tokens: `StyleTokens` of tokens
-    :return: tuple(Length, Length)
-    */
-    let offsets = [];
-
-    if (tokens instanceof Array && tokens.length == 2) {
-        for (let token of tokens) {
-            if (token.type === 'SEQUENCE') {
-// TODO                <offset> <reln> <id_list>
-            } else if (["DIMENSION", "NUMBER"].indexOf(token.type) >= 0
-                   || (allowLocal && token.type === "PERCENTAGE")) {
-                offsets.push(parseOffset(token));
-            } else {
-                throw new SyntaxError("Invalid syntax");
-            }
-        }
-    } else {
-        throw new SyntaxError("Expected pair of offsets");
-    }
-    return offsets;
-}
-
-//==============================================================================
-
-export function parseColour(tokens)
-{
-    if (tokens.type === "FUNCTION") {
-        const name = tokens.name.value;
-        if (["radial-gradient", "linear-gradient"].indexOf(name) < 0) {
-            throw new SyntaxError("Unknown colour gradient");
-        }
-        const gradientType = name.substr(0, 6);
-        let stopColours = [];
-        if ('parameters' in tokens) {
-            const parameters = tokens.parameters;
-            if (parameters instanceof Array) {
-                let colour, stop;
-                for (let token of parameters) {
-                    if (token.type === 'SEQUENCE') {
-                        colour = parseColourValue(token.value[0]);
-                        if (token.value[1].type === "PERCENTAGE") {
-                            stop = token.value[1].value;
-                        } else {
-                            throw new SyntaxError("Gradient stop percentage expected");
-                        }
-                    } else {
-                        colour = parseColourValue(token);
-                        stop = null;
-                    }
-                    stopColours.push([colour, stop]);
-                }
-            }
-        }
-    return Gradients.url(gradientType, stopColours);
-    }
-    return parseColourValue(tokens);
-}
-
-//==============================================================================
-
-export function parseColourValue(tokens)
-{
-    if (['HASH', 'ID'].indexOf(tokens.type) >= 0) {
-        return tokens.value;
-    }
-    throw new SyntaxError("Colour expected");
-}
-
-//==============================================================================
-
 export class Parser
 {
-    constructor() {
-        this.diagram = null;
-        this.bondGraph = null;
-        this.stylesheet = new StyleSheet;
+    constructor(cellDiagram) {
+        this.cellDiagram = cellDiagram;
+        this.stylesheet = new StyleSheet();
     }
 
-    parseContainer(element, container)
-    /*==============================*/
+    newDiagramElement(element, elementClass)
+    /*====================================*/
     {
-        for (let e of element.children) {
-            if (e.nodeName === "compartment") {
-                this.parseCompartment(e, container);
-            } else {
-                if (e.nodeName === "quantity") {
-                    this.parseQuantity(e, container);
-                } else {
-                    if ((e.nodeName === "transporter") && (container instanceof dia.Compartment)) {
-                        this.parseTransporter(e, container);
-                    } else {
-                        throw new SyntaxError(`Unexpected XML element <${e.nodeName}>`);
-                    }
-                }
-            }
-        }
+        const diagramElement = new elementClass(element.attributes, this.stylesheet.style(element));
+        this.cellDiagram.addElement(diagramElement);
+        return diagramElement;
     }
 
-    parseCompartment(element, container)
-    /*================================*/
-    {
-        const compartment = new dia.Compartment(container, element.attributes, this.stylesheet.style(element));
-        this.diagram.addCompartment(compartment);
-        this.parseContainer(element, compartment);
-    }
-
-    parseQuantity(element, container)
-    /*=============================*/
-    {
-        const quantity = new dia.Quantity(container, element.attributes, this.stylesheet.style(element));
-        this.diagram.addQuantity(quantity);
-    }
-
-    parseTransporter(element, compartment)
-    /*==================================*/
-    {
-        const transporter = new dia.Transporter(compartment, element.attributes, this.stylesheet.style(element));
-        this.diagram.addTransporter(transporter);
-    }
+//    parseContainer(element, container)
+//    /*==============================*/
+//    {
+//        for (let e of element.children) {
+//            if (e.nodeName === "compartment") {
+//                this.parseCompartment(e, container);
+//            } else {
+//                if (e.nodeName === "quantity") {
+//                    this.parseQuantity(e, container);
+//                } else {
+//                    if ((e.nodeName === "transporter") && (container instanceof dia.Compartment)) {
+//                        this.parseTransporter(e, container);
+//                    } else {
+//                        throw new SyntaxError(`Unexpected XML element <${e.nodeName}>`);
+//                    }
+//                }
+//            }
+//        }
+//    }
+//
+//    parseCompartment(element, container)
+//    /*================================*/
+//    {
+//        const compartment = this.newDiagramElement(element, dia.Compartment, container);
+//        this.diagram.addCompartment(compartment);
+//        this.parseContainer(element, compartment);
+//    }
+//
+//    parseTransporter(element, compartment)
+//    /*==================================*/
+//    {
+//        const transporter = this.newDiagramElement(element, dia.Transporter, compartment);
+//        this.diagram.addTransporter(transporter);
+//    }
 
     parseBondGraph(element)
     /*===================*/
     {
         for (let e of element.children) {
-            if (e.nodeName === "potential") {
+            if        (e.nodeName === "flow") {
+                this.parseFlow(e);
+            } else if (e.nodeName === "gyrator") {
+                this.parseGyrator(e);
+            } else if (e.nodeName === "potential") {
                 this.parsePotential(e);
+            } else if (e.nodeName === "quantity") {
+                this.parseQuantity(e);
+            } else if (e.nodeName === "reaction") {
+                this.parseReaction(e);
+            } else if (e.nodeName === "transformer") {
+                this.parseTransformer(e);
             } else {
-                if (e.nodeName === "flow") {
-                    this.parseFlow(e);
-                } else {
-                    throw new SyntaxError("Invalid <bond-graph> element");
-                }
+                throw new SyntaxError("Invalid <bond-graph> element");
             }
         }
-    }
-
-    parsePotential(element)
-    /*===================*/
-    {
-        let potential = new bg.Potential(this.diagram, element.attributes, this.stylesheet.style(element));
-        if (potential.quantity === null) {
-            throw new SyntaxError("Missing or unknown quantity");
-        }
-        potential.setContainer(potential.quantity.container);
-        this.diagram.addElement(potential);
-        this.bondGraph.addPotential(potential);
     }
 
     parseFlow(element)
     /*==============*/
     {
         const transporterId = ('transporter' in element.attributes) ? element.attributes.transporter : null;
-        const flow = new bg.Flow(this.diagram, element.attributes, this.stylesheet.style(element), transporterId);
-        this.diagram.addElement(flow);
-        let container = (flow.transporter !== null) ? flow.transporter.container : null;
+        const flow = this.newDiagramElement(element, bondgraph.Flow, transporterId);
+
+//        let container = (flow.transporter !== null) ? flow.transporter.container : null;
         for (let e of element.children) {
             if (e.nodeName === "component") {
-                if (!("from" in e.attributes && "to" in e.attributes)) {
-                    throw new SyntaxError("Flow component requires 'from' and 'to' potentials");
+                if (!("input" in e.attributes || "output" in e.attributes)) {
+                    throw new SyntaxError("Flow component requires an 'input' or 'output'");
                 }
-                const component = new bg.FlowComponent(this.diagram, e.attributes, this.stylesheet.style(e), flow);
-                if (flow.transporter === null) {
-                    if (container === null) {
-                        container = component.fromPotential.container;
-                    } else {
-                        if (container !== component.fromPotential.container) {
-                            throw new ValueError("All 'to' potentials must be in the same container");
-                        }
-                    }
-                    for (let p of component.toPotentials) {
-                        if (container !== p.container) {
-                            throw new ValueError("All 'from' and 'to' potentials must be in the same container");
-                        }
-                    }
-                }
-                component.setContainer(container);
-                this.diagram.addElement(component);
+                const component = new bondgraph.FlowComponent(e.attributes, this.stylesheet.style(e), flow);
                 flow.addComponent(component);
             } else {
                 throw SyntaxError;
             }
         }
-        this.bondGraph.addFlow(flow);
+        // check we have at least one input and one output
+        // each component has its own styling
+        // inherit styles from parent
+/*
+                if (flow.transporter === null) {
+                    if (container === null) {
+                        container = component.fromPotential.container;
+                    } else {
+                        if (container !== component.fromPotential.container) {
+                            throw new ValueError("All inputs must be in the same container");
+                        }
+                    }
+                    for (let p of component.outputs) {
+                        if (container !== p.container) {
+                            throw new ValueError("All 'from' and 'to' potentials must be in the same container");
+                        }
+                    }
+                }
+*/
     }
 
-
-    parse(xmldoc)
-    /*=========*/
+    parseGyrator(element)
+    /*=================*/
     {
-        if (xmldoc.children.length != 1) {
+        const gyrator = this.newDiagramElement(element, bondgraph.Gyrator);
+    }
+
+    parsePotential(element)
+    /*===================*/
+    {
+        const potential = this.newDiagramElement(element, bondgraph.Potential);
+    }
+
+    parseQuantity(element)
+    /*==================*/
+    {
+        const quantity = this.newDiagramElement(element, bondgraph.Quantity);
+    }
+
+    parseReaction(element)
+    /*==================*/
+    {
+        const reaction = this.newDiagramElement(element, bondgraph.Reaction);
+    }
+
+    parseTransformer(element)
+    /*=====================*/
+    {
+        const transformer = this.newDiagramElement(element, bondgraph.Transformer);
+    }
+
+    parseDocument(xmlDocument)
+    /*======================*/
+    {
+        if (xmlDocument.children.length != 1) {
             throw new SyntaxError("Invalid XML document");
         }
 
-        const xmlroot = xmldoc.children[0];
+        const xmlRoot = xmlDocument.children[0];
 
-        // check xmlroot.attributes.xmlns.value (textContent) === CELLDL_NAMESPACE
-        if (xmlroot.nodeName !== 'cell-diagram') {
+        if ('xmlns' in xmlRoot.attributes
+         && xmlRoot.attributes.xmlns.textContent !== CELLDL_NAMESPACE) {
+            throw new SyntaxError("Not a CellDL document");
+        } else if (xmlRoot.nodeName !== 'cell-diagram') {
             throw new SyntaxError("Root tag must be <cell-diagram>");
         }
 
         let diagramElement = null;
         let bondGraphElement = null;
-        for (let element of xmlroot.children) {
+        for (let element of xmlRoot.children) {
             if (element.nodeName === 'bond-graph') {
                 if ((bondGraphElement === null)) {
                     bondGraphElement = element;
@@ -384,26 +216,16 @@ export class Parser
             }
         }
 
-        if (diagramElement !== null) {
-            this.diagram = new dia.Diagram(diagramElement.attributes, this.stylesheet.style(diagramElement));
-            this.parseContainer(diagramElement, this.diagram);
-        } else {
-            this.diagram = new dia.Diagram();
-        }
+//        if (diagramElement !== null) {
+//            this.diagram = new dia.Diagram(diagramElement.attributes, this.stylesheet.style(diagramElement));
+//            this.parseContainer(diagramElement, this.diagram);
+//        } else {
+//            this.diagram = new dia.Diagram();
+//        }
 
         if ((bondGraphElement !== null)) {
-            this.bondGraph = new bg.BondGraph(this.diagram,
-                                              bondGraphElement.attributes, this.stylesheet.style(bondGraphElement));
             this.parseBondGraph(bondGraphElement);
-        } else {
-            this.bondGraph = new bg.BondGraph(this.diagram);
         }
-
-        this.diagram.setBondGraph(this.bondGraph);
-
-        this.diagram.layoutElements();
-
-        return this.diagram;
     }
 }
 

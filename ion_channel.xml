@@ -1,0 +1,49 @@
+<cell-diagram xmlns="http://www.cellml.org/celldl/1.0#">
+
+    <bond-graph>
+        <quantity id="q1"/>
+        <quantity id="q2"/>
+        <quantity id="q4"/>
+
+        <potential id="u1" quantity="q1"/>
+        <potential id="u2" quantity="q2"/>
+        <potential id="u4" quantity="q4"/>
+        <potential id="u_E"/>
+        <potential id="u3"/>
+
+        <transformer id="zF" input="u_E" output="u3"/>
+
+        <reaction id="I_Kp">
+            <modulator source="u3"/>
+        </reaction>
+
+        <flow id="v1">
+            <component input="u1" output="I_Kp"/>
+            <component input="u3"/>
+            <component input="u4"/>
+        </flow>
+
+        <flow id="v2">
+            <component input="I_Kp" output="u2"/>
+            <component output="u4"/>
+        </flow>
+    </bond-graph>
+
+</cell-diagram>
+
+<!--
+
+Represent as a collection of nodes and connections/lines between them.
+
+Node types:
+
+* potential
+* quantity
+* flow
+* reaction
+* gyrator
+* transformer
+
+Each node has a unique `id`.
+
+-->

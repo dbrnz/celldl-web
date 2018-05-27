@@ -22,9 +22,9 @@ limitations under the License.
 
 //==============================================================================
 
-import * as bg from './bondgraph.js';
-import * as dia from './diagram.js';
-import * as parser from './parser.js';
+//import * as bg from './bondgraph.js';
+//import * as dia from './diagram.js';
+import * as stylesheet from './stylesheet.js';
 import {List} from './utils.js';
 
 //==============================================================================
@@ -76,22 +76,26 @@ export class Position
         // (index into global array/list of elements)
     }
 
-    bool()
+    get valid()
+    /*=======*/
     {
         return (this.dependencies.size > 0 || this.lengths !== null);
     }
 
     get hasPixelCoords()
+    /*================*/
     {
         return (this.pixelCoords !== null && this.pixelCoords.indexOf(null) < 0);
     }
 
     addDependency(dependency)
+    /*=====================*/
     {
         this.dependencies.add(dependency);
     }
 
     addDependencies(dependencies)
+    /*=========================*/
     {
         for (let dependency of dependencies) {
             this.dependencies.add(dependency);
@@ -99,16 +103,19 @@ export class Position
     }
 
     addRelationship(offset, relation, dependencies)
+    /*===========================================*/
     {
         this.relationships.push({offset, relation, dependencies});
     }
 
     setLengths(lengths)
+    /*===============*/
     {
         this.lengths = lengths;
     }
 
     static centroid(dependencies)
+    /*=========================*/
     {
         let pixelCoords = [0.0, 0.0];
         for (let dependency of dependencies) {
@@ -124,6 +131,7 @@ export class Position
     }
 
     parseComponent(tokens, previousDirn, defaultOffset, defaultDependency)
+    /*==================================================================*/
     {
         let offset = null;
         let usingDefaultOffset = false;
@@ -134,7 +142,7 @@ export class Position
             switch (state) {
               case 0:
                 if (token.type !== 'ID') {
-                    offset = parser.parseOffset(tokens, defaultOffset);
+                    offset = stylesheet.parseOffset(tokens, defaultOffset);
                     state = 1;
                     break;
                 } else {
@@ -188,6 +196,7 @@ export class Position
     }
 
     parse(tokens, defaultOffset=null, defaultDependency=null)
+    /*=====================================================*/
     {
         /*
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
@@ -197,7 +206,7 @@ export class Position
         if (tokens instanceof Array) {
             if (tokens.length === 2) {
                 if (['ID', 'SEQUENCE'].indexOf(tokens[0].type) < 0) {
-                    this.setLengths(parser.parseOffsetPair(tokens.parameters));
+                    this.setLengths(stylesheet.parseOffsetPair(tokens.parameters));
                 } else {
                     const dirn = this.parseComponent(tokens[0], null);
                     this.parseComponent(tokens[1], dirn, defaultOffset, defaultDependency);
@@ -278,6 +287,7 @@ export class Position
 */
 
     static resolveCoords(unitConverter, offset, reln, dependencies)
+    /*===========================================================*/
     {
         /*
         :return: tuple(tuple(x, y), index) where index == 0 means
@@ -297,6 +307,7 @@ export class Position
     }
 
     resolvePixelCoords()
+    /*================*/
     {
         /*
         # Transporters are always on a compartment boundary
@@ -349,12 +360,14 @@ Position.orientation = {centre: -1, center: -1, left: 0, right: 0, above: 1, bel
 
 //==============================================================================
 
-export class Size {
-    constructor(tokens) {
+export class Size
+{
+    constructor(tokens)
+    {
         this.size = []
         if (tokens instanceof Array && tokens.length == 2) {
             for (let token of tokens) {
-                this.size.push(parser.parseOffset(token));
+                this.size.push(stylesheet.parseOffset(token));
             }
         } else {
             throw new SyntaxError("Pair of lengths expected.");
@@ -364,14 +377,18 @@ export class Size {
 
 //==============================================================================
 
-export class Line {
-    constructor(element, tokens) {
+export class Line
+{
+    constructor(element, tokens)
+    {
         this.element = element;
         this.tokens = tokens;
         this.segments = [];
     }
 
-    parse() {
+    parse()
+    /*===*/
+    {
         /*
         <line-point> ::= <coord-pair> | <line-angle> <constraint>
         <coord-pair> ::= '(' <length> ',' <length> ')'
@@ -460,7 +477,9 @@ export class Line {
         }
     }
 
-    points(start_pos, flow=null, reverse=false) {
+    points(start_pos, flow=null, reverse=false)
+    /*=======================================*/
+    {
         var angle, dx, dy, end_pos, last_pos, line_offset, offset, points, trans_coords;
         last_pos = start_pos;
         points = [start_pos];
@@ -500,8 +519,10 @@ export class Line {
 
 //==============================================================================
 
-export class UnitConverter {
-    constructor(globalSize, localSize, localOffset=[0, 0]) {
+export class UnitConverter
+{
+    constructor(globalSize, localSize, localOffset=[0, 0])
+    {
         /*
         :param globalSize: tuple(width, height) of diagram, in pixels
         :param localSize: tuple(width, height) of current container, in pixels
@@ -512,11 +533,15 @@ export class UnitConverter {
         this.localOffset = localOffset;
     }
 
-    toString() {
+    toString()
+    /*======*/
+    {
         return "UC: global=${this.globalSize}, local=${this.localSize}, offset=${this.localOffset}";
     }
 
-    toPixels(length, index, addOffset=true) {
+    toPixels(length, index, addOffset=true)
+    /*===================================*/
+    {
         if (length !== null) {
             const unit = length.unit;
             if (unit.indexOf('x') >= 0) {
@@ -534,7 +559,9 @@ export class UnitConverter {
         return 0;
     }
 
-    toPixelPair(coords, addOffset=true) {
+    toPixelPair(coords, addOffset=true)
+    /*===============================*/
+    {
         return [this.toPixels(coords[0], 0, addOffset), this.toPixels(coords[1], 1, addOffset)];
     }
 }
