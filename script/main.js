@@ -29,12 +29,13 @@ import {Parser} from './parser.js';
 
 function main(cellDL, svgElementId)
 {
-    let xhr = new XMLHttpRequest();
-
-    xhr.onload = function() {
-        const xmlDocument = xhr.responseXML;
-
-//        try {
+    fetch(cellDL)
+        .then(response => response.text())
+        .catch(error => console.error('Error getting XML:', error))
+        .then(text => {
+            const domParser = new DOMParser();
+            const xmlDocument = domParser.parseFromString(text, "application/xml");
+        try {
             const parser = new Parser(cellDiagram);
             parser.parseDocument(xmlDocument);
 
@@ -46,19 +47,12 @@ function main(cellDL, svgElementId)
 //            const svgElement = document.getElementById(svgElementId);
 //            svgElement.innerHTML = svg;
 
-//        } catch (error) {
-//            console.error(error);
-//            alert(error);
-//        }
-    }
+        } catch (error) {
+            console.error(error);
+            alert(error);
+        }
+    });
 
-    xhr.onerror = function() {
-        console.log("Error while getting XML");
-    }
-
-    xhr.open("GET", cellDL);
-    xhr.responseType = "document";
-    xhr.send();
 }
 
 export default main;
