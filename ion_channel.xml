@@ -13,21 +13,33 @@
 
         <transformer id="zF" input="u_E" output="u3"/>
 
-        <reaction id="I_Kp">
-            <modulator source="u3"/>
-        </reaction>
+        <reaction id="I_Kp" input="v1" output="v2" modulator="u3"/>
 
         <flow id="v1">
-            <component input="u1" output="I_Kp"/>
+            <component input="u1"/>
             <component input="u3"/>
             <component input="u4"/>
         </flow>
 
         <flow id="v2">
-            <component input="I_Kp" output="u2"/>
+            <component output="u2"/>
             <component output="u4"/>
         </flow>
     </bond-graph>
+
+    <style src="./styles/colours.css"/>
+
+    <style>
+        diagram {
+            width: 1600;           /* SVG `pixel` units */
+            height:1000;           /* SVG `pixel` units */
+            flow-offset: 30x;      /* From its transporter */
+            quantity-offset: 37x;  /* From its potential   */
+        }
+
+        #u1 { position: 15%, 35% }
+
+    </style>
 
 </cell-diagram>
 

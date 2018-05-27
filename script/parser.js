@@ -210,7 +210,11 @@ export class Parser
                     throw new SyntaxError("Can only declare a single <diagram>");
                 }
             } else if (element.nodeName === 'style') {
-                this.stylesheet.addStyle(element);
+                if ('src' in element.attributes) {
+                    this.stylesheet.getStyles(element.attributes.src.textContent);
+                } else {
+                    this.stylesheet.addStyles(element.textContent);
+                }
             } else {
                 throw new SyntaxError("Unknown XML element: <${element.nodeName}>");
             }

@@ -35,6 +35,8 @@ import {Gradients} from './svgElements.js';
 // TODO: Implement inheritance and initial values as per
 //       https://www.w3.org/TR/css-cascade-4
 
+//==============================================================================
+
 export class StyleSheet
 {
     constructor() {
@@ -43,11 +45,10 @@ export class StyleSheet
         this._parser = new cssparser.Parser();
     }
 
-    addStyle(styleElement)
-    /*==================*/
+    addStyles(cssText)
+    /*==============*/
     {
-        const css = styleElement.textContent;
-        const ast = this._parser.parse(css);
+        const ast = this._parser.parse(cssText);
         const rules = ast._props_.value;
         for (let rule of rules) {
             let selectors = cssparser.toSimple(rule._props_.selectors);
@@ -70,6 +71,17 @@ export class StyleSheet
                      : (a.order < b.order) ? -1
                      :  0;
             }
+        });
+    }
+
+    async getStyles(cssUrl)
+    /*===================*/
+    {
+        fetch(cssUrl)
+            .then(response => response.text())
+            .catch(error => console.error('Error getting stylesheet:', error))
+            .then(text => {
+                this.addStyles(text);
         });
     }
 

@@ -1,0 +1,75 @@
+/* Colours of elements */
+
+.sodium {
+    colour: #FE44F9;
+    stroke: #FE44F9;
+    }
+quantity.sodium { colour: radial-gradient(white 20%, #FEA3FB); }
+transporter.sodium { colour: radial-gradient(white 40%, #FE44F9); }
+
+.potassium {
+    colour: #2209E1;
+    stroke: #2209E1;
+}
+quantity.potassium { colour: radial-gradient(white 20%, #9C9FF5); }
+transporter.potassium { colour: radial-gradient(white 40%, #2209E1); }
+
+.calcium {
+    colour: #0AD8FF;
+    stroke: #0AD8FF;
+}
+quantity.calcium { colour: radial-gradient(white 20%, #0AD8FF); }
+transporter.calcium { colour: radial-gradient(white 40%, #0AD8FF); }
+
+.chloride {
+    colour: #1AF32E;
+    stroke: #1AF32E;
+}
+quantity.chloride { colour: radial-gradient(white 20%, #BEFFCA); }
+transporter.chloride { colour: radial-gradient(white 40%, #BEFFCA); }
+
+.hydrogen {
+    colour: #FFA606;
+    stroke: #FFA606;
+}
+quantity.hydrogen { colour: radial-gradient(white 20%, #FFD12E); }
+transporter.hydrogen {
+    colour: radial-gradient(white 40%, #202020);
+    stroke: #000000;
+}
+
+.hydroxide {
+    colour: #4A9B00;
+    stroke: #4A9B00;
+}
+quantity.hydroxide { colour: radial-gradient(white 20%, #A4D5A0); }
+transporter.hydroxide {
+    colour: radial-gradient(white 40%, #A4D5A0);
+    stroke: #000000;
+}
+
+.bicarbonate {
+    colour: #A00096;
+    stroke: #A00096;
+}
+quantity.bicarbonate { colour: radial-gradient(white 20%, #B254AD); }
+transporter.bicarbonate {
+    colour: radial-gradient(white 40%, #A00096);
+    stroke: #000000;
+}
+
+.metabolic {
+    colour: #F50D00;
+    stroke: #FF808B;
+}
+quantity.metabolic { colour: radial-gradient(white 20%, #FF808B); }
+
+flow {
+    colour: radial-gradient(#ABFF9E, #D5FFD5);
+    text-colour: #059996;
+}
+
+potential {
+    colour: radial-gradient(#FF9299, #FFFDEE);
+    text-colour: #D93300;
+}
