@@ -25,7 +25,7 @@ limitations under the License.
 //import * as bg from './bondgraph.js';
 //import * as dia from './diagram.js';
 import * as stylesheet from './stylesheet.js';
-import {cellDiagram} from './cellDiagram.js';
+import {CellDiagram} from './cellDiagram.js';
 import {List} from './utils.js';
 
 //==============================================================================
@@ -160,7 +160,7 @@ export class Position
                 break;
               case 2:
                 if (token.type === 'HASH') {
-                    const dependency = cellDiagram.findElement(token.value);
+                    const dependency = CellDiagram.instance().findElement(token.value);
                     if (dependency === null) {
                         throw new Error(`Unknown element ${token.value}`);
                     }
@@ -449,7 +449,7 @@ export class Line
             }
             dependencies = [];
             while (((token !== null) && (token.type === "hash"))) {
-                dependency = cellDiagram.findElement(token.value);
+                dependency = CellDiagram.instance().findElement(token.value);
                 if ((dependency === null)) {
                     throw new Error(`Unknown element ${token.value}`);
                 }

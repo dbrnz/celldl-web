@@ -25,7 +25,7 @@ limitations under the License.
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
 
-import {cellDiagram, DiagramElement} from './cellDiagram.js';
+import {CellDiagram, DiagramElement} from './cellDiagram.js';
 import {List} from './utils.js';
 import {svgLine} from './svgElements.js';
 
@@ -47,6 +47,7 @@ export class Node extends DiagramElement
 
 export function generateSvg()
 {
+    const cellDiagram = CellDiagram.instance();
     const flows = cellDiagram.elements(Flow);
     const potentials = cellDiagram.elements(Potential);
 

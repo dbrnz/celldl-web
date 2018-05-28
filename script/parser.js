@@ -29,6 +29,7 @@ import * as SPECIFICITY from '../thirdparty/specificity.js';
 
 import * as bondgraph from './bondgraph.js';
 //import * as dia from './diagram.js';
+import {CellDiagram} from './cellDiagram.js';
 import {StyleSheet} from './stylesheet.js';
 
 //==============================================================================
@@ -39,8 +40,8 @@ var CELLDL_NAMESPACE = "http://www.cellml.org/celldl/1.0#";
 
 export class Parser
 {
-    constructor(cellDiagram) {
-        this.cellDiagram = cellDiagram;
+    constructor() {
+        this.cellDiagram = CellDiagram.instance();
         this.stylesheet = new StyleSheet();
     }
 
@@ -219,6 +220,8 @@ export class Parser
                 throw new SyntaxError("Unknown XML element: <${element.nodeName}>");
             }
         }
+
+        this.cellDiagram.initialise(this.stylesheet.style(xmlRoot));
 
 //        if (diagramElement !== null) {
 //            this.diagram = new dia.Diagram(diagramElement.attributes, this.stylesheet.style(diagramElement));

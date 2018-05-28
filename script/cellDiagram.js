@@ -52,7 +52,7 @@ export class DiagramElement {
     {
         if (attributeName in attributes) {
             const elementId = `#${attributes[attributeName].textContent}`;
-            return cellDiagram.findElement(elementId, elementClass);
+            return CellDiagram.instance().findElement(elementId, elementClass);
         }
         return null;
     }
@@ -199,11 +199,33 @@ export class DiagramElement {
 
 //==============================================================================
 
-class CellDiagram {
+// The cell diagram we are creating
+
+let cellDiagramInstance = null;
+
+//==============================================================================
+
+export class CellDiagram {
     constructor()
     {
-        this._elements = [];
-        this._elementsById = {}
+        if (cellDiagramInstance === null) {
+            cellDiagramInstance = this;
+            this._elements = [];
+            this._elementsById = {};
+        }
+        return cellDiagramInstance;
+    }
+
+    static instance() {
+        if (cellDiagramInstance === null) {
+            return new CellDiagram();
+        } else {
+            return cellDiagramInstance;
+        }
+    }
+
+    initialise(style) {
+        // width, height, defaults from style
     }
 
     addElement(element)
@@ -259,19 +281,19 @@ jsnx.draw(dependencyGraph, {
     }
 );
 
-//        this.setPixelCoords([0, 0]);
-//        this.setUnitConverter(new layout.UnitConverter(this.pixelSize, this.pixelSize));
-//        for (let e of jsnx.topologicalSort(g)) {
-//            if (e !== this && !e.hasPixelCoords) {
-//                e.resolvePixelCoords();
-//                if (e instanceof Compartment) {
-//                    e.setPixelSize(e.container.unitConverter.toPixelPair(e.size.size, false));
-//                    e.setUnitConverter(new layout.UnitConverter(this.pixelSize, e.pixelSize, e.position.pixels));
-//                }
-//            }
-//
-//        }
-//        bondGraph.setOffsets();
+        this.setPixelCoords([0, 0]);
+        this.setUnitConverter(new layout.UnitConverter(this.pixelSize, this.pixelSize));
+        for (let node of jsnx.topologicalSort(dependencyGraph)) {
+            if (!node.hasPixelCoords) {
+                node.resolvePixelCoords();
+                if (node instanceof Compartment) {
+                    node.setPixelSize(node.container.unitConverter.toPixelPair(node.size.size, false));
+                    node.setUnitConverter(new layout.UnitConverter(this.pixelSize, node.pixelSize, node.position.pixels));
+                }
+            }
+
+        }
+        bondGraph.setOffsets();
     }
 
     generateSvg()
@@ -304,7 +326,5 @@ jsnx.draw(dependencyGraph, {
         return svg.join('\n');
     }
 }
-
-export const cellDiagram = new CellDiagram();
 
 //==============================================================================

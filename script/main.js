@@ -22,7 +22,7 @@ limitations under the License.
 
 //==============================================================================
 
-import {cellDiagram} from './cellDiagram.js';
+import {CellDiagram} from './cellDiagram.js';
 import {Parser} from './parser.js';
 
 //==============================================================================
@@ -35,22 +35,24 @@ function main(cellDL, svgElementId)
         .then(text => {
             const domParser = new DOMParser();
             const xmlDocument = domParser.parseFromString(text, "application/xml");
-        try {
-            const parser = new Parser(cellDiagram);
-            parser.parseDocument(xmlDocument);
 
-            cellDiagram.layout();
+            try {
+                const parser = new Parser();
+                parser.parseDocument(xmlDocument);
 
-//            const svg = cellDiagram.generateSvg();
-//            console.log(svg);
-//
-//            const svgElement = document.getElementById(svgElementId);
-//            svgElement.innerHTML = svg;
+                const cellDiagram = CellDiagram.instance();
+                cellDiagram.layout();
 
-        } catch (error) {
-            console.error(error);
-            alert(error);
-        }
+                const svg = cellDiagram.generateSvg();
+                console.log(svg);
+
+                const svgElement = document.getElementById(svgElementId);
+                svgElement.innerHTML = svg;
+
+            } catch (error) {
+                console.error(error);
+                alert(error);
+            }
     });
 
 }
