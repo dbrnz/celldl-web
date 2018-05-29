@@ -74,15 +74,15 @@ export class StyleSheet
         });
     }
 
-    async getStyles(cssUrl)
-    /*===================*/
+    async fetchStyles(cssUrl)
+    /*=====================*/
     {
-        fetch(cssUrl)
-            .then(response => response.text())
-            .catch(error => console.error('Error getting stylesheet:', error))
-            .then(text => {
-                this.addStyles(text);
-        });
+        return fetch(cssUrl)
+                    .then(response => response.text())
+                    .catch(error => console.error('Error getting stylesheet:', error))
+                    .then(text => {
+                        this.addStyles(text);
+                    });
     }
 
     style(element)

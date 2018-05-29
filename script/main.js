@@ -35,20 +35,20 @@ function main(cellDL, svgElementId)
         .then(text => {
             const domParser = new DOMParser();
             const xmlDocument = domParser.parseFromString(text, "application/xml");
-
             try {
                 const parser = new Parser();
-                parser.parseDocument(xmlDocument);
+                parser.parseDocument(xmlDocument)
+                    .then(() => {
+                        const svgElement = document.getElementById(svgElementId);
 
-                const cellDiagram = CellDiagram.instance();
-                cellDiagram.layout();
+                        const cellDiagram = CellDiagram.instance();
+                        cellDiagram.layout();
 
-                const svg = cellDiagram.generateSvg();
-                console.log(svg);
+                        const svg = cellDiagram.generateSvg();
+//                       console.log(svg);
 
-                const svgElement = document.getElementById(svgElementId);
-                svgElement.innerHTML = svg;
-
+                        svgElement.innerHTML = svg;
+                    });
             } catch (error) {
                 console.error(error);
                 alert(error);

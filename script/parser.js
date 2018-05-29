@@ -42,6 +42,8 @@ export class Parser
 {
     constructor() {
         this.cellDiagram = CellDiagram.instance();
+        this.bondGraphElement = null;
+        this.diagramElement = null;
         this.stylesheet = new StyleSheet();
     }
 
@@ -195,24 +197,23 @@ export class Parser
             throw new SyntaxError("Root tag must be <cell-diagram>");
         }
 
-        let diagramElement = null;
-        let bondGraphElement = null;
+        let stylePromises = [];
         for (let element of xmlRoot.children) {
             if (element.nodeName === 'bond-graph') {
-                if ((bondGraphElement === null)) {
-                    bondGraphElement = element;
+                if ((this.bondGraphElement === null)) {
+                    this.bondGraphElement = element;
                 } else {
                     throw new SyntaxError("Can only declare a single <bond-graph>");
                 }
             } else if (element.nodeName === 'diagram') {
-                if ((diagramElement === null)) {
-                    diagramElement = element;
+                if ((this.diagramElement === null)) {
+                    this.diagramElement = element;
                 } else {
                     throw new SyntaxError("Can only declare a single <diagram>");
                 }
             } else if (element.nodeName === 'style') {
                 if ('src' in element.attributes) {
-                    this.stylesheet.getStyles(element.attributes.src.textContent);
+                    stylePromises.push(this.stylesheet.fetchStyles(element.attributes.src.textContent));
                 } else {
                     this.stylesheet.addStyles(element.textContent);
                 }
@@ -221,18 +222,20 @@ export class Parser
             }
         }
 
-        this.cellDiagram.initialise(this.stylesheet.style(xmlRoot));
-
-//        if (diagramElement !== null) {
-//            this.diagram = new dia.Diagram(diagramElement.attributes, this.stylesheet.style(diagramElement));
-//            this.parseContainer(diagramElement, this.diagram);
-//        } else {
-//            this.diagram = new dia.Diagram();
-//        }
-
-        if ((bondGraphElement !== null)) {
-            this.parseBondGraph(bondGraphElement);
-        }
+        return Promise.all(stylePromises)
+                      .then(() => {
+                            this.cellDiagram.initialise(this.stylesheet.style(xmlRoot));
+//                            if (this.diagramElement !== null) {
+//                                this.diagram = new dia.Diagram(this.diagramElement.attributes,
+//                                                               this.stylesheet.style(this.diagramElement));
+//                                this.parseContainer(this.diagramElement, this.diagram);
+//                            } else {
+//                                this.diagram = new dia.Diagram();
+//                            }
+                            if (this.bondGraphElement !== null) {
+                                this.parseBondGraph(this.bondGraphElement);
+                            }
+                        });
     }
 }
 
