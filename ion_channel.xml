@@ -13,6 +13,7 @@
 
         <transformer id="zF" input="u_E" output="u3"/>
 
+        <reaction id="I_Kp" input="v1" output="v2" modulator="u3" class="potassium"/>
 
         <flow id="v1">
             <component input="u1"/>
@@ -25,21 +26,17 @@
             <component output="u4"/>
         </flow>
 
-        <reaction id="I_Kp" input="v1" output="v2" modulator="u3"/>
-
     </bond-graph>
 
     <style src="./styles/colours.css"/>
 
     <style>
         cell-diagram {
-            width: 600;           /* SVG `pixel` units */
-            height:400;           /* SVG `pixel` units */
-            flow-offset: 30x;      /* From its transporter */
-            quantity-offset: 37x;  /* From its potential   */
+            width: 600;            /* SVG `pixel` units */
+            height: 500;           /* SVG `pixel` units */
         }
 
-        #q4, #zF { color: none; }
+        #q4, #zF, #u_E { color: none; }
 
         #u1 { position: 20%, 40%; }
         #q1 { position: 15% above #u1; }
