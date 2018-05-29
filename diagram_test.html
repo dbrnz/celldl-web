@@ -1,14 +1,54 @@
 <html>
     <head>
         <meta charset="utf-8"/>
+        <style type="text/css">
+            .float {
+                float: left;
+            }
+            .leftcolumn {
+                width: 45%;
+            }
+            .rightcolumn {
+                width: 55%;
+            }
+            .CodeMirror {
+                border: 2px solid #888;
+            }
+            #cell_diagram {
+                height: 100%;
+                border: 2px solid #888;
+            }
+        </style>
     </head>
     <body>
 
-        <div id="canvas" style="height: 100%;"></div>
+<!--
+        <div id="canvas" style="height: 50%;"></div>
         <script src="./thirdparty/d3.v3.js"></script>
-
-<!--        <div id="cell_diagram" style="height: 100%;"></div>
 -->
+        <section style="height: 90%;">
+            <div class="float leftcolumn">
+                <textarea id="celldl_text" class="border"></textarea>
+            </div>
+            <div class="float rightcolumn">
+                <div id="cell_diagram"></div>
+            </div>
+        </section>
+        <section style="height: 10%;">
+        </section>
+
+        <!-- Create a simple CodeMirror instance -->
+        <link rel="stylesheet" href="./thirdparty/codemirror/lib/codemirror.css">
+        <script src="./thirdparty/codemirror/lib/codemirror.js"></script>
+        <script src="./thirdparty/codemirror/mode/xml/xml.js"></script>
+        <script>
+            const celldlElement = document.getElementById("celldl_text");
+            const editor = CodeMirror.fromTextArea(celldlElement,
+                                                { lineNumbers: true }
+            );
+            editor.setSize("100%", "100%");
+        </script>
+
         <script type="module">
             import main from './script/main.js';
 
