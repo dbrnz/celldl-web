@@ -50,7 +50,7 @@ function main(cellDL, svgElementId)
                         svgElement.innerHTML = svg;
                     });
             } catch (error) {
-                console.error(error);
+                console.trace(error);
                 alert(error);
             }
     });

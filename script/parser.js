@@ -28,9 +28,11 @@ import * as SPECIFICITY from '../thirdparty/specificity.js';
 //==============================================================================
 
 import * as bondgraph from './bondgraph.js';
-//import * as dia from './diagram.js';
+
 import {CellDiagram} from './cellDiagram.js';
 import {StyleSheet} from './stylesheet.js';
+
+//import * as dia from './diagram.js';
 
 //==============================================================================
 

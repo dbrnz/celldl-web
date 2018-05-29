@@ -21,38 +21,44 @@ limitations under the License.
 'use strict';
 
 //==============================================================================
-
-import * as geo from './geometry.js';
 import * as layout from './layout.js';
-import * as parser from './parser.js';
 import * as stylesheet from './stylesheet.js';
-import * as svgElements from './svgElements.js';
+
+import {CellDiagram} from './cellDiagram.js';
 import {List} from './utils.js';
 
 //==============================================================================
 
-export class Element {
-    constructor(container, attributes, style, className='Element') {
-        this.id = ('id' in attributes) ? `#${attributes.id.textContent}` : null;
-        const name = ('name' in attributes) ? attributes.name.textContent
-                   : (this.id !== null) ? this.id.substr(1)
-                   : '';
-        this.name = name;
-        this.container = container;
-        if (container === null) {
-            this.diagram = this;
-            this.fullName = '/';
-        } else {
-            this.diagram = container.diagram;
-            this.fullName = container.fullName + '/' + name;
+export class DiagramElement {
+    constructor(attributes, style, className='Element')
+    {
+        if (!('id' in attributes)) {
+            throw new SyntaxError("A diagram element must have an 'id'")
         }
-        this.className = className;
+        this.id = `#${attributes.id.textContent}`;
+        this.name = ('name' in attributes) ? attributes.name.textContent : this.id.substr(1);
         this.classes = ('class' in attributes) ? attributes.class.textContent.split(/\s+/) : [];
-        this.label = ('label' in attributes) ? attributes.label.textContent : name;
+        this.label = ('label' in attributes) ? attributes.label.textContent : this.name;
         this.style = style;
+        this.className = className;
+        this.position = new layout.Position(this);
     }
 
-    toString() {
+    static fromAttribute(attributes, attributeName, elementClass=DiagramElement)
+    /*========================================================================*/
+    {
+        if (attributeName in attributes) {
+            const elementId = `#${attributes[attributeName].textContent}`;
+            const element = CellDiagram.instance().findElement(elementId, elementClass);
+            // TODO: lookup later...
+            return (element == null) ? elementId : element;
+        }
+        return null;
+    }
+
+    toString()
+    /*======*/
+    {
         let s = [this.className];
         if (this.id !== null) {
             s.push(`(${this.id})`);
@@ -60,23 +66,38 @@ export class Element {
         return s.join(' ');
     }
 
-    get colour() {
+    get colour()
+    /*========*/
+    {
         const key = ('colour' in this.style) ? 'colour'
                   : ('color' in this.style) ? 'color'
                   : null;
-        return (key === null) ? '#808080'
+        return (key === null) ? '#808080' // TODO: specify defaults in one place
                               : stylesheet.parseColour(this.style[key]);
     }
 
-    get stroke() {
+    get display()
+    /*=========*/
+    {
+        const d = this.getStyleAsString("display");
+        return d ? ` display="${d}"` : '';
+    }
+
+    get stroke()
+    /*========*/
+    {
         return this.getStyleAsString('stroke', 'none');
     }
 
-    get strokeWidth() {
+    get strokeWidth()
+    /*=============*/
+    {
         return this.getStyleAsString('stroke-width', '1');
     }
 
-    getStyleAsString(name, defaultValue='') {
+    getStyleAsString(name, defaultValue='')
+    /*===================================*/
+    {
         if (name in this.style) {
             const tokens = this.style[name];
             if (['ID', 'HASH', 'NUMBER'].indexOf(tokens.type) >= 0) {
@@ -88,20 +109,15 @@ export class Element {
         return defaultValue;
     }
 
-    isClass(name) {
+    hasClass(name)
+    /*==========*/
+    {
         return this.classes.indexOf(name) >= 0;
     }
 
-    setContainer(container) {
-        this.container = container;
-    }
-
-    display() {
-        const d = this.getStyleAsString("display");
-        return d ? ` display="${d}"` : '';
-    }
-
-    idClass() {
+    idClass()
+    /*=====*/
+    {
         let s = [''];
         if (this.id !== null)
             s.push(`id="${this.id.substr(1)}"`);
@@ -109,54 +125,48 @@ export class Element {
             s.push(`class="${this.classes.join(" ")}"`);
         return s.join(' ');
     }
-}
 
-//==============================================================================
-
-export class PositionedElement extends Element {
-    constructor(container, attributes, style, className="positionedElement") {
-        super(container, attributes, style, className);
-        this.position = new layout.Position(this);
-        this.position.addDependency(container);
-        this.positionTokens = ('position' in this.style) ? this.style.position: null;
-        this.cachedGeometry = null;
+    get coordinates()
+    /*=============*/
+    {
+        return this.position.coordinates;
     }
 
-    get geometry() {
-        if (this.cachedGeometry === null && this.pixelCoords) {
-            this.cachedGeometry = geo.Point(this.pixelCoords);
-        }
-        return this.cachedGeometry;
+    assignCoordinates(unitConverter)
+    /*============================*/
+    {
+        this.position.assignCoordinates(unitConverter);
+        console.log(`${this.toString()} at ${this.coordinates}`)
     }
 
-    get pixelCoords() {
-        return this.position.pixelCoords;
+    get hasCoordinates()
+    /*================*/
+    {
+        return this.position.hasCoordinates;
     }
 
-    get hasPixelCoords() {
-        return this.position.hasPixelCoords;
+    get hasValidPosition()
+    /*==================*/
+    {
+        return this.position.valid;
     }
 
-    resolvePixelCoords() {
-        this.position.resolvePixelCoords();
-    }
-
-    setPixelCoords(pixelCoords) {
-        this.position.pixelCoords = pixelCoords;
-    }
-
-    parsePosition(defaultOffset=null, defaultDependency=null) {
+    parsePosition(defaultOffset=null, defaultDependency=null)
+    /*=====================================================*/
+    {
         /*
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
         */
-        if (this.positionTokens !== null) {
-            this.position.parse(this.positionTokens, defaultOffset, defaultDependency);
+        if ('position' in this.style) {
+            this.position.parse(this.style.position, defaultOffset, defaultDependency);
         }
     }
 
-    labelAsSvg() {
-        const [x, y] = this.pixelCoords;
+    labelAsSvg()
+    /*========*/
+    {
+        const [x, y] = this.coordinates;
         if (this.label.startsWith('$')) {
             return `  <text text-anchor="middle" dominant-baseline="central" x="${x}" y="${y}">${this.name}</text>`;
 //            const rotation = Number.parseFloat(this.getStyleAsString("text-rotation", "0"));
@@ -166,10 +176,12 @@ export class PositionedElement extends Element {
         }
     }
 
-    svg(radius=layout.ELEMENT_RADIUS) {
-        let svg = new List([`<g${this.idClass()}${this.display()}>`]);
-        if (this.hasPixelCoords) {
-            const [x, y] = this.pixelCoords;
+    generateSvg(radius=layout.ELEMENT_RADIUS)
+    /*=====================================*/
+    {
+        let svg = new List([`<g${this.idClass()}${this.display}>`]);
+        if (this.hasCoordinates) {
+            const [x, y] = this.coordinates;
             svg.append(`  <circle r="${radius}" cx="${x}" cy="${y}" stroke="${this.stroke}" stroke-width="${this.strokeWidth}" fill="${this.colour}"/>`);
             svg.append(this.labelAsSvg());
         }

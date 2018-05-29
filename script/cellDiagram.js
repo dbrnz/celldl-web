@@ -26,176 +26,13 @@ import '../thirdparty/jsnetworkx.js';
 
 //==============================================================================
 
+import * as bondgraph from './bondgraph.js';
 import * as layout from './layout.js';
 import * as stylesheet from './stylesheet.js';
+import * as svgElements from './svgElements.js';
+
+import {DiagramElement} from './element.js';
 import {List} from './utils.js';
-
-//==============================================================================
-
-export class DiagramElement {
-    constructor(attributes, style, className='Element')
-    {
-        if (!('id' in attributes)) {
-            throw new SyntaxError("A diagram element must have an 'id'")
-        }
-        this.id = `#${attributes.id.textContent}`;
-        this.name = ('name' in attributes) ? attributes.name.textContent : this.id.substr(1);
-        this.classes = ('class' in attributes) ? attributes.class.textContent.split(/\s+/) : [];
-        this.label = ('label' in attributes) ? attributes.label.textContent : this.name;
-        this.style = style;
-        this.className = className;
-        this.position = new layout.Position(this);
-    }
-
-    static fromAttribute(attributes, attributeName, elementClass=DiagramElement)
-    /*========================================================================*/
-    {
-        if (attributeName in attributes) {
-            const elementId = `#${attributes[attributeName].textContent}`;
-            return CellDiagram.instance().findElement(elementId, elementClass);
-        }
-        return null;
-    }
-
-    toString()
-    /*======*/
-    {
-        let s = [this.className];
-        if (this.id !== null) {
-            s.push(`(${this.id})`);
-        }
-        return s.join(' ');
-    }
-
-    get colour()
-    /*========*/
-    {
-        const key = ('colour' in this.style) ? 'colour'
-                  : ('color' in this.style) ? 'color'
-                  : null;
-        return (key === null) ? '#808080' // TODO: specify defaults in one place
-                              : stylesheet.parseColour(this.style[key]);
-    }
-
-    get display()
-    /*=========*/
-    {
-        const d = this.getStyleAsString("display");
-        return d ? ` display="${d}"` : '';
-    }
-
-    get stroke()
-    /*========*/
-    {
-        return this.getStyleAsString('stroke', 'none');
-    }
-
-    get strokeWidth()
-    /*=============*/
-    {
-        return this.getStyleAsString('stroke-width', '1');
-    }
-
-    getStyleAsString(name, defaultValue='')
-    /*===================================*/
-    {
-        if (name in this.style) {
-            const tokens = this.style[name];
-            if (['ID', 'HASH', 'NUMBER'].indexOf(tokens.type) >= 0) {
-                return tokens.value;
-            } else if (['DIMENSION', 'PERCENTAGE'].indexOf(tokens.type) >= 0) {
-                return `${tokens.value}${tokens.unit}`;
-            }
-        }
-        return defaultValue;
-    }
-
-    hasClass(name)
-    /*==========*/
-    {
-        return this.classes.indexOf(name) >= 0;
-    }
-
-    idClass()
-    /*=====*/
-    {
-        let s = [''];
-        if (this.id !== null)
-            s.push(`id="${this.id.substr(1)}"`);
-        if (this.classes.length > 0)
-            s.push(`class="${this.classes.join(" ")}"`);
-        return s.join(' ');
-    }
-
-    get pixelCoords()
-    /*=============*/
-    {
-        return this.position.pixelCoords;
-    }
-
-    get hasPixelCoords()
-    /*================*/
-    {
-        return this.position.hasPixelCoords;
-    }
-
-    resolvePixelCoords()
-    /*================*/
-    {
-        this.position.resolvePixelCoords();
-    }
-
-    setPixelCoords(pixelCoords)
-    /*=======================*/
-    {
-        this.position.pixelCoords = pixelCoords;
-    }
-
-    get hasPosition()
-    /*===============*/
-    {
-        return this.position.valid;
-    }
-
-    parsePosition(defaultOffset=null, defaultDependency=null)
-    /*=====================================================*/
-    {
-        /*
-        * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
-        * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
-        */
-        if ('position' in this.style) {
-            this.position.parse(this.style.position, defaultOffset, defaultDependency);
-        }
-    }
-
-    labelAsSvg()
-    /*========*/
-    {
-        const [x, y] = this.pixelCoords;
-        if (this.label.startsWith('$')) {
-            return `  <text text-anchor="middle" dominant-baseline="central" x="${x}" y="${y}">${this.name}</text>`;
-//            const rotation = Number.parseFloat(this.getStyleAsString("text-rotation", "0"));
-//            return svgElements.Text.typeset(this.label, x, y, rotation);
-        } else {
-            return `  <text text-anchor="middle" dominant-baseline="central" x="${x}" y="${y}">${this.label}</text>`;
-        }
-    }
-
-    generateSvg(radius=layout.ELEMENT_RADIUS)
-    /*=====================================*/
-    {
-        let svg = new List([`<g${this.idClass()}${this.display()}>`]);
-        if (this.hasPixelCoords) {
-            const [x, y] = this.pixelCoords;
-            svg.append(`  <circle r="${radius}" cx="${x}" cy="${y}" stroke="${this.stroke}" stroke-width="${this.strokeWidth}" fill="${this.colour}"/>`);
-            svg.append(this.labelAsSvg());
-        }
-        svg.append('</g>');
-        return svg;
-    }
-
-}
 
 //==============================================================================
 
@@ -212,11 +49,15 @@ export class CellDiagram {
             cellDiagramInstance = this;
             this._elements = [];
             this._elementsById = {};
+            this.width = 0;
+            this.height = 0;
         }
         return cellDiagramInstance;
     }
 
-    static instance() {
+    static instance()
+    /*=============*/
+    {
         if (cellDiagramInstance === null) {
             return new CellDiagram();
         } else {
@@ -224,8 +65,21 @@ export class CellDiagram {
         }
     }
 
-    initialise(style) {
-        // width, height, defaults from style
+    initialise(style)
+    /*=============*/
+    {
+        if ('width' in style) {
+            this.width = stylesheet.parseNumber(style.width);
+        }
+        if ('height' in style) {
+            this.height = stylesheet.parseNumber(style.height);
+        }
+    }
+
+    get size()
+    /*======*/
+    {
+        return [this.width, this.height]
     }
 
     addElement(element)
@@ -264,7 +118,7 @@ export class CellDiagram {
 
         for (let element of this._elements) {
             element.parsePosition();
-            if (element.hasPosition) {
+            if (element.hasValidPosition) {
                 dependencyGraph.addNode(element);
             }
         }
@@ -274,26 +128,28 @@ export class CellDiagram {
             }
         }
 
+/*
 jsnx.draw(dependencyGraph, {
     element: '#canvas',
     withLabels: true,
-    stickyDrag: true
+    stickyDrag: true,
+    edgeStyle: {
+        'stroke-width': 10,
+        fill: '#999'
     }
-);
-
-        this.setPixelCoords([0, 0]);
-        this.setUnitConverter(new layout.UnitConverter(this.pixelSize, this.pixelSize));
+});
+*/
+        const unitConverter = new layout.UnitConverter([this.width, this.height], [this.width, this.height]);
         for (let node of jsnx.topologicalSort(dependencyGraph)) {
-            if (!node.hasPixelCoords) {
-                node.resolvePixelCoords();
-                if (node instanceof Compartment) {
-                    node.setPixelSize(node.container.unitConverter.toPixelPair(node.size.size, false));
-                    node.setUnitConverter(new layout.UnitConverter(this.pixelSize, node.pixelSize, node.position.pixels));
-                }
-            }
-
+            node.assignCoordinates(unitConverter);
+//                if (node instanceof Compartment) {
+//                    node.setPixelSize(node.container.unitConverter.toPixelPair(node.size.size, false));
+//                    node.setUnitConverter(new layout.UnitConverter(this.pixelSize, node.pixelSize, node.position.pixels));
+//                }
         }
-        bondGraph.setOffsets();
+
+ // Space flow lines going through a transporter
+ //       bondGraph.setOffsets();
     }
 
     generateSvg()
@@ -310,15 +166,15 @@ jsnx.draw(dependencyGraph, {
         */
         let svg = new List(['<?xml version="1.0" encoding="UTF-8"?>']);
         svg.append(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  version="1.1" width="${this.width}" height="${this.height}"
+  version="1.1" preserveAspectRatio="none"
   viewBox="0 0 ${this.width} ${this.height}">`);
-        for (let c of this.compartments) {
-            svg.extend(c.svg());
-        }
-        svg.extend(bondGraph.generateSvg());
-        for (let transporter of this.transporters) {
-            svg.extend(transporter.svg());
-        }
+//        for (let c of this.compartments) {
+//            svg.extend(c.svg());
+//        }
+        svg.extend(bondgraph.generateSvg());
+//        for (let transporter of this.transporters) {
+//            svg.extend(transporter.svg());
+//        }
         svg.append('<defs>');
         svg.extend(svgElements.DefinesStore.defines());
         svg.append('</defs>');

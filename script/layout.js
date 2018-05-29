@@ -67,14 +67,10 @@ export class Position
     constructor(element)
     {
         this.element = element;
-        this.lengths = null;             // Relative position as a pair of Lengths
+        this.lengths = null;             // Position as a pair of Offsets
         this.relationships = [];
-        this.pixelCoords = null;              // Resolved position in pixels
+        this.coordinates = null;         // Resolved position in pixels
         this.dependencies = new Set();
-
-// lengths v's coords??
-        // dependencies are Elements, so assign each elememt a unique `id`
-        // (index into global array/list of elements)
     }
 
     get valid()
@@ -83,10 +79,10 @@ export class Position
         return (this.dependencies.size > 0 || this.lengths !== null);
     }
 
-    get hasPixelCoords()
+    get hasCoordinates()
     /*================*/
     {
-        return (this.pixelCoords !== null && this.pixelCoords.indexOf(null) < 0);
+        return (this.coordinates !== null);
     }
 
     addDependency(dependency)
@@ -118,17 +114,17 @@ export class Position
     static centroid(dependencies)
     /*=========================*/
     {
-        let pixelCoords = [0.0, 0.0];
+        let coordinates = [0.0, 0.0];
         for (let dependency of dependencies) {
-            if (!dependency.hasPixelCoords) {
-                throw new ReferenceError(`No position for '${dependency}' element`);
+            if (!dependency.hasCoordinates) {
+                throw new ReferenceError(`No coordinates for the '${dependency}' element`);
             }
-            pixelCoords[0] += dependency.pixelCoords[0];
-            pixelCoords[1] += dependency.pixelCoords[1];
+            coordinates[0] += dependency.coordinates[0];
+            coordinates[1] += dependency.coordinates[1];
         }
-        pixelCoords[0] /= dependencies.length;
-        pixelCoords[1] /= dependencies.length;
-        return pixelCoords;
+        coordinates[0] /= dependencies.length;
+        coordinates[1] /= dependencies.length;
+        return coordinates;
     }
 
     parseComponent(tokens, previousDirn, defaultOffset, defaultDependency)
@@ -220,137 +216,49 @@ export class Position
         }
     }
 
-/*
-// 20%, 10%
-// array.length == 2
-            [
-              {
-                "type": "PERCENTAGE",
-                "value": 20,
-                "unit": "%"
-              },
-              {
-                "type": "PERCENTAGE",
-                "value": 10,
-                "unit": "%"
-              }
-            ]
-
-// left
-              "type": "ID",
-              "value": "left"
-
-// 20% left
-              "type": "SEQUENCE",
-              "value": [
-                {
-                  "type": "PERCENTAGE",
-                  "value": 20,
-                  "unit": "%"
-                },
-                {
-                  "type": "ID",
-                  "value": "left"
-                }
-              ]
-
-// left, 10% above #q #f
-// array.length == 2
-            [
-              {
-                "type": "ID",
-                "value": "left"
-              },
-              {
-                "type": "SEQUENCE",
-                "value": [
-                  {
-                    "type": "PERCENTAGE",
-                    "value": 10,
-                    "unit": "%"
-                  },
-                  {
-                    "type": "ID",
-                    "value": "above"
-                  },
-                  {
-                    "type": "HASH",
-                    "value": "#q"
-                  },
-                  {
-                    "type": "HASH",
-                    "value": "#f"
-                  }
-                ]
-              },
-            ]
-
-*/
-
-    static resolveCoords(unitConverter, offset, reln, dependencies)
-    /*===========================================================*/
+    static getCoordinates(unitConverter, offset, reln, dependencies)
+    /*============================================================*/
     {
         /*
         :return: tuple(tuple(x, y), index) where index == 0 means
         horizontal and 1 means vertical.
         */
-        let pixelCoords = Position.centroid(dependencies);
+        let coordinates = Position.centroid(dependencies);
         let index = Position.orientation[reln];
         if (index >= 0) {
             let adjust = unitConverter.toPixels(offset, index, false);
             if (["left", "above"].indexOf(reln) >= 0) {
-                pixelCoords[index] -= adjust;
+                coordinates[index] -= adjust;
             } else {
-                pixelCoords[index] += adjust;
+                coordinates[index] += adjust;
             }
         }
-        return [pixelCoords, index];
+        return [coordinates, index];
     }
 
-    resolvePixelCoords()
-    /*================*/
+    assignCoordinates(unitConverter)
+    /*============================*/
     {
-        /*
-        # Transporters are always on a compartment boundary
-        pos="100 top"    ## x = x(compartment) + 100; y = y(compartment)
-        pos="bottom"     ## y = y(compartment) + height(compartment)
+        if (this.lengths !== null) {
+            this.coordinates = unitConverter.toPixelPair(this.lengths);
 
-        pos="100 top"    ## same as pos="100 right #compartment"
-        pos="100 bottom" ## same as pos="100 right #compartment; 1000 below #compartment"
-
-        pos="top; 10 right #t1"    ## same as pos="0 below #compartment; 10 right #t1"
-        pos="right; 10 below #t2"  ## same as pos="1000 right #compartment; 10 below #t2"
-
-        pos="top; 10 above/below #t1"  ## ERROR: multiple `y` constraints
-        pos="left; 10 left/right #t1"  ## ERROR: multiple `y` constraints
-        pos="10 right; 10 below #t2"   ## ERROR: multiple `y` constraints
-        pos="5 left #t1; 100 bottom"   ## ERROR: multiple `x` constraints
-
-        # FUTURE: Autopositioning
-        pos="top"  # default is top  }
-        pos="top"  #                 } Centered in top, spaced evenly (`transporter-spacing`?)
-        pos="top"  #                 }
-        */
-        const unitConverter = this.element.container.unitConverter;
-        if (this.lengths) {
-            this.pixelCoords = unitConverter.toPixelPair(this.lengths);
-        } else if (this.pixelCoords === null && this.relationships.length > 0) {
-            this.pixelCoords = [0, 0];
+        } else if (this.coordinates === null || this.coordinates.indexOf(null) >= 0) {
+            this.coordinates = [0, 0];
             if (this.relationships.length === 1) {
                 const offset = this.relationships[0].offset;
                 const reln = this.relationships[0].relation;
                 const dependencies = this.relationships[0].dependencies;
-                this.pixelCoords = Position.resolveCoords(unitConverter, offset, reln, dependencies)[0];
+                this.coordinates = Position.getCoordinates(unitConverter, offset, reln, dependencies)[0];
             } else {
                 for (let relationship of this.relationships) {
                     const offset = relationship.offset;
                     const reln = relationship.relation;
                     const dependencies = relationship.dependencies;
-                    [pixelCoords, index] = Position.resolveCoords(unitConverter, offset, reln, dependencies);
+                    [coordinates, index] = Position.getCoordinates(unitConverter, offset, reln, dependencies);
                     if (offset === null) {
                         index -= 1;
                     }
-                    this.pixelCoords[index] = pixelCoords[index];
+                    this.coordinates[index] = coordinates[index];
                 }
             }
         }
@@ -395,7 +303,6 @@ export class Line
         <coord-pair> ::= '(' <length> ',' <length> ')'
         <constraint> ::= ('until-x' | 'until-y') <relative-point>
         <relative-point> ::= <id-list> | [ <offset> <reln> ] <id-list>
-
         */
 
         // TODO

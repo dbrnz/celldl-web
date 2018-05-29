@@ -22,10 +22,27 @@ limitations under the License.
 
 //==============================================================================
 
-import * as dia from './diagram.js';
+export class LineString
+{
+    constructor(...points)
+    {
+        this.coordinates = [];
+        for (let point of points) {
+            this.coordinates.push(point);
+        }
+    }
+
+    // TODO
+    parallelOffset(offset, side)
+    {
+        return new LineString(...this.coordinates);
+    }
+
+}
 
 //==============================================================================
 
+/*
 export class Point {
     constructor(x=0.0, y=0.0) {
         this.coords = [x, y];
@@ -232,5 +249,5 @@ class Item extends GeometricObject {
         }
     }
 }
-
+*/
 //==============================================================================

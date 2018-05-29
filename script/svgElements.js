@@ -89,7 +89,7 @@ export class Gradients
     static url(gradientType, stopColours) {
         const hashValue = Gradients.hash(gradientType, stopColours);
         let id;
-        if (hasValue in Gradients._gradientsToId) {
+        if (hashValue in Gradients._gradientsToId) {
             id = Gradients._gradientsToId[hashValue]
         } else {
             id = Gradients.nextId();
@@ -449,9 +449,9 @@ Arrow._nextId = 0;
 
 //==============================================================================
 
-export function svgLine(line, colour, reverse=false, display='', style='')
+export function svgLine(lineString, colour, {reverse=false, display='', style=''}={})
 {
-    const points = (reverse ? list(reversed(line.coords)) : line.coords);
+    const points = reverse ? [...lineString.coordinates].reverse() : lineString.coordinates;
     const dash = (style === 'dashed') ? ' stroke-dasharray="10,5"' : '';
     let pointLocations = [];
     for (let point of points.slice(1)) {
@@ -480,42 +480,5 @@ export class Text
 }
 
 Text._nextId = 0;
-
-//==============================================================================
-
-/*
-
-Exchanger
-<g>
-<radialGradient id='SVGID_133_' cx='501.8' cy='536.9' r='18.0223' gradientTransform='matrix(1 0 0 1 0 -342)' gradientUnits='userSpaceOnUse'>
-<stop offset='0' style='stop-color:#ECFFE3'/>
-<stop offset='0.5566' style='stop-color:#EBFFEE'/>
-<stop offset='0.9946' style='stop-color:#FF2EF1'/>
-</radialGradient>
-<circle class='st187' cx='501.8' cy='194.9' r='18'/>
-<text transform='matrix(1 0 0 1 490.6613 200.0031)' class='st3 st4'>NKE</text>
-</g>
-
-.st3{font-family:'ArialMT';}
-.st4{font-size:12px;}
-.st187{fill:url(#SVGID_133_);stroke:#EB2900;stroke-width:4;}
-
-
-
-
-ATP and arrow
-<g>
-<g>
-<path class='st0' d='M696.6,480c-41.1,5-42.4,27,0.1,32.6'/>
-<g>
-<path class='st1' d='M705.5,513.5c-4.3,1.1-9.7,3.2-13.2,5.7l3.2-6.7l-1.8-7.2C696.6,508.4,701.5,511.5,705.5,513.5z'/>
-</g>
-</g>
-</g>
-<text transform='matrix(1 0 0 1 699.1954 483.9253)' class='st2 st3 st4'>[ATP]</text>
-
-.st0{fill:none;stroke:#EB2D00;stroke-width:3;stroke-miterlimit:10;}
-.st1{fill:#EB2D00;}
-*/
 
 //==============================================================================
