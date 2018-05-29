@@ -1,8 +1,8 @@
 <cell-diagram xmlns="http://www.cellml.org/celldl/1.0#">
 
     <bond-graph>
-        <quantity id="q1"/>
-        <quantity id="q2"/>
+        <quantity id="q1" class="potassium"/>
+        <quantity id="q2" class="potassium"/>
         <quantity id="q4"/>
 
         <potential id="u1" quantity="q1"/>
@@ -13,7 +13,6 @@
 
         <transformer id="zF" input="u_E" output="u3"/>
 
-        <reaction id="I_Kp" input="v1" output="v2" modulator="u3"/>
 
         <flow id="v1">
             <component input="u1"/>
@@ -25,34 +24,39 @@
             <component output="u2"/>
             <component output="u4"/>
         </flow>
+
+        <reaction id="I_Kp" input="v1" output="v2" modulator="u3"/>
+
     </bond-graph>
 
     <style src="./styles/colours.css"/>
 
     <style>
         cell-diagram {
-            width: 1600;           /* SVG `pixel` units */
-            height:1000;           /* SVG `pixel` units */
+            width: 600;           /* SVG `pixel` units */
+            height:400;           /* SVG `pixel` units */
             flow-offset: 30x;      /* From its transporter */
             quantity-offset: 37x;  /* From its potential   */
         }
 
-        #q1 { position: 15%x above #u1; }
-        #u1 { position: 20%, 35%; }
+        #q4, #zF { color: none; }
+
+        #u1 { position: 20%, 40%; }
+        #q1 { position: 15% above #u1; }
 
         #v1 { position: 15% right #u1; }
         #I_Kp { position: 15% right #v1; }
         #v2 { position: 15% right #I_Kp; }
 
-        #q2 { position: 15%x above #u2; }
+        #q2 { position: 15% above #u2; }
         #u2 { position: 15% right #v2; }
 
-        #u3 { position: 15%x below #v1; }
-        #zF { position: 15%x below #u3; }
-        #u_E { position: 15%x below #zF; }
+        #u3 { position: 15% below #v1; }
+        #zF { position: 15% below #u3; }
+        #u_E { position: 15% below #zF; }
 
-        #q4 { position: 12%x above #u4; }
-        #u4 { position: 15%x above #I_Kp; }
+        #q4 { position: 12% above #u4; }
+        #u4 { position: 15% above #I_Kp; }
 
     </style>
 
