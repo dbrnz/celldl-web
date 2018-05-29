@@ -60,11 +60,11 @@ export function generateSvg()
 
     // Order of drawing matters as we want nodes covering lines
 
-    extendSvg(svg, Flow);
-
     extendSvg(svg, Gyrator);
     extendSvg(svg, Reaction);
     extendSvg(svg, Transformer);
+
+    extendSvg(svg, Flow);
 
     extendSvg(svg, Potential);
     extendSvg(svg, Quantity);
