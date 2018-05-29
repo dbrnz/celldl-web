@@ -69,11 +69,8 @@ export class DiagramElement {
     get colour()
     /*========*/
     {
-        const key = ('colour' in this.style) ? 'colour'
-                  : ('color' in this.style) ? 'color'
-                  : null;
-        return (key === null) ? '#808080' // TODO: specify defaults in one place
-                              : stylesheet.parseColour(this.style[key]);
+        return ('color' in this.style) ? stylesheet.parseColour(this.style.color)
+                                       : '#808080' // TODO: specify defaults in one place
     }
 
     get display()
@@ -81,6 +78,13 @@ export class DiagramElement {
     {
         const d = this.getStyleAsString("display");
         return d ? ` display="${d}"` : '';
+    }
+
+    get textColour()
+    /*============*/
+    {
+        return ('text-color' in this.style) ? stylesheet.parseColour(this.style['text-color'])
+                                            : '#202020'; // TODO: specify defaults in one place
     }
 
     get stroke()
@@ -169,10 +173,11 @@ export class DiagramElement {
         const [x, y] = this.coordinates;
         if (this.label.startsWith('$')) {
             return `  <text text-anchor="middle" dominant-baseline="central" x="${x}" y="${y}">${this.name}</text>`;
+            // Pass this.textcolour to MathJax...
 //            const rotation = Number.parseFloat(this.getStyleAsString("text-rotation", "0"));
 //            return svgElements.Text.typeset(this.label, x, y, rotation);
         } else {
-            return `  <text text-anchor="middle" dominant-baseline="central" x="${x}" y="${y}">${this.label}</text>`;
+            return `  <text text-anchor="middle" dominant-baseline="central" x="${x}" y="${y}" fill="${this.textColour}">${this.label}</text>`;
         }
     }
 
