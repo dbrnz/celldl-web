@@ -36,6 +36,7 @@ function main(cellDL, svgElementId)
             const domParser = new DOMParser();
             const xmlDocument = domParser.parseFromString(text, "application/xml");
             try {
+                CellDiagram.instance().reset()
                 const parser = new Parser();
                 parser.parseDocument(xmlDocument)
                     .then(() => {

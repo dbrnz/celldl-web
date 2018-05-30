@@ -48,12 +48,18 @@ export class CellDiagram {
     {
         if (cellDiagramInstance === null) {
             cellDiagramInstance = this;
-            this._elements = [];
-            this._elementsById = {};
-            this.width = 0;
-            this.height = 0;
+            this.reset();
         }
         return cellDiagramInstance;
+    }
+
+    reset()
+    //=====
+    {
+        this._elements = [];
+        this._elementsById = {};
+        this.width = 0;
+        this.height = 0;
     }
 
     static instance()
