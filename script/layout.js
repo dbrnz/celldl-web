@@ -24,6 +24,8 @@ limitations under the License.
 
 //import * as bg from './bondgraph.js';
 //import * as dia from './diagram.js';
+
+import * as exception from './exception.js';
 import * as stylesheet from './stylesheet.js';
 import {CellDiagram} from './cellDiagram.js';
 import {List} from './utils.js';
@@ -117,7 +119,7 @@ export class Position
         let coordinates = [0.0, 0.0];
         for (let dependency of dependencies) {
             if (!dependency.hasCoordinates) {
-                throw new ReferenceError(`No coordinates for the '${dependency}' element`);
+                throw new exception.ReferenceError(`No coordinates for the '${dependency}' element`);
             }
             coordinates[0] += dependency.coordinates[0];
             coordinates[1] += dependency.coordinates[1];
@@ -149,7 +151,7 @@ export class Position
                 }
               case 1:
                 if (token.type !== "ID" || !POSITION_RELATIONS.contains(token.value.toLowerCase())) {
-                    throw new SyntaxError("Unknown relationship for position.");
+                    throw new exception.StyleError(tokens, "Unknown relationship for position");
                 }
                 reln = token.value.toLowerCase();
                 state = 2;
@@ -158,11 +160,11 @@ export class Position
                 if (token.type === 'HASH') {
                     const dependency = CellDiagram.instance().findElement(token.value);
                     if (dependency === null) {
-                        throw new Error(`Unknown element ${token.value}`);
+                        throw new exception.StyleError(tokens, `Unknown element ${token.value}`);
                     }
                     dependencies.append(dependency);
                 } else {
-                    throw new SyntaxError("Element ID expected.");
+                    throw new exception.StyleError(tokens, "Element ID expected");
                 }
             }
         }
@@ -170,7 +172,7 @@ export class Position
             if (defaultDependency !== null) {
                 dependencies.append(defaultDependency);
             } else {
-                throw new SyntaxError("Element IDs expected.");
+                throw new exception.StyleError(tokens, "Element IDs expected");
             }
         }
 
@@ -179,7 +181,7 @@ export class Position
             constraints += 1;
             if (previousDirn === 'H' && HORIZONTAL_RELATIONS.contains(reln)
              || previousDirn === 'V' && VERTICAL_RELATIONS.contains(reln)) {
-                throw new SyntaxError("Constraints must have different directions.");
+                throw new exception.StyleError(tokens, "Constraints must have different directions");
             }
         }
         if (usingDefaultOffset && constraints >= 1) {
@@ -209,7 +211,7 @@ export class Position
                     this.parseComponent(tokens[1], dirn, defaultOffset, defaultDependency);
                 }
             } else {
-                throw new SyntaxError("Position can't have more than two components.")
+                throw new exception.StyleError(tokens, "Position can't have more than two components")
             }
         } else {
             this.parseComponent(tokens, null, defaultOffset, defaultDependency);
@@ -279,7 +281,7 @@ export class Size
                 this.size.push(stylesheet.parseOffset(token));
             }
         } else {
-            throw new SyntaxError("Pair of lengths expected.");
+            throw new exception.StyleError(tokens, "Pair of lengths expected");
         }
     }
 }

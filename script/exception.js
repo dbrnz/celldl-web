@@ -22,48 +22,42 @@ limitations under the License.
 
 //==============================================================================
 
-import * as exception from './exception.js';
-
-//==============================================================================
-
-export class List extends Array {
-    constructor(iterable=null) {
-        super();
-        if (iterable !== null)
-            this.extend(iterable);
-    }
-
-    append(element) {
-        super.push(element);
-        return this;
-    }
-
-    contains(element) {
-        return (super.indexOf(element) >= 0);
-    }
-
-    extend(other) {
-        if (this == other) {
-            throw new exception.ValueError('Cannot extend a list with itself...');
-        } else {
-            for (let element of other) {
-                super.push(element);
-            }
-        }
-        return this;
+export class KeyError extends Error
+{
+    constructor(element, message)
+    {
+        super(`${message}\n${element.domElement.outerHTML}`);
     }
 }
 
 //==============================================================================
 
-// From https://stackoverflow.com/a/47327873
-
-export function format(template, params)
+export class SyntaxError extends Error
 {
-    let tpl = template.replace(/\${(?!this\.)/g, "${this.");
-    let tpl_func = new Function(`return \`${tpl}\``);
+    constructor(element, message)
+    {
+        super(`${message}\n${element.domElement.outerHTML}`);
+    }
+}
 
-    return tpl_func.call(params);
+//==============================================================================
+
+export class StyleError extends Error
+{
+    constructor(tokens, message)
+    {
+        super(message);
+    }
+}
+
+//==============================================================================
+
+export class ValueError extends Error
+{
+    constructor(message)
+    {
+        super(message);
+    }
 }
 
 //==============================================================================

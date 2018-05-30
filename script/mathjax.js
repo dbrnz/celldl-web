@@ -26,6 +26,10 @@ const MathJaxPath = ./thirdparty/Mathjax/Mathjax.js';
 
 //==============================================================================
 
+import * as exception from './exception.js';
+
+//==============================================================================
+
 function suffix_ids(xml, attribute, id_base, new_attrib = null) {
     for (var e, _pj_c = 0, _pj_a = xml.findall(".//*[@{}]".format(attribute)), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
         e = _pj_a[_pj_c];
@@ -43,7 +47,7 @@ function suffix_ids(xml, attribute, id_base, new_attrib = null) {
 function clean_svg(svg, id_base) {
     var h, s, title, va, vb, w, xml;
     if ((! svg.startsWith("<svg "))) {
-        throw new ValueError(svg);
+        throw new exception.ValueError(svg);
     }
     xml = etree.fromstring(svg);
     xml.tag = "{http://www.w3.org/2000/svg}g";

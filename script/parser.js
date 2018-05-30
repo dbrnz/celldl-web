@@ -28,6 +28,7 @@ import * as SPECIFICITY from '../thirdparty/specificity.js';
 //==============================================================================
 
 import * as bondgraph from './bondgraph.js';
+import * as exception from './exception.js';
 
 import {CellDiagram} from './cellDiagram.js';
 import {StyleSheet} from './stylesheet.js';
@@ -70,7 +71,7 @@ export class Parser
 //                    if ((e.nodeName === "transporter") && (container instanceof dia.Compartment)) {
 //                        this.parseTransporter(e, container);
 //                    } else {
-//                        throw new SyntaxError(`Unexpected XML element <${e.nodeName}>`);
+//                        throw new exception.SyntaxError(e, `Unexpected XML element <${e.nodeName}>`);
 //                    }
 //                }
 //            }
@@ -109,7 +110,7 @@ export class Parser
             } else if (e.nodeName === "transformer") {
                 this.parseTransformer(e);
             } else {
-                throw new SyntaxError("Invalid <bond-graph> element");
+                throw new exception.SyntaxError(e, "Invalid element for <bond-graph>");
             }
         }
     }
@@ -124,12 +125,12 @@ export class Parser
         for (let e of element.children) {
             if (e.nodeName === "component") {
                 if (!("input" in e.attributes || "output" in e.attributes)) {
-                    throw new SyntaxError("Flow component requires an 'input' or 'output'");
+                    throw new exception.SyntaxError(e, "Flow component requires an 'input' or 'output'");
                 }
                 const component = new bondgraph.FlowComponent(e.attributes, this.stylesheet.style(e), flow);
                 flow.addComponent(component);
             } else {
-                throw SyntaxError;
+                throw new exception.SyntaxError(e, `Unexpected <flow> element`);
             }
         }
         // check we have at least one input and one output
@@ -141,12 +142,12 @@ export class Parser
                         container = component.fromPotential.container;
                     } else {
                         if (container !== component.fromPotential.container) {
-                            throw new ValueError("All inputs must be in the same container");
+                            throw new exception.SyntaxError(element, "All inputs must be in the same container");
                         }
                     }
                     for (let p of component.outputs) {
                         if (container !== p.container) {
-                            throw new ValueError("All 'from' and 'to' potentials must be in the same container");
+                            throw new exception.SyntaxError(element, "All 'from' and 'to' potentials must be in the same container");
                         }
                     }
                 }
@@ -156,47 +157,47 @@ export class Parser
     parseGyrator(element)
     //===================
     {
-        const gyrator = this.newDiagramElement(element, bondgraph.Gyrator);
+        const gyrator = new bondgraph.Gyrator(element);
     }
 
     parsePotential(element)
     //=====================
     {
-        const potential = this.newDiagramElement(element, bondgraph.Potential);
+        const potential = new bondgraph.Potential(element);
     }
 
     parseQuantity(element)
     //====================
     {
-        const quantity = this.newDiagramElement(element, bondgraph.Quantity);
+        const quantity = new bondgraph.Quantity(element);
     }
 
     parseReaction(element)
     //====================
     {
-        const reaction = this.newDiagramElement(element, bondgraph.Reaction);
+        const reaction = new bondgraph.Reaction(element);
     }
 
     parseTransformer(element)
     //=======================
     {
-        const transformer = this.newDiagramElement(element, bondgraph.Transformer);
+        const transformer = new bondgraph.Transformer(element);
     }
 
     parseDocument(xmlDocument)
     //========================
     {
         if (xmlDocument === null || xmlDocument.children.length != 1) {
-            throw new SyntaxError("Invalid XML document");
+            throw new exception.SyntaxError(xmlDocument, "Invalid XML document");
         }
 
         const xmlRoot = xmlDocument.children[0];
 
         if ('xmlns' in xmlRoot.attributes
          && xmlRoot.attributes.xmlns.textContent !== CELLDL_NAMESPACE) {
-            throw new SyntaxError("Not a CellDL document");
+            throw new exception.SyntaxError(xmlroot, "Not a CellDL document");
         } else if (xmlRoot.nodeName !== 'cell-diagram') {
-            throw new SyntaxError("Root tag must be <cell-diagram>");
+            throw new exception.SyntaxError(xmlroot, "Root tag must be <cell-diagram>");
         }
 
         let stylePromises = [];
@@ -205,13 +206,13 @@ export class Parser
                 if ((this.bondGraphElement === null)) {
                     this.bondGraphElement = element;
                 } else {
-                    throw new SyntaxError("Can only declare a single <bond-graph>");
+                    throw new exception.SyntaxError(element, "Can only declare a single <bond-graph>");
                 }
             } else if (element.nodeName === 'diagram') {
                 if ((this.diagramElement === null)) {
                     this.diagramElement = element;
                 } else {
-                    throw new SyntaxError("Can only declare a single <diagram>");
+                    throw new exception.SyntaxError(element, "Can only declare a single <diagram>");
                 }
             } else if (element.nodeName === 'style') {
                 if ('src' in element.attributes) {
@@ -220,7 +221,7 @@ export class Parser
                     this.stylesheet.addStyles(element.textContent);
                 }
             } else {
-                throw new SyntaxError("Unknown XML element: <${element.nodeName}>");
+                throw new exception.SyntaxError(element, "Unknown XML element");
             }
         }
 

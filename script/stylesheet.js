@@ -28,6 +28,8 @@ import * as SPECIFICITY from '../thirdparty/specificity.js';
 //==============================================================================
 
 import * as layout from './layout.js';
+import * as exception from './exception.js';
+
 import {Gradients} from './svgElements.js';
 
 //==============================================================================
@@ -108,7 +110,7 @@ export class StyleSheet
 export function parseNumber(tokens)
 {
     if (tokens.type !== "NUMBER") {
-        throw new SyntaxError("Number expected");
+        throw new exception.StyleError(tokens, "Number expected");
     } else {
         return tokens.value;
     }
@@ -126,14 +128,14 @@ export function parsePercentageOffset(tokens, defaultValue=null)
         if (defaultValue !== null) {
             return defaultValue;
         } else {
-            throw new SyntaxError("Percentage expected");
+            throw new exception.StyleError(tokens, "Percentage expected");
         }
     }
     const percentage = tokens.value;
     const unit = tokens.unit;
     const modifier = unit.substring(1);
     if (["", "x", "y"].indexOf(modifier) < 0) {
-        throw new SyntaxError("Modifier (${modifier}) must be 'x' or 'y'");
+        throw new exception.StyleError(tokens, "Modifier (${modifier}) must be 'x' or 'y'");
     }
     return new layout.Offset(percentage, unit);
 }
@@ -154,12 +156,12 @@ export function parseOffset(tokens, defaultValue=null)
         if (defaultValue !== null) {
             return defaultValue;
         } else {
-            throw new SyntaxError("Length expected.");
+            throw new exception.StyleError(tokens, "Length expected.");
         }
     }
     const unit = (tokens.type === "DIMENSION") ? tokens.unit : "";
     if (["", "x", "y"].indexOf(unit) < 0) {
-        throw new SyntaxError("Modifier must be 'x' or 'y'");
+        throw new exception.StyleError(tokens, "Modifier must be 'x' or 'y'");
     }
     return new layout.Offset(tokens.value, unit);
 }
@@ -184,11 +186,11 @@ export function parseOffsetPair(tokens, allowLocal=true)
                    || (allowLocal && token.type === "PERCENTAGE")) {
                 offsets.push(parseOffset(token));
             } else {
-                throw new SyntaxError("Invalid syntax");
+                throw new exception.StyleError(tokens, "Invalid syntax");
             }
         }
     } else {
-        throw new SyntaxError("Expected pair of offsets");
+        throw new exception.StyleError(tokens, "Expected pair of offsets");
     }
     return offsets;
 }
@@ -200,7 +202,7 @@ export function parseColour(tokens)
     if (tokens.type === "FUNCTION") {
         const name = tokens.name.value;
         if (["radial-gradient", "linear-gradient"].indexOf(name) < 0) {
-            throw new SyntaxError("Unknown colour gradient");
+            throw new exception.StyleError(tokens, "Unknown colour gradient");
         }
         const gradientType = name.substr(0, 6);
         let stopColours = [];
@@ -214,7 +216,7 @@ export function parseColour(tokens)
                         if (token.value[1].type === "PERCENTAGE") {
                             stop = token.value[1].value;
                         } else {
-                            throw new SyntaxError("Gradient stop percentage expected");
+                            throw new exception.StyleError(tokens, "Gradient stop percentage expected");
                         }
                     } else {
                         colour = parseColourValue(token);
@@ -236,7 +238,7 @@ export function parseColourValue(tokens)
     if (['HASH', 'ID'].indexOf(tokens.type) >= 0) {
         return tokens.value;
     }
-    throw new SyntaxError("Colour expected");
+    throw new exception.StyleError(tokens, "Colour expected");
 }
 
 //==============================================================================

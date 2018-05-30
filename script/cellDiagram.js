@@ -27,6 +27,7 @@ import '../thirdparty/jsnetworkx.js';
 //==============================================================================
 
 import * as bondgraph from './bondgraph.js';
+import * as exception from './exception.js';
 import * as layout from './layout.js';
 import * as stylesheet from './stylesheet.js';
 import * as svgElements from './svgElements.js';
@@ -87,7 +88,7 @@ export class CellDiagram {
     {
         this._elements.push(element);
         if (element.id in this._elementsById) {
-            throw new Error(`Duplicate element 'id': ${element.id}`);
+            throw new exception.KeyError(element, `Duplicate element 'id': ${element.id}`);
         }
         this._elementsById[element.id] = element;
     }

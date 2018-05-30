@@ -21,6 +21,7 @@ limitations under the License.
 'use strict';
 
 //==============================================================================
+import * as exception from './exception.js';
 import * as layout from './layout.js';
 import * as stylesheet from './stylesheet.js';
 
@@ -33,7 +34,7 @@ export class DiagramElement {
     constructor(attributes, style, className='Element')
     {
         if (!('id' in attributes)) {
-            throw new SyntaxError("A diagram element must have an 'id'")
+            throw new exception.SyntaxError(element, "A diagram element must have an 'id'")
         }
         this.id = `#${attributes.id.textContent}`;
         this.name = ('name' in attributes) ? attributes.name.textContent : this.id.substr(1);
