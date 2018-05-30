@@ -316,12 +316,6 @@ export class Potential extends Node
         svg.extend(super.generateSvg());
         return svg;
     }
-
-    get quantityId()
-    //==============
-    {
-        return this.quantity ? this.quantity.id : '';
-    }
 }
 
 //==============================================================================

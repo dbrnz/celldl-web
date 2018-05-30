@@ -51,7 +51,7 @@ function main(cellDL, svgElementId)
                         const svg = cellDiagram.generateSvg();
 //                       console.log(svg);
 
-                        svgElement.innerHTML = svg;
+                        svgElement.insertAdjacentHTML('afterbegin', svg);
                     });
             } catch (error) {
                 console.trace(error);
