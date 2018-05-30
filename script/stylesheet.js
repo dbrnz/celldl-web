@@ -39,12 +39,39 @@ import {Gradients} from './svgElements.js';
 
 //==============================================================================
 
+// The stylesheet we are using
+
+let styleSheetInstance = null;
+
+//==============================================================================
+
 export class StyleSheet
 {
     constructor() {
+        if (styleSheetInstance === null) {
+            styleSheetInstance = this;
+            this._parser = new cssparser.Parser();
+            this.reset();
+        }
+
+        return styleSheetInstance;
+    }
+
+    reset()
+    //=====
+    {
         this.stylesheet = [];
         this._order = 0;
-        this._parser = new cssparser.Parser();
+    }
+
+    static instance()
+    //===============
+    {
+        if (styleSheetInstance === null) {
+            return new StyleSheet();
+        } else {
+            return styleSheetInstance;
+        }
     }
 
     addStyles(cssText)

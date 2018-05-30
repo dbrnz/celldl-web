@@ -23,10 +23,10 @@ limitations under the License.
 //==============================================================================
 import * as exception from './exception.js';
 import * as layout from './layout.js';
-import * as stylesheet from './stylesheet.js';
 
 import {CellDiagram} from './cellDiagram.js';
 import {List} from './utils.js';
+import {parseColour, StyleSheet} from './stylesheet.js';
 
 //==============================================================================
 
@@ -41,6 +41,7 @@ export class DiagramElement {
         this.classes = ('class' in attributes) ? attributes.class.textContent.split(/\s+/) : [];
         this.label = ('label' in attributes) ? attributes.label.textContent : this.name;
         this.style = style;
+        this.style = StyleSheet.instance().style(domElement);
         this.className = className;
         this.position = new layout.Position(this);
     }

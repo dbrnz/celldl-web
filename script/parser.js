@@ -47,7 +47,6 @@ export class Parser
         this.cellDiagram = CellDiagram.instance();
         this.bondGraphElement = null;
         this.diagramElement = null;
-        this.stylesheet = new StyleSheet();
     }
 
     newDiagramElement(element, elementClass)
@@ -216,9 +215,9 @@ export class Parser
                 }
             } else if (element.nodeName === 'style') {
                 if ('src' in element.attributes) {
-                    stylePromises.push(this.stylesheet.fetchStyles(element.attributes.src.textContent));
+                    stylePromises.push(StyleSheet.instance().fetchStyles(element.attributes.src.textContent));
                 } else {
-                    this.stylesheet.addStyles(element.textContent);
+                    StyleSheet.instance().addStyles(element.textContent);
                 }
             } else {
                 throw new exception.SyntaxError(element, "Unknown XML element");
@@ -230,7 +229,7 @@ export class Parser
                             this.cellDiagram.initialise(this.stylesheet.style(xmlRoot));
 //                            if (this.diagramElement !== null) {
 //                                this.diagram = new dia.Diagram(this.diagramElement.attributes,
-//                                                               this.stylesheet.style(this.diagramElement));
+//                                                               StyleSheet.instance().style(this.diagramElement));
 //                                this.parseContainer(this.diagramElement, this.diagram);
 //                            } else {
 //                                this.diagram = new dia.Diagram();

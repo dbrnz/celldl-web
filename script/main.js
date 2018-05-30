@@ -24,6 +24,7 @@ limitations under the License.
 
 import {CellDiagram} from './cellDiagram.js';
 import {Parser} from './parser.js';
+import {StyleSheet} from './stylesheet.js';
 
 //==============================================================================
 
@@ -37,6 +38,8 @@ function main(cellDL, svgElementId)
             const xmlDocument = domParser.parseFromString(text, "application/xml");
             try {
                 CellDiagram.instance().reset()
+                StyleSheet.instance().reset()
+
                 const parser = new Parser();
                 parser.parseDocument(xmlDocument)
                     .then(() => {
