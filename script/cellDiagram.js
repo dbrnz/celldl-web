@@ -56,7 +56,7 @@ export class CellDiagram {
     }
 
     static instance()
-    /*=============*/
+    //===============
     {
         if (cellDiagramInstance === null) {
             return new CellDiagram();
@@ -66,7 +66,7 @@ export class CellDiagram {
     }
 
     initialise(style)
-    /*=============*/
+    //===============
     {
         if ('width' in style) {
             this.width = stylesheet.parseNumber(style.width);
@@ -77,13 +77,13 @@ export class CellDiagram {
     }
 
     get size()
-    /*======*/
+    //========
     {
         return [this.width, this.height]
     }
 
     addElement(element)
-    /*===============*/
+    //=================
     {
         this._elements.push(element);
         if (element.id in this._elementsById) {
@@ -93,20 +93,20 @@ export class CellDiagram {
     }
 
     elements(elementClass=DiagramElement)
-    /*=================================*/
+    //===================================
     {
         return this._elements.filter(e => e instanceof elementClass);
     }
 
     findElement(id, elementClass=DiagramElement)
-    /*========================================*/
+    //==========================================
     {
         const e = (id in this._elementsById) ? this._elementsById[id] : null;
         return (e instanceof elementClass) ? e : null;
     }
 
     layout()
-    /*====*/
+    //======
     {
         /*
         Set positions (and sizes) of all components in the diagram.
@@ -153,7 +153,7 @@ jsnx.draw(dependencyGraph, {
     }
 
     generateSvg()
-    /*=========*/
+    //===========
     {
         /*
         Drawing order:

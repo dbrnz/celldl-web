@@ -46,7 +46,7 @@ export class StyleSheet
     }
 
     addStyles(cssText)
-    /*==============*/
+    //================
     {
         const ast = this._parser.parse(cssText);
         const rules = ast._props_.value;
@@ -75,7 +75,7 @@ export class StyleSheet
     }
 
     async fetchStyles(cssUrl)
-    /*=====================*/
+    //=======================
     {
         return fetch(cssUrl)
                     .then(response => response.text())
@@ -86,7 +86,7 @@ export class StyleSheet
     }
 
     style(element)
-    /*==========*/
+    //============
     {
         let styling = {};
         for (let rule of this.stylesheet) {

@@ -74,25 +74,25 @@ export class Position
     }
 
     get valid()
-    /*=======*/
+    //=========
     {
         return (this.dependencies.size > 0 || this.lengths !== null);
     }
 
     get hasCoordinates()
-    /*================*/
+    //==================
     {
         return (this.coordinates !== null);
     }
 
     addDependency(dependency)
-    /*=====================*/
+    //=======================
     {
         this.dependencies.add(dependency);
     }
 
     addDependencies(dependencies)
-    /*=========================*/
+    //===========================
     {
         for (let dependency of dependencies) {
             this.dependencies.add(dependency);
@@ -100,19 +100,19 @@ export class Position
     }
 
     addRelationship(offset, relation, dependencies)
-    /*===========================================*/
+    //=============================================
     {
         this.relationships.push({offset, relation, dependencies});
     }
 
     setLengths(lengths)
-    /*===============*/
+    //=================
     {
         this.lengths = lengths;
     }
 
     static centroid(dependencies)
-    /*=========================*/
+    //===========================
     {
         let coordinates = [0.0, 0.0];
         for (let dependency of dependencies) {
@@ -128,7 +128,7 @@ export class Position
     }
 
     parseComponent(tokens, previousDirn, defaultOffset, defaultDependency)
-    /*==================================================================*/
+    //====================================================================
     {
         let offset = null;
         let usingDefaultOffset = false;
@@ -193,7 +193,7 @@ export class Position
     }
 
     parse(tokens, defaultOffset=null, defaultDependency=null)
-    /*=====================================================*/
+    //=======================================================
     {
         /*
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
@@ -217,7 +217,7 @@ export class Position
     }
 
     static getCoordinates(unitConverter, offset, reln, dependencies)
-    /*============================================================*/
+    //==============================================================
     {
         /*
         :return: tuple(tuple(x, y), index) where index == 0 means
@@ -237,7 +237,7 @@ export class Position
     }
 
     assignCoordinates(unitConverter)
-    /*============================*/
+    //==============================
     {
         if (this.lengths !== null) {
             this.coordinates = unitConverter.toPixelPair(this.lengths);
@@ -296,7 +296,7 @@ export class Line
     }
 
     parse()
-    /*===*/
+    //=====
     {
         /*
         <line-point> ::= <coord-pair> | <line-angle> <constraint>
@@ -386,7 +386,7 @@ export class Line
     }
 
     points(start_pos, flow=null, reverse=false)
-    /*=======================================*/
+    //=========================================
     {
         var angle, dx, dy, end_pos, last_pos, line_offset, offset, points, trans_coords;
         last_pos = start_pos;
@@ -442,13 +442,13 @@ export class UnitConverter
     }
 
     toString()
-    /*======*/
+    //========
     {
         return "UC: global=${this.globalSize}, local=${this.localSize}, offset=${this.localOffset}";
     }
 
     toPixels(length, index, addOffset=true)
-    /*===================================*/
+    //=====================================
     {
         if (length !== null) {
             const unit = length.unit;
@@ -468,7 +468,7 @@ export class UnitConverter
     }
 
     toPixelPair(coords, addOffset=true)
-    /*===============================*/
+    //=================================
     {
         return [this.toPixels(coords[0], 0, addOffset), this.toPixels(coords[1], 1, addOffset)];
     }

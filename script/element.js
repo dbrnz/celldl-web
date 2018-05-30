@@ -45,7 +45,7 @@ export class DiagramElement {
     }
 
     static fromAttribute(attributes, attributeName, elementClass=DiagramElement)
-    /*========================================================================*/
+    //===========================================================
     {
         if (attributeName in attributes) {
             const elementId = `#${attributes[attributeName].textContent}`;
@@ -57,7 +57,7 @@ export class DiagramElement {
     }
 
     toString()
-    /*======*/
+    //========
     {
         let s = [this.className];
         if (this.id !== null) {
@@ -67,40 +67,40 @@ export class DiagramElement {
     }
 
     get colour()
-    /*========*/
+    //==========
     {
         return ('color' in this.style) ? stylesheet.parseColour(this.style.color)
                                        : '#808080' // TODO: specify defaults in one place
     }
 
     get display()
-    /*=========*/
+    //===========
     {
         const d = this.getStyleAsString("display");
         return d ? ` display="${d}"` : '';
     }
 
     get textColour()
-    /*============*/
+    //==============
     {
         return ('text-color' in this.style) ? stylesheet.parseColour(this.style['text-color'])
                                             : '#202020'; // TODO: specify defaults in one place
     }
 
     get stroke()
-    /*========*/
+    //==========
     {
         return this.getStyleAsString('stroke', 'none');
     }
 
     get strokeWidth()
-    /*=============*/
+    //===============
     {
         return this.getStyleAsString('stroke-width', '1');
     }
 
     getStyleAsString(name, defaultValue='')
-    /*===================================*/
+    //=====================================
     {
         if (name in this.style) {
             const tokens = this.style[name];
@@ -114,13 +114,13 @@ export class DiagramElement {
     }
 
     hasClass(name)
-    /*==========*/
+    //============
     {
         return this.classes.indexOf(name) >= 0;
     }
 
     idClass()
-    /*=====*/
+    //=======
     {
         let s = [''];
         if (this.id !== null)
@@ -131,32 +131,32 @@ export class DiagramElement {
     }
 
     get coordinates()
-    /*=============*/
+    //===============
     {
         return this.position.coordinates;
     }
 
     assignCoordinates(unitConverter)
-    /*============================*/
+    //==============================
     {
         this.position.assignCoordinates(unitConverter);
         console.log(`${this.toString()} at ${this.coordinates}`)
     }
 
     get hasCoordinates()
-    /*================*/
+    //==================
     {
         return this.position.hasCoordinates;
     }
 
     get hasValidPosition()
-    /*==================*/
+    //====================
     {
         return this.position.valid;
     }
 
     parsePosition(defaultOffset=null, defaultDependency=null)
-    /*=====================================================*/
+    //======================================================
     {
         /*
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
@@ -168,7 +168,7 @@ export class DiagramElement {
     }
 
     labelAsSvg()
-    /*========*/
+    //==========
     {
         const [x, y] = this.coordinates;
         if (this.label.startsWith('$')) {
@@ -182,7 +182,7 @@ export class DiagramElement {
     }
 
     generateSvg(radius=layout.ELEMENT_RADIUS)
-    /*=====================================*/
+    //=======================================
     {
         let svg = new List([`<g${this.idClass()}${this.display}>`]);
         if (this.hasCoordinates) {

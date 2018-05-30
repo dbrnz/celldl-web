@@ -58,7 +58,7 @@ export class Parser
     }
 
 //    parseContainer(element, container)
-//    /*==============================*/
+//    //================================
 //    {
 //        for (let e of element.children) {
 //            if (e.nodeName === "compartment") {
@@ -78,7 +78,7 @@ export class Parser
 //    }
 //
 //    parseCompartment(element, container)
-//    /*================================*/
+//    //==================================
 //    {
 //        const compartment = this.newDiagramElement(element, dia.Compartment, container);
 //        this.diagram.addCompartment(compartment);
@@ -86,14 +86,14 @@ export class Parser
 //    }
 //
 //    parseTransporter(element, compartment)
-//    /*==================================*/
+//    //====================================
 //    {
 //        const transporter = this.newDiagramElement(element, dia.Transporter, compartment);
 //        this.diagram.addTransporter(transporter);
 //    }
 
     parseBondGraph(element)
-    /*===================*/
+    //=====================
     {
         for (let e of element.children) {
             if        (e.nodeName === "flow") {
@@ -115,7 +115,7 @@ export class Parser
     }
 
     parseFlow(element)
-    /*==============*/
+    //================
     {
         const transporterId = ('transporter' in element.attributes) ? element.attributes.transporter : null;
         const flow = this.newDiagramElement(element, bondgraph.Flow, transporterId);
@@ -154,37 +154,37 @@ export class Parser
     }
 
     parseGyrator(element)
-    /*=================*/
+    //===================
     {
         const gyrator = this.newDiagramElement(element, bondgraph.Gyrator);
     }
 
     parsePotential(element)
-    /*===================*/
+    //=====================
     {
         const potential = this.newDiagramElement(element, bondgraph.Potential);
     }
 
     parseQuantity(element)
-    /*==================*/
+    //====================
     {
         const quantity = this.newDiagramElement(element, bondgraph.Quantity);
     }
 
     parseReaction(element)
-    /*==================*/
+    //====================
     {
         const reaction = this.newDiagramElement(element, bondgraph.Reaction);
     }
 
     parseTransformer(element)
-    /*=====================*/
+    //=======================
     {
         const transformer = this.newDiagramElement(element, bondgraph.Transformer);
     }
 
     parseDocument(xmlDocument)
-    /*======================*/
+    //========================
     {
         if (xmlDocument === null || xmlDocument.children.length != 1) {
             throw new SyntaxError("Invalid XML document");
