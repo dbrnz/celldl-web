@@ -124,6 +124,7 @@ export class CellDiagram {
         let dependencyGraph = new jsnx.DiGraph();
 
         for (let element of this._elements) {
+            element.resolveReferences();
             element.parsePosition();
             if (element.hasValidPosition) {
                 dependencyGraph.addNode(element);

@@ -38,9 +38,9 @@ const LINE_OFFSET = 3.5;  // TODO: Initial/default value from CSS
 
 export class Node extends DiagramElement
 {
-    constructor(attributes, style, className='Node')
+    constructor(element, className='Node')
     {
-        super(attributes, style, className);
+        super(element, className);
     }
 }
 
@@ -76,12 +76,13 @@ export function generateSvg()
 
 export class Flow extends Node
 {
-    constructor(attributes, style)
+    constructor(element)
     {
-        super(attributes, style, "Flow");
+        super(element, "Flow");
         this.components = [];
 //        this.componentOffsets = [];
-//        this.transporter = DiagramElement.fromAttribute(attributes, 'transporter', diagram.Transporter)
+//        const transporterId = ('transporter' in element.attributes) ? element.attributes.transporter : null;
+//        this.transporter = this.fromAttribute('transporter', [diagramTransporter])
     }
 
     addComponent(component)
@@ -89,6 +90,14 @@ export class Flow extends Node
     {
         this.components.push(component);
 //        this.componentOffsets[component] = new geo.Point();
+    }
+
+    resolveReferences()
+    //=================
+    {
+        for (let component of this.components) {
+            component.resolveReferences();
+        }
     }
 
     parsePosition()
@@ -185,14 +194,20 @@ export class Flow extends Node
 
 //==============================================================================
 
-export class FlowComponent
+export class FlowComponent extends DiagramElement
 {
-    constructor(attributes, style, flow)
+    constructor(element, flow)
     {
+        super(element, 'FlowComponent', false);
         this.flow = flow;
-        this.input = DiagramElement.fromAttribute(attributes, 'input', Potential)
-        this.output = DiagramElement.fromAttribute(attributes, 'output', Potential)
-        this.count = ('count' in attributes) ? Number(attributes.count.textContent) : 1;
+        this.count = ('count' in this.attributes) ? Number(attributes.count.textContent) : 1;
+    }
+
+    resolveReferences()
+    //=================
+    {
+        this.input = this.fromAttribute('input', [Potential, Reaction])
+        this.output = this.fromAttribute('output', [Potential, Reaction])
     }
 
     parsePosition()
@@ -255,12 +270,17 @@ export class FlowComponent
 
 export class Gyrator extends DiagramElement
 {
-    constructor(attributes, style)
+    constructor(element)
     {
-        super(attributes, style, 'Gyrator');
-        this.input = DiagramElement.fromAttribute(attributes, 'input', Flow)
-        this.output = DiagramElement.fromAttribute(attributes, 'output', Flow)
+        super(element, 'Gyrator');
         if (!this.label.startsWith('$')) this.label = `GY:${this.label}`;
+    }
+
+    resolveReferences()
+    //=================
+    {
+        this.input = this.fromAttribute('input', [Flow])
+        this.output = this.fromAttribute('output', [Flow])
     }
 
     generateSvg()
@@ -286,10 +306,15 @@ export class Gyrator extends DiagramElement
 
 export class Potential extends Node
 {
-    constructor(attributes, style)
+    constructor(element)
     {
-        super(attributes, style, 'Potential');
-        this.quantity = DiagramElement.fromAttribute(attributes, 'quantity', Quantity)
+        super(element, 'Potential');
+    }
+
+    resolveReferences()
+    //=================
+    {
+        this.quantity = this.fromAttribute('quantity', [Quantity])
         if (this.quantity !== null) {
             this.quantity.setPotential(this);
         }
@@ -320,8 +345,8 @@ export class Potential extends Node
 
 export class Quantity extends DiagramElement
 {
-    constructor(attributes, style) {
-        super(attributes, style, 'Quantity');
+    constructor(element) {
+        super(element, 'Quantity');
         this.potential = null;
     }
 
@@ -336,13 +361,16 @@ export class Quantity extends DiagramElement
 
 export class Reaction extends DiagramElement
 {
-    constructor(attributes, style)
+    constructor(element)
     {
-        super(attributes, style, 'Reaction');
-        this.input = DiagramElement.fromAttribute(attributes, 'input', Node)
-        this.output = DiagramElement.fromAttribute(attributes, 'output', Node)
-        this.modulator = DiagramElement.fromAttribute(attributes, 'modulator', Potential)
+        super(element, 'Reaction');
         if (!this.label.startsWith('$')) this.label = `RE:${this.label}`;
+    }
+
+    resolveReferences()
+    //=================
+    {
+        this.modulator = this.fromAttribute('modulator', [Potential])
     }
 
     generateSvg()
@@ -370,12 +398,17 @@ export class Reaction extends DiagramElement
 
 export class Transformer extends DiagramElement
 {
-    constructor(attributes, style)
+    constructor(element)
     {
-        super(attributes, style, 'Transformer');
-        this.input = DiagramElement.fromAttribute(attributes, 'input', Potential)
-        this.output = DiagramElement.fromAttribute(attributes, 'output', Potential)
+        super(element, 'Transformer');
         if (!this.label.startsWith('$')) this.label = `TF:${this.label}`;
+    }
+
+    resolveReferences()
+    //=================
+    {
+        this.input = this.fromAttribute('input', [Potential])
+        this.output = this.fromAttribute('output', [Potential])
     }
 
     generateSvg()

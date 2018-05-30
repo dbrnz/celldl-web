@@ -31,31 +31,49 @@ import {parseColour, StyleSheet} from './stylesheet.js';
 //==============================================================================
 
 export class DiagramElement {
-    constructor(attributes, style, className='Element')
+    constructor(domElement, className='Element', requireId=true)
     {
-        if (!('id' in attributes)) {
+        if (requireId && !('id' in domElement.attributes)) {
             throw new exception.SyntaxError(element, "A diagram element must have an 'id'")
         }
-        this.id = `#${attributes.id.textContent}`;
-        this.name = ('name' in attributes) ? attributes.name.textContent : this.id.substr(1);
-        this.classes = ('class' in attributes) ? attributes.class.textContent.split(/\s+/) : [];
-        this.label = ('label' in attributes) ? attributes.label.textContent : this.name;
-        this.style = style;
+        this.domElement = domElement;
+        this.attributes = domElement.attributes;
+        this.id = ('id' in this.attributes) ? `#${this.attributes.id.textContent}` : '';
+        this.name = ('name' in this.attributes) ? this.attributes.name.textContent : this.id.substr(1);
+        this.classes = ('class' in this.attributes) ? this.attributes.class.textContent.split(/\s+/) : [];
+        this.label = ('label' in this.attributes) ? this.attributes.label.textContent : this.name;
         this.style = StyleSheet.instance().style(domElement);
         this.className = className;
         this.position = new layout.Position(this);
+        if (this.id !== '') {
+            CellDiagram.instance().addElement(this);
+        }
     }
 
-    static fromAttribute(attributes, attributeName, elementClass=DiagramElement)
+    fromAttribute(attributeName, elementClasses=[DiagramElement])
     //===========================================================
     {
-        if (attributeName in attributes) {
-            const elementId = `#${attributes[attributeName].textContent}`;
-            const element = CellDiagram.instance().findElement(elementId, elementClass);
-            // TODO: lookup later...
-            return (element == null) ? elementId : element;
+        if (attributeName in this.attributes) {
+            const elementId = `#${this.attributes[attributeName].textContent}`;
+            for (let elementClass of elementClasses) {
+                const element = CellDiagram.instance().findElement(elementId, elementClass);
+                if (element !== null) {
+                    return element;
+                }
+            }
+            const names = elementClasses.filter(c => c.name);
+            const classNames = (names.length === 1) ? names[0]
+                                                    : [names.slice(0, -1).join(', '), names.slice(-1)[0]].join(' or ');
+
+            throw new exception.KeyError(this, `Can't find ${classNames} with id '${elementId}'`);
         }
         return null;
+    }
+
+    resolveReferences()
+    //=================
+    {
+        // Sub-classes will override this method
     }
 
     toString()

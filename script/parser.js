@@ -44,17 +44,8 @@ var CELLDL_NAMESPACE = "http://www.cellml.org/celldl/1.0#";
 export class Parser
 {
     constructor() {
-        this.cellDiagram = CellDiagram.instance();
         this.bondGraphElement = null;
         this.diagramElement = null;
-    }
-
-    newDiagramElement(element, elementClass)
-    /*====================================*/
-    {
-        const diagramElement = new elementClass(element.attributes, this.stylesheet.style(element));
-        this.cellDiagram.addElement(diagramElement);
-        return diagramElement;
     }
 
 //    parseContainer(element, container)
@@ -117,8 +108,7 @@ export class Parser
     parseFlow(element)
     //================
     {
-        const transporterId = ('transporter' in element.attributes) ? element.attributes.transporter : null;
-        const flow = this.newDiagramElement(element, bondgraph.Flow, transporterId);
+        const flow = new bondgraph.Flow(element);
 
 //        let container = (flow.transporter !== null) ? flow.transporter.container : null;
         for (let e of element.children) {
@@ -126,7 +116,7 @@ export class Parser
                 if (!("input" in e.attributes || "output" in e.attributes)) {
                     throw new exception.SyntaxError(e, "Flow component requires an 'input' or 'output'");
                 }
-                const component = new bondgraph.FlowComponent(e.attributes, this.stylesheet.style(e), flow);
+                const component = new bondgraph.FlowComponent(e, flow);
                 flow.addComponent(component);
             } else {
                 throw new exception.SyntaxError(e, `Unexpected <flow> element`);
@@ -226,7 +216,7 @@ export class Parser
 
         return Promise.all(stylePromises)
                       .then(() => {
-                            this.cellDiagram.initialise(this.stylesheet.style(xmlRoot));
+                            CellDiagram.instance().initialise(StyleSheet.instance().style(xmlRoot));
 //                            if (this.diagramElement !== null) {
 //                                this.diagram = new dia.Diagram(this.diagramElement.attributes,
 //                                                               StyleSheet.instance().style(this.diagramElement));
