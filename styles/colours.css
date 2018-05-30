@@ -10,6 +10,7 @@ transporter.sodium { color: radial-gradient(white 40%, #FE44F9); }
 .potassium {
     color: #2209E1;
     stroke: #2209E1;
+    line-color: #2209E1;
 }
 quantity.potassium { color: radial-gradient(white 20%, #9C9FF5); }
 transporter.potassium { color: radial-gradient(white 40%, #2209E1); }

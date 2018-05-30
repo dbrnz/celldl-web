@@ -92,7 +92,7 @@ export class DiagramElement {
     get colour()
     //==========
     {
-        return ('color' in this.style) ? stylesheet.parseColour(this.style.color)
+        return ('color' in this.style) ? parseColour(this.style.color)
                                        : '#808080' // TODO: specify defaults in one place
     }
 
@@ -103,10 +103,17 @@ export class DiagramElement {
         return d ? ` display="${d}"` : '';
     }
 
+    get lineColour()
+    //==============
+    {
+        return ('line-color' in this.style) ? parseColour(this.style['line-color'])
+                                            : '#A0A0A0'; // TODO: specify defaults in one place
+    }
+
     get textColour()
     //==============
     {
-        return ('text-color' in this.style) ? stylesheet.parseColour(this.style['text-color'])
+        return ('text-color' in this.style) ? parseColour(this.style['text-color'])
                                             : '#202020'; // TODO: specify defaults in one place
     }
 

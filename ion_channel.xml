@@ -38,6 +38,21 @@
 
         #q4, #zF, #u_E { color: none; }
 
+        #q4,
+        #v1 > component[input="u4"],
+        #v2 > component[output="u4"] {
+            line-color: purple;
+        }
+
+        /* Either have an id on a component (e.g. "v1u3") and use this as the
+           selector or use a selector in the form `#v1 > component[input="u3"]`
+        */
+
+        #zF,
+        #v1u3 {
+            line-color: red;
+        }
+
         #u1 { position: 20%, 40%; }
         #q1 { position: 15% above #u1; }
 
@@ -54,6 +69,10 @@
 
         #q4 { position: 12% above #u4; }
         #u4 { position: 15% above #I_Kp; }
+
+        #I_Kp[modulator] {
+            line-color: red;
+        }
 
     </style>
 
