@@ -21,12 +21,15 @@ limitations under the License.
 'use strict';
 
 //==============================================================================
+
 import * as exception from './exception.js';
+import * as geo from './geometry.js';
 import * as layout from './layout.js';
 
 import {CellDiagram} from './cellDiagram.js';
 import {List} from './utils.js';
 import {parseColour, StyleSheet} from './stylesheet.js';
+import {svgLine} from './svgElements.js'
 
 //==============================================================================
 
@@ -185,6 +188,21 @@ export class DiagramElement {
         if ('position' in this.style) {
             this.position.parse(this.style.position, defaultOffset, defaultDependency);
         }
+    }
+
+    lineFrom(other, lineColour, reverse=false)
+    //====================================
+    {
+        return (other !== null) ? svgLine(new geo.LineString(other.coordinates, this.coordinates),
+                                          // TODO: Default stroke colour from CSS
+                                          lineColour, {reverse: reverse})
+                                : '';
+    }
+
+    lineTo(other, colour, reverse=false)
+    //==================================
+    {
+        return this.lineFrom(other, colour, !reverse)
     }
 
     labelAsSvg()

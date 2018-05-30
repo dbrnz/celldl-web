@@ -60,11 +60,11 @@ export function generateSvg()
 
     // Order of drawing matters as we want nodes covering lines
 
+    extendSvg(svg, Flow);
+
     extendSvg(svg, Gyrator);
     extendSvg(svg, Reaction);
     extendSvg(svg, Transformer);
-
-    extendSvg(svg, Flow);
 
     extendSvg(svg, Potential);
     extendSvg(svg, Quantity);
@@ -226,14 +226,8 @@ export class FlowComponent extends DiagramElement
     //===========
     {
         let svg = new List();
-        if (this.input !== null) {
-            // TODO: Default stroke colour from CSS
-            svg.append(svgLine(new geo.LineString(this.input.coordinates, this.flow.coordinates), '#808080'));
-        }
-        if (this.output !== null) {
-            // TODO: Default stroke colour from CSS
-            svg.append(svgLine(new geo.LineString(this.flow.coordinates, this.output.coordinates), '#808080'));
-        }
+        svg.append(this.flow.lineFrom(this.input, this.lineColour));
+        svg.append(this.flow.lineTo(this.output, this.lineColour));
         return svg;
         /*
         const componentPoints = new List(this.lines["start"].points(this.fromPotential.coordinates, {"flow": this.flow}));
@@ -287,19 +281,11 @@ export class Gyrator extends DiagramElement
     //===========
     {
         let svg = new List();
-        if (this.input !== null) {
-            // TODO: Default stroke colour from CSS
-            svg.append(svgLine(new geo.LineString(this.input.coordinates, this.coordinates), '#808080'));
-        }
-        if (this.output !== null) {
-            // TODO: Default stroke colour from CSS
-            svg.append(svgLine(new geo.LineString(this.coordinates, this.output.coordinates), '#808080'));
-        }
+        svg.append(this.lineFrom(this.input, this.lineColour));
+        svg.append(this.lineTo(this.output, this.lineColour));
         svg.extend(super.generateSvg());
         return svg;
     }
-
-
 }
 
 //==============================================================================
@@ -324,11 +310,8 @@ export class Potential extends Node
     //===========
     {
         let svg = new List();
-        const quantity = this.quantity;
-        if (quantity !== null) {
-            // TODO: Default stroke colour from CSS
-            svg.append(svgLine(new geo.LineString(this.coordinates, quantity.coordinates),
-                              (quantity.stroke !== "none") ? quantity.stroke : '#808080'));
+        if (this.quantity !== null) {
+            svg.append(this.lineTo(this.quantity, this.quantity.lineColour));
         }
         svg.extend(super.generateSvg());
         return svg;
@@ -377,18 +360,7 @@ export class Reaction extends DiagramElement
     //===========
     {
         let svg = new List();
-        if (this.input !== null) {
-            // TODO: Default stroke colour from CSS
-            svg.append(svgLine(new geo.LineString(this.input.coordinates, this.coordinates), '#808080'));
-        }
-        if (this.output !== null) {
-            // TODO: Default stroke colour from CSS
-            svg.append(svgLine(new geo.LineString(this.coordinates, this.output.coordinates), '#808080'));
-        }
-        if (this.modulator !== null) {
-            // TODO: Default stroke colour from CSS
-            svg.append(svgLine(new geo.LineString(this.modulator.coordinates, this.coordinates), '#808080'));
-        }
+        svg.append(this.lineFrom(this.modulator, this.lineColour));
         svg.extend(super.generateSvg());
         return svg;
     }
@@ -415,14 +387,8 @@ export class Transformer extends DiagramElement
     //===========
     {
         let svg = new List();
-        if (this.input !== null) {
-            // TODO: Default stroke colour from CSS
-            svg.append(svgLine(new geo.LineString(this.input.coordinates, this.coordinates), '#808080'));
-        }
-        if (this.output !== null) {
-            // TODO: Default stroke colour from CSS
-            svg.append(svgLine(new geo.LineString(this.coordinates, this.output.coordinates), '#808080'));
-        }
+        svg.append(this.lineFrom(this.input, this.lineColour));
+        svg.append(this.lineTo(this.output, this.lineColour));
         svg.extend(super.generateSvg());
         return svg;
     }
