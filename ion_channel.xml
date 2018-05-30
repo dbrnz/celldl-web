@@ -72,6 +72,7 @@
 
         #I_Kp[modulator] {
             line-color: red;
+            line-end: -90 until-x #u3;
         }
 
     </style>

@@ -57,7 +57,7 @@ export const COMPARTMENT_BOUNDARIES = new List().extend(HORIZONTAL_BOUNDARIES).e
 //==============================================================================
 
 export class Offset {
-    constructor(offset, unit) {
+    constructor(offset=0, unit='') {
         this.offset = offset;
         this.unit = unit;
     }
@@ -296,6 +296,7 @@ export class Line
         this.element = element;
         this.tokens = tokens;
         this.segments = [];
+        this.lengths = null;
     }
 
     parse()
@@ -303,128 +304,151 @@ export class Line
     {
         /*
         <line-point> ::= <coord-pair> | <line-angle> <constraint>
-        <coord-pair> ::= '(' <length> ',' <length> ')'
+        <coord-pair> ::= <length> ',' <length>
         <constraint> ::= ('until-x' | 'until-y') <relative-point>
         <relative-point> ::= <id-list> | [ <offset> <reln> ] <id-list>
         */
-
-        // TODO
-
-        var angle, constraint, dependencies, dependency, length, line_offset, offset, reln, token;
-        if (this.tokens === null) {
-            return;
-        }
-        this.segments = [];
-        const tokens = this.tokens;
-        token = tokens.peek();
-        while ((token !== null)) {
-            angle = ((token.type === "number") ? parser.get_number(tokens) : null);
-            token = tokens.next();
-            if ((((token === null) || (token.type !== "ident")) || (! _pj.in_es6(token.lower_value, ["until", "until-x", "until-y"])))) {
-                throw new SyntaxError("Unknown constraint for curve segment.");
-            }
-            if (((angle === null) && _pj.in_es6(token.lower_value, ["until-x", "until-y"]))) {
-                throw new SyntaxError("Angle expected.");
-            } else {
-                if (((angle !== null) && (token.lower_value === "until"))) {
-                    throw new SyntaxError("Unexpected angle.");
-                }
-            }
-            constraint = ((token.lower_value === "until-x") ? (- 1) : ((token.lower_value === "until-y") ? 1 : 0));
-            token = tokens.peek();
-            if ((token.type === "() block")) {
-                offset = parser.get_coordinates(new parser.StyleTokensIterator(token.content), {"allow_local": false});
-                token = tokens.next();
-                if (((token.type !== "ident") || (token.lower_value !== "from"))) {
-                    throw new SyntaxError("'from' expected.");
-                }
-                token = tokens.next();
-            } else {
-                if (_pj.in_es6(token.type, ["number", "dimension"])) {
-                    length = parser.get_length(tokens);
-                    token = tokens.next();
-                    if (((token.type !== "ident") || (! _pj.in_es6(token.lower_value, POSITION_RELATIONS)))) {
-                        throw new SyntaxError("Unknown relationship for offset.");
-                    }
-                    reln = token.lower_value;
-                    if (_pj.in_es6(reln, HORIZONTAL_RELATIONS)) {
-                        offset = [[((reln === "right") ? length[0] : (- length[0])), length[1]], [0, ""]];
-                    } else {
-                        offset = [[0, ""], [((reln === "right") ? length[0] : (- length[0])), length[1]]];
-                    }
-                    token = tokens.next();
+        if (tokens instanceof Array) {
+            if (tokens.length === 2) {
+                if (tokens[0].type !== 'SEQUENCE') {
+                    this.lengths = stylesheet.parseOffsetPair(tokens);
                 } else {
-                    offset = [[0, ""], [0, ""]];
-                }
-            }
-            dependencies = [];
-            while (((token !== null) && (token.type === "hash"))) {
-                dependency = CellDiagram.instance().findElement(token.value);
-                if ((dependency === null)) {
-                    throw new Error(`Unknown element ${token.value}`);
-                }
-                dependencies.append(dependency);
-                token = tokens.next();
-            }
-            if ((! dependencies)) {
-                throw new SyntaxError("Identifier(s) expected.");
-            }
-            if ((((token !== null) && (token.type === "ident")) && (token.lower_value === "offset"))) {
-                token = tokens.next();
-                if ((token.type === "() block")) {
-                    line_offset = parser.get_coordinates(new parser.StyleTokensIterator(token.content), {"allow_local": false});
-                    token = tokens.peek();
-                } else {
-                    throw new SyntaxError("Offset expected.");
+                    this.parseSegment(tokens[0]);
+                    this.parseSegment(tokens[1]);
                 }
             } else {
-                line_offset = null;
+                throw new exception.StyleError(tokens, "Line can't have more than two constraints")
             }
-            this._segments.append([angle, constraint, offset, dependencies, line_offset]);
-            if ((! _pj.in_es6(token, [null, ","]))) {
-                throw new SyntaxError("Invalid syntax");
-            }
-            token = tokens.peek();
+        } else {
+            this.parseSegment(tokens);
         }
     }
 
-    points(start_pos, flow=null, reverse=false)
+    parseSegment(tokens)
+    //==================
+    {
+        let angle = null;
+        let constraint = null;
+        let offset = null;
+        let reln = null;
+        let offsets = [new Offset(), new Offset()];
+        let dependencies = [];
+        let lineOffset = null;
+
+        let state = 0;
+        for (let token of this.tokens.value) {
+            switch (state) {
+              case 0:
+                if (token.type === 'NUMBER') {
+                    angle = stylesheet.parseNumber(token.value);
+                    state = 1;
+                    break;
+                }
+                // NB. Fall through to get constraint
+
+              case 1:
+                if (token.type !== 'ID' || ['until-x', 'until-y'].indexOf(token.value) < 0) {
+                    throw new exception.StyleError(tokens, 'Unknown constraint for line segment');
+                } else if (angle === null) {
+                    throw new exception.StyleError(tokens, "Angle expected");
+                } else if ((token.value === 'until-x' && (angle %  90) === 0)
+                        || (token.value === 'until-y' && (angle % 180) === 0)) {
+                    throw new exception.StyleError(tokens, "Invalid angle for direction");
+                }
+                constraint = (token.lower_value === 'until-x') ? -1 : 1 ;
+                state = 2;
+                break;
+
+              case 2:
+                if (['NUMBER', 'DIMENSION', 'PERCENTAGE'].indexOf(token.type) >= 0) {
+                    offset = stylesheet.parseOffset(token);
+                    state = 9;
+                    break;
+                }
+                state = 4;
+                // NB. Fall through to get dependencies
+
+              case 4:
+                if (token.type === 'HASH') {
+                    dependency = CellDiagram.instance().findElement(token.value);
+                    if (dependency === null) {
+                        throw new exception.StyleError(tokens, `Unknown element ${token.value}`);
+                    }
+                    dependencies.push(dependency);
+                }
+                // Check for a line offset
+                if (token.type === 'FUNCTION' && token.name.value === 'offset') {
+                    lineOffset = stylesheet.parseOffsetPair(token.parameters, false);
+                    state = 99;
+                    break;
+                }
+                // NB. Fall through to check for unexpected tokens
+
+              case 99:
+                throw new exception.StyleError(tokens, 'Invalid syntax for a line segment');
+                break;
+
+              case 9:
+                if (token.type !== 'ID' || POSITION_RELATIONS.indexOf(token.value) < 0) {
+                    throw new exception.StyleError(tokens, "Unknown offset relationship");
+                }
+                reln = token.value;
+                if (HORIZONTAL_RELATIONS.indexOf(reln) >= 0) {
+                    offsets[0] = new Offset(((reln === 'right') ? offset.offset : -offset.offset), offset.unit);
+                } else {
+                    offsets[1] = new Offset(((reln === 'below') ? offset.offset : -offset.offset), offset.unit);
+                }
+                state = 4;
+                break;
+            }
+            if (dependencies.length === 0) {
+                throw new exception.StyleError(tokens, 'Identifier(s) expected');
+            }
+            this.segments.push({angle, constraint, offsets, dependencies, lineOffset});
+        }
+    }
+
+    points(startPos, flow=null, reverse=false)
     //=========================================
     {
-        var angle, dx, dy, end_pos, last_pos, line_offset, offset, points, trans_coords;
-        last_pos = start_pos;
-        points = [start_pos];
-        for (var segment, _pj_c = 0, _pj_a = this._segments, _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-            segment = _pj_a[_pj_c];
-            angle = segment[0];
-            offset = this._element.diagram.unit_converter.pixel_pair(segment[2], {"add_offset": false});
-            end_pos = (offset + Position.centroid(segment[3]));
-            if ((segment[1] === (- 1))) {
-                dx = (end_pos[0] - last_pos[0]);
-                dy = (dx * math.tan(((angle * math.pi) / 180)));
-                end_pos[1] = (last_pos[1] - dy);
-            } else {
-                if ((segment[1] === 1)) {
-                    dy = (last_pos[1] - end_pos[1]);
-                    dx = (dy * math.tan((((90 - angle) * math.pi) / 180)));
-                    end_pos[0] = (last_pos[0] + dx);
-                }
+        let lastPos = startPos;
+        const points = [startPos];
+
+        for (let segment of this.segments) {
+            const angle = segment.angle;
+            const offset = this.element.diagram.unitConverter.toPixelPair(segment.offsets, false);
+            const position = Position.centroid(segment.dependencies);
+            let xPos = position[0] + offset[0];
+            let yPos = position[1] + offset[1];
+            if (segment.constraint === -1) {
+                const dx = endPos[0] - lastPos[0];
+                const dy = dx*Math.tan(angle*Math.PI/180);
+                yPos = lastPos[1] - dy;
+            } else if (segment.constraint === 1) {
+                const dy = lastPos[1] - endPos[1];
+                const dx = dy*Math.tan((90 - angle)*Math.PI/180);
+                xPos = lastPos[0] + dx;
             }
-            if ((segment[4] !== null)) {
-                line_offset = this._element.diagram.unit_converter.pixel_pair(segment[4], {"add_offset": false});
-                points.slice((- 1))[0] += line_offset;
-                end_pos += line_offset;
+            if (segment.lineOffset !== null) {
+                const lineOffset = this.element.diagram.unitConverter.toPixelPair(segment.lineOffset, false);
+                points.slice(-1)[0][0] += lineOffset[0];
+                points.slice(-1)[0][1] += lineOffset[1];
+                xPos += lineOffset[0];
+                yPos += lineOffset[1];
             }
-            points.append(end_pos);
-            last_pos = end_pos;
+            points.push([xPos, yPos]);
+            lastPos = [xPos, yPos];
         }
+/*
         if ((flow.transporter !== null)) {
             trans_coords = flow.transporter.coords;
             if (((trans_coords[0] === points.slice((- 1))[0][0]) || (trans_coords[1] === points.slice((- 1))[0][1]))) {
                 points.slice((- 1))[0] += flow.component_offset(this._element);
             }
         }
-        return ((! reverse) ? points : list(reversed(points)));
+*/
+        if (reverse) points.reverse();
+        return points;
     }
 }
 
