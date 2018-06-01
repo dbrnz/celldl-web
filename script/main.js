@@ -37,8 +37,8 @@ function main(cellDL, svgElementId)
             const domParser = new DOMParser();
             const xmlDocument = domParser.parseFromString(text, "application/xml");
             try {
-                CellDiagram.instance().reset()
-                StyleSheet.instance().reset()
+                CellDiagram.instance().reset();
+                StyleSheet.instance().reset();
 
                 const parser = new Parser();
                 parser.parseDocument(xmlDocument)
@@ -49,8 +49,6 @@ function main(cellDL, svgElementId)
                         cellDiagram.layout();
 
                         const svg = cellDiagram.generateSvg();
-//                       console.log(svg);
-
                         svgElement.insertAdjacentHTML('afterbegin', svg);
                     });
             } catch (error) {

@@ -113,8 +113,6 @@ export class CellDiagram {
         return (e instanceof elementClass) ? e : null;
     }
 
-    layout()
-    //======
     addEdge(edge)
     //===========
     {
@@ -147,6 +145,8 @@ export class CellDiagram {
     }
 */
 
+    layout(drawDependencyGraph=false)
+    //===============================
     {
         /*
         Set positions (and sizes) of all components in the diagram.
@@ -169,17 +169,18 @@ export class CellDiagram {
             }
         }
 
-/*
-jsnx.draw(dependencyGraph, {
-    element: '#canvas',
-    withLabels: true,
-    stickyDrag: true,
-    edgeStyle: {
-        'stroke-width': 10,
-        fill: '#999'
-    }
-});
-*/
+        if (drawDependencyGraph) {
+            jsnx.draw(dependencyGraph, {
+                element: '#canvas',
+                withLabels: true,
+                stickyDrag: true,
+                edgeStyle: {
+                    'stroke-width': 10,
+                    fill: '#999'
+                }
+            });
+        }
+
         const unitConverter = new layout.UnitConverter([this.width, this.height], [this.width, this.height]);
         for (let node of jsnx.topologicalSort(dependencyGraph)) {
             node.assignCoordinates(unitConverter);
@@ -200,15 +201,6 @@ jsnx.draw(dependencyGraph, {
     generateSvg()
     //===========
     {
-        /*
-        Drawing order:
-        0. All <defs>  ==>  first allocate SVG Element classes
-        1. All compartment boundaries
-        2. All flow lines
-        3. Everything else (transporters, quantities, potentials, flow components)
-        Transporter SVG elements need to generate SVG from super class (Exchanger, Channel, etc)
-        with <defs> only once for each superclass...
-        */
         svgElements.DefinesStore.reset()
 
         let svg = new List(['<?xml version="1.0" encoding="UTF-8"?>']);
