@@ -58,6 +58,7 @@ export class CellDiagram {
     {
         this._elements = [];
         this._elementsById = {};
+        this._edges = [];
         this.width = 0;
         this.height = 0;
     }
@@ -114,6 +115,38 @@ export class CellDiagram {
 
     layout()
     //======
+    addEdge(edge)
+    //===========
+    {
+        this._edges.push(edge);
+    }
+
+    edges()
+    //=====
+    {
+         return this._edges;
+    }
+
+/* FUTURE ??
+    edgesTo(fromId)
+    //=============
+    {
+         return Array.from(this._edges).filter(edge => edge.id.split(' ')[1] === fromId)
+    }
+
+    elementsFrom(element)
+    //===================
+    {
+        return this.edgesFrom(element.id).filter(id => this._elementsById[id])
+    }
+
+    elementsTo(element)
+    //===================
+    {
+        return this.edgesTo(element.id).filter(id => this._elementsById[id])
+    }
+*/
+
     {
         /*
         Set positions (and sizes) of all components in the diagram.
@@ -154,6 +187,10 @@ jsnx.draw(dependencyGraph, {
 //                    node.setPixelSize(node.container.unitConverter.toPixelPair(node.size.size, false));
 //                    node.setUnitConverter(new layout.UnitConverter(this.pixelSize, node.pixelSize, node.position.pixels));
 //                }
+        }
+
+        for (let edge of this._edges) {
+            edge.resolveReferences();
         }
 
  // Space flow lines going through a transporter

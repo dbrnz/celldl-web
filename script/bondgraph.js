@@ -22,17 +22,54 @@ limitations under the License.
 
 //==============================================================================
 
+import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
 
 import {CellDiagram} from './cellDiagram.js';
 import {DiagramElement} from './element.js';
 import {List} from './utils.js';
+import {parseColour, StyleSheet} from './stylesheet.js';
 import {svgLine} from './svgElements.js';
 
 //==============================================================================
 
 const LINE_OFFSET = 3.5;  // TODO: Initial/default value from CSS
+
+//==============================================================================
+
+function drawEdges(svg)
+//=====================
+{
+    for (let edge of CellDiagram.instance().edges()) {
+        svg.extend(edge.generateSvg());
+    }
+}
+
+function extendSvg(svg, elementClass)
+//===================================
+{
+    for (let element of CellDiagram.instance().elements(elementClass)) {
+        svg.extend(element.generateSvg());
+    }
+}
+
+
+export function generateSvg()
+//===========================
+{
+    let svg = new List();
+
+    drawEdges(svg);
+    extendSvg(svg, Flow);
+    extendSvg(svg, Gyrator);
+    extendSvg(svg, Potential);
+    extendSvg(svg, Quantity);
+    extendSvg(svg, Reaction);
+    extendSvg(svg, Transformer);
+
+    return svg;
+}
 
 //==============================================================================
 
@@ -46,30 +83,150 @@ export class Node extends DiagramElement
 
 //==============================================================================
 
-function extendSvg(svg, elementClass)
+export class Edge
 {
-    for (let element of CellDiagram.instance().elements(elementClass)) {
-        svg.extend(element.generateSvg());
+    constructor(domElement, fromId, toParent, parent, validClasses, styleElementId=null) {
+        this.domElement = domElement;
+        this.otherId = `#${fromId}`;
+        this.other = null;
+        this.toParent = toParent;
+        this.parent = parent;
+        this.validClasses = validClasses;
+        this.style = null;
+        this.styleElementId = styleElementId;
+        this.id = toParent ? `${this.otherId} ${parent.id}` : `${parent.id} ${this.otherId}`;
+        CellDiagram.instance().addEdge(this);
+    }
+
+    static fromAttribute(domElement, attributeName, toParent, parent, validClasses)
+    //=============================================================================
+    {
+        if (!(attributeName in domElement.attributes)) {
+            throw new exception.KeyError(domElement, `Expected ${attributeName} attribute`);
+        }
+        return new Edge(domElement, domElement.attributes[attributeName].textContent,
+                        toParent, parent, validClasses);
+    }
+
+    resolveReferences()
+    //=================
+    {
+        for (let elementClass of this.validClasses) {
+            this.other = CellDiagram.instance().findElement(this.otherId, elementClass);
+            if (this.other !== null) {
+                const styleDomElement = (this.styleElementId !== null)
+                                            ? CellDiagram.instance().findElement(this.styleElementId).domElement
+                                            : this.domElement;
+                this.style = StyleSheet.instance().style(styleDomElement);
+                return;
+            }
+        }
+        const names = this.validClasses.filter(c => c.name);
+        const classNames = (names.length === 1) ? names[0]
+                                                : [names.slice(0, -1).join(', '), names.slice(-1)[0]].join(' or ');
+
+        throw new exception.KeyError(this.domElement, `Can't find ${classNames} with id '${this.otherId}'`);
+    }
+
+    parsePosition()
+    //=============
+    {
+/* TODO
+        this.lines = { start: new layout.Line(this, this.style["line-start"]),
+                       end:   new layout.Line(this, this.style["line-end"])};
+        for (let line of this.lines.values()) {
+            line.parse();
+        }
+*/
+    }
+
+    get lineColour()
+    //==============
+    {
+        return ('line-color' in this.style) ? parseColour(this.style['line-color'])
+                                            : '#A0A0A0'; // TODO: specify defaults in one place
+    }
+
+    lineFrom(other, lineColour, reverse=false)
+    //====================================
+    {
+        return (other !== null) ?
+
+        svgLine(new geo.LineString(this.other.coordinates, this.parent.coordinates),
+                                          this.lineColour, {reverse: reverse})
+                                : '';
+    }
+
+    lineTo(other, colour, reverse=false)
+    //==================================
+    {
+        return this.lineFrom(other, colour, !reverse)
+    }
+
+
+    generateSvg()
+    //===========
+    {
+        let svg = new List();
+        if (this.toParent) {
+            svg.append(svgLine(new geo.LineString(this.other.coordinates, this.parent.coordinates),
+                               this.lineColour));
+        } else {
+            svg.append(svgLine(new geo.LineString(this.parent.coordinates, this.other.coordinates),
+                               this.lineColour));
+        }
+        return svg;
+        /*
+        const componentPoints = new List(this.lines["start"].points(this.fromPotential.coordinates, {"flow": this.flow}));
+        componentPoints.extend(this.flow.getFlowLine(this));
+        for (let to of this.toPotentials) {
+            const points = new List(componentPoints);
+            points.extend(this.lines["end"].points(to.coordinates, {"flow": this.flow, "reverse": true}));
+            const line = new geo.LineString(...points);
+            const lineStyle = this.getStyleAsString("line-style", "");
+            if ((this.count % 2) === 0) {
+                for (let n = 0; n < this.count/2; n += 1) {
+                    const offset = (n + 0.5)*LINE_OFFSET;
+                    svg.append(svgLine(line.parallelOffset(offset, "left"),
+                                       this.colour, {style: line_style}));
+                    svg.append(svgLine(line.parallelOffset(offset, "right"),
+                                       this.colour, {reverse: true, style: lineStyle}));
+                }
+            } else {
+                for (let n = 0; n < math.floor(this.count/2); n += 1) {
+                    const offset = (n + 1)*LINE_OFFSET;
+                    svg.append(svgLine(line.parallelOffset(offset, "left"),
+                                       this.colour, {style: line_style}));
+                    svg.append(svgLine(line.parallelOffset(offset, "right"),
+                                       this.colour, {reverse: true, style: lineStyle}));
+                }
+                svg.append(svgLine(line, this.colour, {"style": lineStyle}));
+            }
+        }
+    */
     }
 }
 
+//==============================================================================
 
-export function generateSvg()
+export class FlowEdge extends Edge
 {
-    let svg = new List();
+    constructor(element, fromId, toParent, parent, validClasses, count, styleElementId=null)
+    {
+        super(element, fromId, toParent, parent, validClasses, styleElementId);
+        this.count = count;
+    }
 
-    // Order of drawing matters as we want nodes covering lines
-
-    extendSvg(svg, Flow);
-
-    extendSvg(svg, Gyrator);
-    extendSvg(svg, Reaction);
-    extendSvg(svg, Transformer);
-
-    extendSvg(svg, Potential);
-    extendSvg(svg, Quantity);
-
-    return svg;
+    static fromAttribute(element, attributeName, toParent, parent, validClasses)
+    //==========================================================================
+    {
+        if (!(attributeName in element.attributes)) {
+            throw new exception.KeyError(element, `Expected ${attributeName} attribute`);
+        }
+        const count = ('count' in element.attributes) ? Number(attributes.count.textContent) : 1;
+        return new FlowEdge(element, element.attributes[attributeName].textContent,
+                            toParent, parent, validClasses, count);
+    }
 }
 
 //==============================================================================
@@ -79,45 +236,9 @@ export class Flow extends Node
     constructor(element)
     {
         super(element, "Flow");
-        this.components = [];
 //        this.componentOffsets = [];
 //        const transporterId = ('transporter' in element.attributes) ? element.attributes.transporter : null;
 //        this.transporter = this.fromAttribute('transporter', [diagramTransporter])
-    }
-
-    addComponent(component)
-    //=====================
-    {
-        this.components.push(component);
-//        this.componentOffsets[component] = new geo.Point();
-    }
-
-    resolveReferences()
-    //=================
-    {
-        for (let component of this.components) {
-            component.resolveReferences();
-        }
-    }
-
-    parsePosition()
-    //=============
-    {
-        super.parsePosition();
-        for (let component of this.components) {
-            component.parsePosition();
-        }
-    }
-
-    generateSvg()
-    //===========
-    {
-        let svg = new List();
-        for (let component of this.components) {
-            svg.extend(component.generateSvg());
-        }
-        svg.extend(super.generateSvg());
-        return svg;
     }
 
 /*
@@ -194,97 +315,12 @@ export class Flow extends Node
 
 //==============================================================================
 
-export class FlowComponent extends DiagramElement
-{
-    constructor(element, flow)
-    {
-        super(element, 'FlowComponent', false);
-        this.flow = flow;
-        this.count = ('count' in this.attributes) ? Number(attributes.count.textContent) : 1;
-    }
-
-    resolveReferences()
-    //=================
-    {
-        this.input = this.fromAttribute('input', [Potential, Reaction])
-        this.output = this.fromAttribute('output', [Potential, Reaction])
-    }
-
-    parsePosition()
-    //=============
-    {
-/* TODO
-        this.lines = { start: new layout.Line(this, this.style["line-start"]),
-                       end:   new layout.Line(this, this.style["line-end"])};
-        for (let line of this.lines.values()) {
-            line.parse();
-        }
-*/
-    }
-
-    generateSvg()
-    //===========
-    {
-        let svg = new List();
-        svg.append(this.flow.lineFrom(this.input, this.lineColour));
-        svg.append(this.flow.lineTo(this.output, this.lineColour));
-        return svg;
-        /*
-        const componentPoints = new List(this.lines["start"].points(this.fromPotential.coordinates, {"flow": this.flow}));
-        componentPoints.extend(this.flow.getFlowLine(this));
-        for (let to of this.toPotentials) {
-            const points = new List(componentPoints);
-            points.extend(this.lines["end"].points(to.coordinates, {"flow": this.flow, "reverse": true}));
-            const line = new geo.LineString(...points);
-            const lineStyle = this.getStyleAsString("line-style", "");
-            if ((this.count % 2) === 0) {
-                for (let n = 0; n < this.count/2; n += 1) {
-                    const offset = (n + 0.5)*LINE_OFFSET;
-                    svg.append(svgLine(line.parallelOffset(offset, "left"),
-                                       this.colour, {style: line_style}));
-                    svg.append(svgLine(line.parallelOffset(offset, "right"),
-                                       this.colour, {reverse: true, style: lineStyle}));
-                }
-            } else {
-                for (let n = 0; n < math.floor(this.count/2); n += 1) {
-                    const offset = (n + 1)*LINE_OFFSET;
-                    svg.append(svgLine(line.parallelOffset(offset, "left"),
-                                       this.colour, {style: line_style}));
-                    svg.append(svgLine(line.parallelOffset(offset, "right"),
-                                       this.colour, {reverse: true, style: lineStyle}));
-                }
-                svg.append(svgLine(line, this.colour, {"style": lineStyle}));
-            }
-        }
-    */
-    }
-}
-
-//==============================================================================
-
 export class Gyrator extends DiagramElement
 {
     constructor(element)
     {
         super(element, 'Gyrator');
         if (!this.label.startsWith('$')) this.label = `GY:${this.label}`;
-    }
-
-    resolveReferences()
-    //=================
-    {
-        this.input = this.fromAttribute('input', [Flow])
-        this.output = this.fromAttribute('output', [Flow])
-    }
-
-    generateSvg()
-    //===========
-    {
-        let svg = new List();
-        svg.append(this.lineFrom(this.input, this.lineColour));
-        svg.append(this.lineTo(this.output, this.lineColour));
-        svg.extend(super.generateSvg());
-        return svg;
     }
 }
 
@@ -295,26 +331,10 @@ export class Potential extends Node
     constructor(element)
     {
         super(element, 'Potential');
-    }
-
-    resolveReferences()
-    //=================
-    {
-        this.quantity = this.fromAttribute('quantity', [Quantity])
-        if (this.quantity !== null) {
-            this.quantity.setPotential(this);
+        if ('quantity' in element.attributes) {
+            const quantityId = element.attributes.quantity.textContent;
+            new Edge(element, quantityId, false, this, [Quantity], `#${quantityId}`);
         }
-    }
-
-    generateSvg()
-    //===========
-    {
-        let svg = new List();
-        if (this.quantity !== null) {
-            svg.append(this.lineTo(this.quantity, this.quantity.lineColour));
-        }
-        svg.extend(super.generateSvg());
-        return svg;
     }
 }
 
@@ -325,12 +345,6 @@ export class Quantity extends DiagramElement
     constructor(element) {
         super(element, 'Quantity');
         this.potential = null;
-    }
-
-    setPotential(potential)
-    //=====================
-    {
-        this.potential = potential;
     }
 }
 
@@ -343,21 +357,6 @@ export class Reaction extends DiagramElement
         super(element, 'Reaction');
         if (!this.label.startsWith('$')) this.label = `RE:${this.label}`;
     }
-
-    resolveReferences()
-    //=================
-    {
-        this.modulator = this.fromAttribute('modulator', [Potential])
-    }
-
-    generateSvg()
-    //===========
-    {
-        let svg = new List();
-        svg.append(this.lineFrom(this.modulator, this.lineColour));
-        svg.extend(super.generateSvg());
-        return svg;
-    }
 }
 
 //==============================================================================
@@ -369,24 +368,6 @@ export class Transformer extends DiagramElement
         super(element, 'Transformer');
         if (!this.label.startsWith('$')) this.label = `TF:${this.label}`;
     }
-
-    resolveReferences()
-    //=================
-    {
-        this.input = this.fromAttribute('input', [Potential])
-        this.output = this.fromAttribute('output', [Potential])
-    }
-
-    generateSvg()
-    //===========
-    {
-        let svg = new List();
-        svg.append(this.lineFrom(this.input, this.lineColour));
-        svg.append(this.lineTo(this.output, this.lineColour));
-        svg.extend(super.generateSvg());
-        return svg;
-    }
-
 }
 
 //==============================================================================

@@ -114,10 +114,15 @@ export class Parser
         for (let e of element.children) {
             if (e.nodeName === "component") {
                 if (!("input" in e.attributes || "output" in e.attributes)) {
-                    throw new exception.SyntaxError(e, "Flow component requires an 'input' or 'output'");
+                    throw new exception.SyntaxError(e, "A flow component requires an 'input' or 'output'");
                 }
-                const component = new bondgraph.FlowComponent(e, flow);
-                flow.addComponent(component);
+                const flowConnectsTo = [bondgraph.Gyrator, bondgraph.Potential, bondgraph.Reaction];
+                if ('input' in e.attributes) {
+                    bondgraph.FlowEdge.fromAttribute(e, 'input', true, flow, flowConnectsTo);
+                }
+                if ('output' in e.attributes) {
+                    bondgraph.FlowEdge.fromAttribute(e, 'output', false, flow, flowConnectsTo);
+                }
             } else {
                 throw new exception.SyntaxError(e, `Unexpected <flow> element`);
             }
@@ -147,6 +152,15 @@ export class Parser
     //===================
     {
         const gyrator = new bondgraph.Gyrator(element);
+        for (let e of element.children) {
+            if        (e.nodeName === 'input') {
+                bondgraph.Edge.fromAttribute(e, 'flow', true, gyrator, [bondgraph.Flow]);
+            } else if (e.nodeName === 'output') {
+                bondgraph.Edge.fromAttribute(e, 'flow', false, gyrator, [bondgraph.Flow]);
+            } else {
+                throw new exception.SyntaxError(e, `Unexpected <gyrator> element`);
+            }
+        }
     }
 
     parsePotential(element)
@@ -165,12 +179,32 @@ export class Parser
     //====================
     {
         const reaction = new bondgraph.Reaction(element);
+        for (let e of element.children) {
+            if (e.nodeName === 'input') {
+                bondgraph.Edge.fromAttribute(e, 'flow', true, reaction, [bondgraph.Flow]);
+            } else if (e.nodeName === 'output') {
+                bondgraph.Edge.fromAttribute(e, 'flow', false, reaction, [bondgraph.Flow]);
+            } else if (e.nodeName === 'modulator') {
+                bondgraph.Edge.fromAttribute(e, 'potential', true, reaction, [bondgraph.Potential]);
+            } else {
+                throw new exception.SyntaxError(e, `Unexpected <reaction> element`);
+            }
+        }
     }
 
     parseTransformer(element)
     //=======================
     {
         const transformer = new bondgraph.Transformer(element);
+        for (let e of element.children) {
+            if (e.nodeName === 'input') {
+                bondgraph.Edge.fromAttribute(e, 'potential', true, transformer, [bondgraph.Potential]);
+            } else if (e.nodeName === 'output') {
+                bondgraph.Edge.fromAttribute(e, 'potential', false, transformer, [bondgraph.Potential]);
+            } else {
+                throw new exception.SyntaxError(e, `Unexpected <transformer> element`);
+            }
+        }
     }
 
     parseDocument(xmlDocument)

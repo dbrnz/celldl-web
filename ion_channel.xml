@@ -11,18 +11,23 @@
         <potential id="u_E"/>
         <potential id="u3"/>
 
-        <transformer id="zF" input="u_E" output="u3"/>
+        <transformer id="zF">
+            <input potential="u_E"/>
+            <output potential="u3"/>
+        </transformer>
 
-        <reaction id="I_Kp" input="v1" output="v2" modulator="u3" class="potassium"/>
+        <reaction id="I_Kp" class="potassium">
+            <modulator potential="u3"/>
+        </reaction>
 
         <flow id="v1">
-            <component input="u1"/>
             <component input="u3"/>
+            <component input="u1" output="I_Kp" class="potassium"/>
             <component input="u4"/>
         </flow>
 
         <flow id="v2">
-            <component output="u2"/>
+            <component input="I_Kp" output="u2" class="potassium"/>
             <component output="u4"/>
         </flow>
 
@@ -48,7 +53,7 @@
            selector or use a selector in the form `#v1 > component[input="u3"]`
         */
 
-        #zF,
+        #zF *,
         #v1u3 {
             line-color: red;
         }
@@ -70,7 +75,7 @@
         #q4 { position: 12% above #u4; }
         #u4 { position: 15% above #I_Kp; }
 
-        #I_Kp[modulator] {
+        #I_Kp > modulator {
             line-color: red;
             line-end: -90 until-x #u3;
         }
