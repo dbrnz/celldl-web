@@ -24,9 +24,9 @@ limitations under the License.
 
 export class KeyError extends Error
 {
-    constructor(element, message)
+    constructor(domElement, message)
     {
-        super(`${message}\n${element.domElement.outerHTML}`);
+        super(`${message}\n${domElement.outerHTML}`);
     }
 }
 
@@ -34,9 +34,9 @@ export class KeyError extends Error
 
 export class SyntaxError extends Error
 {
-    constructor(element, message)
+    constructor(domElement, message)
     {
-        super(`${message}\n${element.domElement.outerHTML}`);
+        super(`${message}\n${domElement.outerHTML}`);
     }
 }
 

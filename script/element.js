@@ -37,7 +37,7 @@ export class DiagramElement {
     constructor(domElement, className='Element', requireId=true)
     {
         if (requireId && !('id' in domElement.attributes)) {
-            throw new exception.SyntaxError(element, "A diagram element must have an 'id'")
+            throw new exception.SyntaxError(domElement, "A diagram element must have an 'id'")
         }
         this.domElement = domElement;
         this.attributes = domElement.attributes;
@@ -68,7 +68,7 @@ export class DiagramElement {
             const classNames = (names.length === 1) ? names[0]
                                                     : [names.slice(0, -1).join(', '), names.slice(-1)[0]].join(' or ');
 
-            throw new exception.KeyError(this, `Can't find ${classNames} with id '${elementId}'`);
+            throw new exception.KeyError(this.domElement, `Can't find ${classNames} with id '${elementId}'`);
         }
         return null;
     }
