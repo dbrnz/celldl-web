@@ -41,7 +41,7 @@
             height: 500;           /* SVG `pixel` units */
         }
 
-        #q4, #zF, #u_E { color: none; }
+        #q4, #zF, #u_E { color: white; }
 
         #q4,
         #v1 > component[input="u4"],
