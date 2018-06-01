@@ -172,6 +172,8 @@ jsnx.draw(dependencyGraph, {
         Transporter SVG elements need to generate SVG from super class (Exchanger, Channel, etc)
         with <defs> only once for each superclass...
         */
+        svgElements.DefinesStore.reset()
+
         let svg = new List(['<?xml version="1.0" encoding="UTF-8"?>']);
         svg.append(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
   version="1.1" preserveAspectRatio="none"

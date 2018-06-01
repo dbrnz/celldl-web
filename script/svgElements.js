@@ -43,7 +43,13 @@ export class SvgElement
 
 export class DefinesStore
 {
-    static add(id, defines) {
+    static reset()
+    {
+        DefinesStore._defines = new Map;
+    }
+
+    static add(id, defines)
+    {
         if (!DefinesStore._defines.has(id)) {
             DefinesStore._defines.set(id, defines);
         }
