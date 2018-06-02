@@ -330,7 +330,7 @@ export class LinePath
                         || (token.value === 'until-y' && ( angle     % 180) === 0)) {
                     throw new exception.StyleError(tokens, "Invalid angle for direction");
                 }
-                limit = (token.lower_value === 'until-x') ? -1 : 1 ;
+                limit = (token.value === 'until-x') ? -1 : 1 ;
                 state = 2;
                 break;
 
@@ -350,6 +350,7 @@ export class LinePath
                         throw new exception.StyleError(tokens, `Unknown element ${token.value}`);
                     }
                     dependencies.push(dependency);
+                    break;
                 }
                 // Check for a line offset
                 if (token.type === 'FUNCTION' && token.name.value === 'offset') {
@@ -394,15 +395,16 @@ export class LinePath
         0 degrees === horizontal, positive is anti-clockwise
         */
         if (tokens instanceof Array) {
-            if (tokens.length === 2) {
-                if (tokens[0].type !== 'SEQUENCE') {
+            if (tokens[0].type !== 'SEQUENCE') {
+                if (tokens.length === 2) {
                     this.lengths = stylesheet.parseOffsetPair(tokens);
                 } else {
-                    this.parseConstraint(tokens[0]);
-                    this.parseConstraint(tokens[1]);
+                    throw new exception.StyleError(tokens, "Invalid path segment");
                 }
             } else {
-                throw new exception.StyleError(tokens, "Line can't have more than two constraints")
+                for (let token of tokens) {
+                    this.parseConstraint(token);
+                }
             }
         } else {
             this.parseConstraint(tokens);
@@ -424,26 +426,23 @@ export class LinePath
     toLineString(unitConverter, startCoordinates, endCoordinates)
     //===========================================================
     {
-        const startPoint = this.reversePath ? endCoordinates : startCoordinates;
-        const endPoint = this.reversePath ? startCoordinates : endCoordinates;
+        const lineStart = this.reversePath ? endCoordinates : startCoordinates;
+        const lineEnd = this.reversePath ? startCoordinates : endCoordinates;
 
-        let lastPoint = startPoint;
-        const points = [startPoint];
+        let currentPoint = lineStart;
+        const points = [currentPoint];
 
         for (let constraint of this.constraints) {
             const angle = constraint.angle;
             const offset = unitConverter.toPixelPair(constraint.offsets, false);
-            const position = Position.centroid(constraint.dependencies);
-            let x = position[0] + offset[0];
-            let y = position[1] + offset[1];
-            if (constraint.limit === -1) {
-                const dx = endPoint[0] - lastPoint[0];
-                const dy = dx*Math.tan(angle*Math.PI/180);
-                y = lastPoint[1] - dy;
-            } else if (constraint.limit === 1) {
-                const dy = lastPoint[1] - endPoint[1];
-                const dx = dy*Math.tan((90 - angle)*Math.PI/180);
-                x = lastPoint[0] + dx;
+            const targetPoint = Position.centroid(constraint.dependencies);
+            let x, y;
+            if (constraint.limit === -1) {              // until-x
+                x = targetPoint[0] + offset[0];
+                y = currentPoint[1] - (x - currentPoint[0])*Math.tan(angle*Math.PI/180);
+            } else if (constraint.limit === 1) {        // until-y
+                y = targetPoint[1] + offset[1];
+                x = currentPoint[0] + (y - currentPoint[1])*Math.tan((angle-90)*Math.PI/180);
             }
             if (constraint.lineOffset !== null) {
                 const lineOffset = unitConverter.toPixelPair(constraint.lineOffset, false);
@@ -453,7 +452,7 @@ export class LinePath
                 y += lineOffset[1];
             }
             points.push([x, y]);
-            lastPoint = [x, y];
+            currentPoint = [x, y];
         }
 /*
         if ((flow.transporter !== null)) {
@@ -463,7 +462,7 @@ export class LinePath
             }
         }
 */
-        points.push(endPoint);
+        points.push(lineEnd);
         if (this.reversePath) points.reverse();
 
         return new geo.LineString(...points);

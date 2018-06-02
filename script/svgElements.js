@@ -464,7 +464,7 @@ export function svgLine(lineString, colour, {display='', style=''}={})
         pointLocations.push(`L${point[0]},${point[1]}`);
     }
     return `<path fill="none" stroke="${colour}" stroke-width="${LINE_WIDTH}" ${display} ${dash} marker-end="${Arrow.url(colour)}"
-  d="M${points[0][0]},${points[0][1]} ${pointLocations}"/>`;
+  d="M${points[0][0]},${points[0][1]}${pointLocations.join('')}"/>`;
 }
 
 //==============================================================================
