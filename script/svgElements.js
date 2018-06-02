@@ -455,9 +455,9 @@ Arrow._nextId = 0;
 
 //==============================================================================
 
-export function svgLine(lineString, colour, {reverse=false, display='', style=''}={})
+export function svgLine(lineString, colour, {display='', style=''}={})
 {
-    const points = reverse ? [...lineString.coordinates].reverse() : lineString.coordinates;
+    const points = lineString.coordinates;
     const dash = (style === 'dashed') ? ' stroke-dasharray="10,5"' : '';
     let pointLocations = [];
     for (let point of points.slice(1)) {

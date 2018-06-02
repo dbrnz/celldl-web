@@ -26,6 +26,7 @@ limitations under the License.
 //import * as dia from './diagram.js';
 
 import * as exception from './exception.js';
+import * as geo from './geometry.js';
 import * as stylesheet from './stylesheet.js';
 
 import {CellDiagram} from './cellDiagram.js';
@@ -289,46 +290,21 @@ export class Size
 
 //==============================================================================
 
-export class Line
+export class LinePath
 {
-    constructor(element, tokens)
+    constructor(style, pathAttribute)
     {
-        this.element = element;
-        this.tokens = tokens;
-        this.segments = [];
+        this.tokens = (pathAttribute in style) ? style[pathAttribute] : null;
+        this.reversePath = false;
+        this.constraints = [];
         this.lengths = null;
     }
 
-    parse()
-    //=====
-    {
-        /*
-        <line-point> ::= <coord-pair> | <line-angle> <constraint>
-        <coord-pair> ::= <length> ',' <length>
-        <constraint> ::= ('until-x' | 'until-y') <relative-point>
-        <relative-point> ::= <id-list> | [ <offset> <reln> ] <id-list>
-        */
-        if (tokens instanceof Array) {
-            if (tokens.length === 2) {
-                if (tokens[0].type !== 'SEQUENCE') {
-                    this.lengths = stylesheet.parseOffsetPair(tokens);
-                } else {
-                    this.parseSegment(tokens[0]);
-                    this.parseSegment(tokens[1]);
-                }
-            } else {
-                throw new exception.StyleError(tokens, "Line can't have more than two constraints")
-            }
-        } else {
-            this.parseSegment(tokens);
-        }
-    }
-
-    parseSegment(tokens)
-    //==================
+    parseConstraint(tokens)
+    //=====================
     {
         let angle = null;
-        let constraint = null;
+        let limit = null;
         let offset = null;
         let reln = null;
         let offsets = [new Offset(), new Offset()];
@@ -336,26 +312,26 @@ export class Line
         let lineOffset = null;
 
         let state = 0;
-        for (let token of this.tokens.value) {
+        for (let token of tokens.value) {
             switch (state) {
               case 0:
                 if (token.type === 'NUMBER') {
-                    angle = stylesheet.parseNumber(token.value);
+                    angle = stylesheet.parseNumber(token);
                     state = 1;
                     break;
                 }
-                // NB. Fall through to get constraint
+                // NB. Fall through to get limit
 
               case 1:
                 if (token.type !== 'ID' || ['until-x', 'until-y'].indexOf(token.value) < 0) {
-                    throw new exception.StyleError(tokens, 'Unknown constraint for line segment');
+                    throw new exception.StyleError(tokens, 'Unknown limit for line segment');
                 } else if (angle === null) {
                     throw new exception.StyleError(tokens, "Angle expected");
-                } else if ((token.value === 'until-x' && (angle %  90) === 0)
-                        || (token.value === 'until-y' && (angle % 180) === 0)) {
+                } else if ((token.value === 'until-x' && ((angle+90) % 180) === 0)
+                        || (token.value === 'until-y' && ( angle     % 180) === 0)) {
                     throw new exception.StyleError(tokens, "Invalid angle for direction");
                 }
-                constraint = (token.lower_value === 'until-x') ? -1 : 1 ;
+                limit = (token.lower_value === 'until-x') ? -1 : 1 ;
                 state = 2;
                 break;
 
@@ -370,7 +346,7 @@ export class Line
 
               case 4:
                 if (token.type === 'HASH') {
-                    dependency = CellDiagram.instance().findElement(token.value);
+                    const dependency = CellDiagram.instance().findElement(token.value);
                     if (dependency === null) {
                         throw new exception.StyleError(tokens, `Unknown element ${token.value}`);
                     }
@@ -379,10 +355,9 @@ export class Line
                 // Check for a line offset
                 if (token.type === 'FUNCTION' && token.name.value === 'offset') {
                     lineOffset = stylesheet.parseOffsetPair(token.parameters, false);
-                    state = 99;
-                    break;
                 }
-                // NB. Fall through to check for unexpected tokens
+                state = 99;
+                break;
 
               case 99:
                 throw new exception.StyleError(tokens, 'Invalid syntax for a line segment');
@@ -401,43 +376,85 @@ export class Line
                 state = 4;
                 break;
             }
-            if (dependencies.length === 0) {
-                throw new exception.StyleError(tokens, 'Identifier(s) expected');
+        }
+        if (dependencies.length === 0) {
+            throw new exception.StyleError(tokens, 'Identifier(s) expected');
+        }
+        this.constraints.push({angle, limit, offsets, dependencies, lineOffset});
+    }
+
+    parsePath(tokens)
+    //===============
+    {
+        /*
+        <line-point> ::= <coord-pair> | <line-angle> <limit>
+        <coord-pair> ::= <length> ',' <length>
+        <limit> ::= ('until-x' | 'until-y') <relative-point>
+        <relative-point> ::= <id-list> | [ <offset> <reln> ] <id-list>
+
+        0 degrees === horizontal, positive is anti-clockwise
+        */
+        if (tokens instanceof Array) {
+            if (tokens.length === 2) {
+                if (tokens[0].type !== 'SEQUENCE') {
+                    this.lengths = stylesheet.parseOffsetPair(tokens);
+                } else {
+                    this.parseConstraint(tokens[0]);
+                    this.parseConstraint(tokens[1]);
+                }
+            } else {
+                throw new exception.StyleError(tokens, "Line can't have more than two constraints")
             }
-            this.segments.push({angle, constraint, offsets, dependencies, lineOffset});
+        } else {
+            this.parseConstraint(tokens);
         }
     }
 
-    points(startPos, flow=null, reverse=false)
-    //=========================================
+    parse()
+    //=====
     {
-        let lastPos = startPos;
-        const points = [startPos];
-
-        for (let segment of this.segments) {
-            const angle = segment.angle;
-            const offset = this.element.diagram.unitConverter.toPixelPair(segment.offsets, false);
-            const position = Position.centroid(segment.dependencies);
-            let xPos = position[0] + offset[0];
-            let yPos = position[1] + offset[1];
-            if (segment.constraint === -1) {
-                const dx = endPos[0] - lastPos[0];
-                const dy = dx*Math.tan(angle*Math.PI/180);
-                yPos = lastPos[1] - dy;
-            } else if (segment.constraint === 1) {
-                const dy = lastPos[1] - endPos[1];
-                const dx = dy*Math.tan((90 - angle)*Math.PI/180);
-                xPos = lastPos[0] + dx;
+        if (this.tokens !== null) {
+            if (this.tokens.type !== 'FUNCTION' || ['begin', 'end'].indexOf(this.tokens.name.value) < 0) {
+                throw new exception.StyleError(tokens, 'Invalid path specification');
             }
-            if (segment.lineOffset !== null) {
-                const lineOffset = this.element.diagram.unitConverter.toPixelPair(segment.lineOffset, false);
+            this.reversePath = (this.tokens.name.value === 'end');
+            this.parsePath(this.tokens.parameters);
+        }
+    }
+
+    toLineString(unitConverter, startCoordinates, endCoordinates)
+    //===========================================================
+    {
+        const startPoint = this.reversePath ? endCoordinates : startCoordinates;
+        const endPoint = this.reversePath ? startCoordinates : endCoordinates;
+
+        let lastPoint = startPoint;
+        const points = [startPoint];
+
+        for (let constraint of this.constraints) {
+            const angle = constraint.angle;
+            const offset = unitConverter.toPixelPair(constraint.offsets, false);
+            const position = Position.centroid(constraint.dependencies);
+            let x = position[0] + offset[0];
+            let y = position[1] + offset[1];
+            if (constraint.limit === -1) {
+                const dx = endPoint[0] - lastPoint[0];
+                const dy = dx*Math.tan(angle*Math.PI/180);
+                y = lastPoint[1] - dy;
+            } else if (constraint.limit === 1) {
+                const dy = lastPoint[1] - endPoint[1];
+                const dx = dy*Math.tan((90 - angle)*Math.PI/180);
+                x = lastPoint[0] + dx;
+            }
+            if (constraint.lineOffset !== null) {
+                const lineOffset = unitConverter.toPixelPair(constraint.lineOffset, false);
                 points.slice(-1)[0][0] += lineOffset[0];
                 points.slice(-1)[0][1] += lineOffset[1];
-                xPos += lineOffset[0];
-                yPos += lineOffset[1];
+                x += lineOffset[0];
+                y += lineOffset[1];
             }
-            points.push([xPos, yPos]);
-            lastPos = [xPos, yPos];
+            points.push([x, y]);
+            lastPoint = [x, y];
         }
 /*
         if ((flow.transporter !== null)) {
@@ -447,8 +464,10 @@ export class Line
             }
         }
 */
-        if (reverse) points.reverse();
-        return points;
+        points.push(endPoint);
+        if (this.reversePath) points.reverse();
+
+        return new geo.LineString(...points);
     }
 }
 

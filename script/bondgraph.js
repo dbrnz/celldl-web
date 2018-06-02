@@ -23,7 +23,6 @@ limitations under the License.
 //==============================================================================
 
 import * as exception from './exception.js';
-import * as geo from './geometry.js';
 import * as layout from './layout.js';
 
 import {CellDiagram} from './cellDiagram.js';
@@ -42,18 +41,17 @@ function drawEdges(svg)
 //=====================
 {
     for (let edge of CellDiagram.instance().edges()) {
-        svg.extend(edge.generateSvg());
+        svg.append(edge.generateSvg());
     }
 }
 
-function extendSvg(svg, elementClass)
-//===================================
+function drawElements(svg, elementClass)
+//======================================
 {
     for (let element of CellDiagram.instance().elements(elementClass)) {
         svg.extend(element.generateSvg());
     }
 }
-
 
 export function generateSvg()
 //===========================
@@ -61,12 +59,12 @@ export function generateSvg()
     let svg = new List();
 
     drawEdges(svg);
-    extendSvg(svg, Flow);
-    extendSvg(svg, Gyrator);
-    extendSvg(svg, Potential);
-    extendSvg(svg, Quantity);
-    extendSvg(svg, Reaction);
-    extendSvg(svg, Transformer);
+    drawElements(svg, Flow);
+    drawElements(svg, Gyrator);
+    drawElements(svg, Potential);
+    drawElements(svg, Quantity);
+    drawElements(svg, Reaction);
+    drawElements(svg, Transformer);
 
     return svg;
 }
@@ -94,6 +92,8 @@ export class Edge
         this.validClasses = validClasses;
         this.style = null;
         this.styleElementId = styleElementId;
+        this.line = null;
+        this.path = null;
         this.id = toParent ? `${this.otherId} ${parent.id}` : `${parent.id} ${this.otherId}`;
         CellDiagram.instance().addEdge(this);
     }
@@ -128,17 +128,6 @@ export class Edge
         throw new exception.KeyError(this.domElement, `Can't find ${classNames} with id '${this.otherId}'`);
     }
 
-    parsePosition()
-    //=============
-    {
-/* TODO
-        this.lines = { start: new layout.Line(this, this.style["line-start"]),
-                       end:   new layout.Line(this, this.style["line-end"])};
-        for (let line of this.lines.values()) {
-            line.parse();
-        }
-*/
-    }
 
     get lineColour()
     //==============
@@ -147,42 +136,42 @@ export class Edge
                                             : '#A0A0A0'; // TODO: specify defaults in one place
     }
 
-    lineFrom(other, lineColour, reverse=false)
-    //====================================
+    parseLine()
+    //=========
     {
-        return (other !== null) ?
-
-        svgLine(new geo.LineString(this.other.coordinates, this.parent.coordinates),
-                                          this.lineColour, {reverse: reverse})
-                                : '';
+        this.line = new layout.LinePath(this.style, 'line-path');
+        this.line.parse();
     }
 
-    lineTo(other, colour, reverse=false)
-    //==================================
+    assignPath(unitConverter)
+    //=======================
     {
-        return this.lineFrom(other, colour, !reverse)
+        if (this.toParent) {
+            this.path = this.line.toLineString(unitConverter, this.other.coordinates, this.parent.coordinates);
+        } else {
+            this.path = this.line.toLineString(unitConverter, this.parent.coordinates, this.other.coordinates);
+        }
     }
-
 
     generateSvg()
     //===========
     {
-        let svg = new List();
-        if (this.toParent) {
-            svg.append(svgLine(new geo.LineString(this.other.coordinates, this.parent.coordinates),
-                               this.lineColour));
-        } else {
-            svg.append(svgLine(new geo.LineString(this.parent.coordinates, this.other.coordinates),
-                               this.lineColour));
-        }
-        return svg;
+        return svgLine(this.path, this.lineColour);
+    }
+
+}
         /*
         const componentPoints = new List(this.lines["start"].points(this.fromPotential.coordinates, {"flow": this.flow}));
+
         componentPoints.extend(this.flow.getFlowLine(this));
+
         for (let to of this.toPotentials) {
             const points = new List(componentPoints);
             points.extend(this.lines["end"].points(to.coordinates, {"flow": this.flow, "reverse": true}));
             const line = new geo.LineString(...points);
+
+
+
             const lineStyle = this.getStyleAsString("line-style", "");
             if ((this.count % 2) === 0) {
                 for (let n = 0; n < this.count/2; n += 1) {
@@ -204,29 +193,36 @@ export class Edge
             }
         }
     */
-    }
-}
 
 //==============================================================================
 
 export class FlowEdge extends Edge
 {
-    constructor(element, fromId, toParent, parent, validClasses, count, styleElementId=null)
+    constructor(element, fromId, toParent, parent, validClasses, direction, count)
     {
-        super(element, fromId, toParent, parent, validClasses, styleElementId);
+        super(element, fromId, toParent, parent, validClasses);
+        this.direction = direction;
         this.count = count;
     }
 
-    static fromAttribute(element, attributeName, toParent, parent, validClasses)
-    //==========================================================================
+    static fromAttribute(element, direction, toParent, parent, validClasses)
+    //======================================================================
     {
-        if (!(attributeName in element.attributes)) {
-            throw new exception.KeyError(element, `Expected ${attributeName} attribute`);
+        if (!(direction in element.attributes)) {
+            throw new exception.KeyError(element, `Expected ${direction} attribute`);
         }
         const count = ('count' in element.attributes) ? Number(attributes.count.textContent) : 1;
-        return new FlowEdge(element, element.attributes[attributeName].textContent,
-                            toParent, parent, validClasses, count);
+        return new FlowEdge(element, element.attributes[direction].textContent,
+                            toParent, parent, validClasses, direction, count);
     }
+
+    parseLine()
+    //=========
+    {
+        this.line = new layout.LinePath(this.style, `${this.direction}-line-path`);
+        this.line.parse();
+    }
+
 }
 
 //==============================================================================

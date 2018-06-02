@@ -192,6 +192,8 @@ export class CellDiagram {
 
         for (let edge of this._edges) {
             edge.resolveReferences();
+            edge.parseLine();
+            edge.assignPath(unitConverter);
         }
 
  // Space flow lines going through a transporter
