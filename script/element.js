@@ -29,7 +29,6 @@ import * as layout from './layout.js';
 import {CellDiagram} from './cellDiagram.js';
 import {List} from './utils.js';
 import {parseColour, StyleSheet} from './stylesheet.js';
-import {svgLine} from './svgElements.js'
 
 //==============================================================================
 
@@ -47,7 +46,7 @@ export class DiagramElement {
         this.label = ('label' in this.attributes) ? this.attributes.label.textContent : this.name;
         this.style = StyleSheet.instance().style(domElement);
         this.className = className;
-        this.position = new layout.Position(this);
+        this.position = new layout.Position();
         if (this.id !== '') {
             CellDiagram.instance().addElement(this);
         }

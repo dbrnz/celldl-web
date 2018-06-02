@@ -68,9 +68,8 @@ export class Offset {
 
 export class Position
 {
-    constructor(element)
+    constructor()
     {
-        this.element = element;
         this.lengths = null;             // Position as a pair of Offsets
         this.relationships = [];
         this.coordinates = null;         // Resolved position in pixels
