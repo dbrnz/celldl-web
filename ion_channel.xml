@@ -21,8 +21,8 @@
         </reaction>
 
         <flow id="v1">
-            <component input="u3"/>
             <component input="u1" output="I_Kp" class="potassium"/>
+            <component id="v1u3" input="u3"/>
             <component input="u4"/>
         </flow>
 
@@ -46,7 +46,7 @@
         #q4,
         #v1 > component[input="u4"],
         #v2 > component[output="u4"] {
-            line-color: purple;
+            line-color: #A32ADE;
         }
 
         /* Either have an id on a component (e.g. "v1u3") and use this as the
@@ -61,12 +61,12 @@
         #u1 { position: 20%, 40%; }
         #q1 { position: 15% above #u1; }
 
-        #v1 { position: 15% right #u1; }
-        #I_Kp { position: 15% right #v1; }
-        #v2 { position: 15% right #I_Kp; }
+        #v1 { position: 12% right #u1; }
+        #I_Kp { position: 12% right #v1; }
+        #v2 { position: 12% right #I_Kp; }
 
         #q2 { position: 15% above #u2; }
-        #u2 { position: 15% right #v2; }
+        #u2 { position: 12% right #v2; }
 
         #u3 { position: 15% below #v1; }
         #zF { position: 15% below #u3; }
@@ -79,6 +79,7 @@
             line-color: red;
             line-path: begin(0 until-x #I_Kp);
         }
+
 
     </style>
 
