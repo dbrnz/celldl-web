@@ -342,6 +342,20 @@ export class Quantity extends DiagramElement
         super(element, 'Quantity');
         this.potential = null;
     }
+
+    generateSvg(radius=layout.ELEMENT_RADIUS)
+    //=======================================
+    {
+        let svg = new List([`<g${this.idClass()}${this.display}>`]);
+        if (this.hasCoordinates) {
+            const [x, y] = this.coordinates;
+            const [w, h] = [layout.QUANTITY_WIDTH, layout.QUANTITY_HEIGHT];
+            svg.append(`  <rect rx="${0.375 * w}" ry="${0.375 * h}" x="${x - w/2}" y="${y - h/2}" width="${w}" height="${h}" stroke="none" fill="${this.colour}"/>`);
+            svg.append(this.labelAsSvg());
+        }
+        svg.append('</g>');
+        return svg;
+    }
 }
 
 //==============================================================================
