@@ -208,6 +208,7 @@ export class CellDiagram {
 
         const svgNode = document.createElementNS(SVG_NS, 'svg');
         svgNode.setAttribute('xmlns', SVG_NS);
+        svgNode.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
         svgNode.setAttribute('version', SVG_VERSION);
         svgNode.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
 
