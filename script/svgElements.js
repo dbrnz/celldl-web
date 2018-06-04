@@ -48,11 +48,6 @@ export class SvgElement
 
 export class DefinesStore
 {
-    static reset()
-    {
-        DefinesStore._defines = new Map;
-    }
-
     static add(id, defines)
     {
         if (!DefinesStore._defines.has(id)) {
@@ -513,5 +508,23 @@ export class Text
 
 Text._nextId = 0;
 Text._promises = [];
+
+//==============================================================================
+
+export function initialise()
+{
+    DefinesStore._defines = new Map;
+
+    Gradients._gradientsToId = {};
+    Gradients._nextId = 0;
+
+    Arrow.ColourToId = {};
+    Arrow._nextId = 0;
+
+    Text._nextId = 0;
+    Text._promises = [];
+
+    mathjax.loadMathJax();
+}
 
 //==============================================================================

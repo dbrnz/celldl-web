@@ -204,7 +204,7 @@ export class CellDiagram {
     generateSvg()
     //===========
     {
-        svgElements.DefinesStore.reset()
+        svgElements.initialise()
 
         const svgNode = document.createElementNS(SVG_NS, 'svg');
         svgNode.setAttribute('xmlns', SVG_NS);
