@@ -127,12 +127,12 @@ export function loadMathJax()
 
 export class TypeSetter
 {
-    constructor(latex, x, y, rotation, nodeId)
+    constructor(latex, x, y, rotation, destinationNode)
     {
         this.x = x;
         this.y = y;
         this.rotation = rotation;
-        this.nodeId = nodeId;
+        this.destinationNode = destinationNode;
         this.content = document.createElement("span");
         this.content.setAttribute('style', 'display: none');
 
@@ -169,9 +169,8 @@ export class TypeSetter
                             (6 * Number.parseFloat(size[1].slice(0, (-2)))),
                             (6 * Number.parseFloat(size[2].slice(0, (-2))))];
 */
-            const destination = document.getElementById(self.nodeId);
-            destination.setAttribute('transform', `translate(${self.x - w/2}, ${self.y + h/2 + va}) scale(0.015)`);
-            destination.insertAdjacentHTML('afterbegin', svg.innerHTML);
+            self.destinationNode.setAttribute('transform', `translate(${self.x - w/2}, ${self.y + h/2 + va}) scale(0.015)`);
+            self.destinationNode.insertAdjacentHTML('afterbegin', svg.innerHTML);
 
             // can now delete content node...
 

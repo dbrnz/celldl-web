@@ -47,11 +47,12 @@ function main(cellDL, svgElementId)
                         const cellDiagram = CellDiagram.instance();
                         cellDiagram.layout();
 
-                        const svgElement = document.getElementById(svgElementId);
-//                        svgElement.appendChild(cellDiagram.generateSvg());
-                        svgElement.innerHTML = cellDiagram.generateSvg().outerHTML;
+                        const svgDiagram = cellDiagram.generateSvg();
 
-                        Promise.all(Text.promises());  // Use then() to make element visible??
+                        Promise.all(Text.promises()).then(() => {
+                            const svgElement = document.getElementById(svgElementId);
+                            svgElement.insertAdjacentHTML('afterbegin', svgDiagram.outerHTML);
+                        });
                     });
             } catch (error) {
                 console.trace(error);
