@@ -181,15 +181,3 @@ export class TypeSetter
 }
 
 //==============================================================================
-
-export function typeset(latex, id_base)
-{
-    // Note: \color command...
-    if (latex.startsWith('$') && latex.endsWith('$')) {
-        latex = latex.slice(1, -1);
-    }
-
-
-}
-
-//==============================================================================
