@@ -165,14 +165,12 @@ export class TypeSetter
             const h = 6*Number.parseFloat(height.slice(0, -2));
             const va = 6*Number.parseFloat(style.split(' ')[1].slice(0, -3));
 
-/*        const [w, h, va] = [(6 * Number.parseFloat(size[0].slice(0, (-2)))),
-                            (6 * Number.parseFloat(size[1].slice(0, (-2)))),
-                            (6 * Number.parseFloat(size[2].slice(0, (-2))))];
-*/
+            // Prepend ids with self.destinationNode.id...
+
             self.destinationNode.setAttribute('transform', `translate(${self.x - w/2}, ${self.y + h/2 + va}) scale(0.015)`);
             self.destinationNode.insertAdjacentHTML('afterbegin', svg.innerHTML);
 
-            // can now delete content node...
+            // We can now delete the content node
 
             self.content.remove();
         }

@@ -106,6 +106,8 @@ export class StyleSheet
     async fetchStyles(cssUrl)
     //=======================
     {
+        // Note: `fetch()` is a Promise
+
         return fetch(cssUrl)
                     .then(response => response.text())
                     .catch(error => console.error('Error getting stylesheet:', error))

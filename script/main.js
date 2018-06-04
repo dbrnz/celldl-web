@@ -45,7 +45,7 @@ function main(cellDL, svgElementId)
                 parser.parseDocument(xmlDocument)
                     .then(() => {
                         const cellDiagram = CellDiagram.instance();
-                        cellDiagram.layout();
+                        cellDiagram.layout();  // Pass width/height to use as defaults...
 
                         const svgDiagram = cellDiagram.generateSvg();
 
