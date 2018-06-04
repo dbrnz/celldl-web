@@ -55,7 +55,8 @@ export class DefinesStore
         }
     }
 
-    static defines() {
+    static defines()
+    {
         const defs = ['<defs>'];
         for (let defines of DefinesStore._defines.values()) {
             defs.push(defines);
@@ -74,16 +75,19 @@ DefinesStore._defines = new Map;
 
 export class Gradients
 {
-    static nextId() {
+    static nextId()
+    {
         Gradients._nextId += 1;
         return `_GRADIENT_${Gradients._nextId}_`;
     }
 
-    static hash(gradientType, stopColours) {
+    static hash(gradientType, stopColours)
+    {
         return `${gradientType}${stopColours.toString()}`;
     }
 
-    static svg(id, gradientType, stopColours) {
+    static svg(id, gradientType, stopColours)
+    {
         let n = 0;
         const nStops = stopColours.length;
         let stops = [];
@@ -100,7 +104,8 @@ export class Gradients
         return `<${gradientType}Gradient id="${id}">${stops.join('\n')}</${gradientType}Gradient>`;
     }
 
-    static url(gradientType, stopColours) {
+    static url(gradientType, stopColours)
+    {
         const hashValue = Gradients.hash(gradientType, stopColours);
         let id;
         if (hashValue in Gradients._gradientsToId) {
@@ -123,7 +128,8 @@ export class CellMembrane extends SvgElement
 {
     constructor(id, width, height, idBase='cell_membrane',
                 outerMarkers=9, innerMarkers=3, markerRadius=4,
-                strokeWidth=1, strokeColour='#0092DF', fillColour='#BFDDFF') {
+                strokeWidth=1, strokeColour='#0092DF', fillColour='#BFDDFF')
+    {
         /*
         :param outerMarkers: Number of outer markers in a corner.
         :param immerMarkers: Number of inner markers in a corner.
@@ -155,19 +161,23 @@ export class CellMembrane extends SvgElement
              'OFFSET': -this.lineWidth/2.0, 'SPACING': -this.markerWidth/2.0}));
     }
 
-    get width() {
+    get width()
+    {
         return (this.outerWidth - this.lineWidth);
     }
 
-    get height() {
+    get height()
+    {
         return (this.outerHeight - this.lineWidth);
     }
 
-    get thickness() {
+    get thickness()
+    {
         return this.lineWidth;
     }
 
-    cornerPath(outerPath) {
+    cornerPath(outerPath)
+    {
         let count = 0;
         let dt = 1;
         let markerId;
@@ -199,7 +209,8 @@ export class CellMembrane extends SvgElement
       </g>`;
     }
 
-    corner(position) {
+    corner(position)
+    {
         const outerRadius = this.outerRadius;
         const outerPath = this.cornerPath(true);
         const rotation = (position === 'top_left') ? 180
@@ -218,7 +229,8 @@ export class CellMembrane extends SvgElement
         return svg;
     }
 
-    side(orientation) {
+    side(orientation)
+    {
         let path = [];
         if (['top', 'bottom'].indexOf(orientation) >= 0) {
             path.push(`M${this.outerRadius},${this.lineWidth/2.0}`);
@@ -243,7 +255,8 @@ export class CellMembrane extends SvgElement
       </g>`]);
     }
 
-    svg(outline=false) {
+    svg(outline=false)
+    {
         let svg = new List();
         svg.append(`<g transform="translate(${-this.lineWidth/2.0},${-this.lineWidth/2.0})">`);
         svg.extend(this.corner('top_left'));
@@ -292,7 +305,8 @@ CellMembrane.SVG_DEFS = ['',
 
 class TransporterElement extends SvgElement
 {
-    constructor(id, coords, rotation, height, defs, definedHeight, idBase) {
+    constructor(id, coords, rotation, height, defs, definedHeight, idBase)
+    {
         super(id, idBase);
         this.coords = coords;
         this.rotation = rotation;
@@ -301,13 +315,14 @@ class TransporterElement extends SvgElement
         DefinesStore.add(idBase, format(defs, {'ID_BASE': idBase}));
     }
 
-    svg() {
+    svg()
+    {
         let svg = new List([`<use xlink:href="#${this.idBase}_element" transform="translate(${this.coords[0]}, ${this.coords[1]})`]);
         const scaling = (this.height / Number.parseFloat(this.definedHeight));
         if ((scaling !== 1.0)) {
             svg.append(` scale(${scaling})`);
         }
-        if ((this.rotation !== 0)) {
+        if (this.rotation !== 0) {
             svg.append(` rotate(${this.rotation})`);
         }
         svg.append('" />');
@@ -319,7 +334,8 @@ class TransporterElement extends SvgElement
 
 export class Channel extends TransporterElement
 {
-    constructor(id, coords, rotation, height=0.6*Channel.HEIGHT, idBase='channel') {
+    constructor(id, coords, rotation, height=0.6*Channel.HEIGHT, idBase='channel')
+    {
         super(id, coords, rotation, height, Channel.SVG_DEFS, Channel.HEIGHT, idBase);
     }
 }
@@ -352,7 +368,8 @@ Channel.SVG_DEFS = ['',
 
 class Exchanger_TO_FINISH extends TransporterElement
 {
-    constructor(id, coords, rotation, height=40, idBase='exchanger') {
+    constructor(id, coords, rotation, height=40, idBase='exchanger')
+    {
         super(id, coords, rotation, height, '', height, idBase);
     }
 }
@@ -361,7 +378,8 @@ class Exchanger_TO_FINISH extends TransporterElement
 
 export class PMRChannel extends TransporterElement
 {
-    constructor(id, coords, rotation, height=0.6*PMRChannel.HEIGHT, idBase='pmr_channel') {
+    constructor(id, coords, rotation, height=0.6*PMRChannel.HEIGHT, idBase='pmr_channel')
+    {
         super(id, coords, rotation, height, PMRChannel.SVG_DEFS, PMRChannel.HEIGHT, idBase);
     }
 }
@@ -402,7 +420,8 @@ PMRChannel.SVG_DEFS = ['',
 
 export class PMRChannelIn extends PMRChannel
 {
-    constructor(id, coords, rotation, height=0.6*PMRChannel.HEIGHT, idBase='pmr_channel') {
+    constructor(id, coords, rotation, height=0.6*PMRChannel.HEIGHT, idBase='pmr_channel')
+    {
         super(id, coords, rotation, height, idBase);
         this.idBase += '_in';
     }
@@ -412,7 +431,8 @@ export class PMRChannelIn extends PMRChannel
 
 export class PMRChannelOut extends PMRChannel
 {
-    constructor(id, coords, rotation, height=0.6*PMRChannel.HEIGHT, idBase='pmr_channel') {
+    constructor(id, coords, rotation, height=0.6*PMRChannel.HEIGHT, idBase='pmr_channel')
+    {
         super(id, coords, rotation, height, idBase);
         this.idBase += '_out';
     }
@@ -422,7 +442,8 @@ export class PMRChannelOut extends PMRChannel
 
 export class PMRChannelInOut extends PMRChannel
 {
-    constructor(id, coords, rotation, height=0.6*PMRChannel.HEIGHT, idBase='pmr_channel') {
+    constructor(id, coords, rotation, height=0.6*PMRChannel.HEIGHT, idBase='pmr_channel')
+    {
         super(id, coords, rotation, height, idBase);
         this.idBase += '_inout';
     }
@@ -432,12 +453,14 @@ export class PMRChannelInOut extends PMRChannel
 
 class Arrow
 {
-    static nextId() {
+    static nextId()
+    {
         Arrow._nextId += 1;
         return `_ARROW_${Arrow._nextId}_`;
     }
 
-    static svg(id, colour) {
+    static svg(id, colour)
+    {
         return `
             <marker id="${id}" orient="auto" style="overflow: visible">
               <path fill="${colour}" transform="rotate(90) translate(0, 13) scale(0.5)"
@@ -445,7 +468,8 @@ class Arrow
             </marker>`;
     }
 
-    static url(colour) {
+    static url(colour)
+    {
         let id;
         if (colour in Arrow.ColourToId) {
             id = Arrow.ColourToId[colour];
