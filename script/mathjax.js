@@ -22,7 +22,7 @@ limitations under the License.
 
 //==============================================================================
 
-const MathJaxPath = ./thirdparty/Mathjax/Mathjax.js';
+const MATHJAX_PATH = './thirdparty/MathJax/unpacked/MathJax.js';
 
 //==============================================================================
 
@@ -31,8 +31,7 @@ import * as exception from './exception.js';
 //==============================================================================
 
 function suffix_ids(xml, attribute, id_base, new_attrib = null) {
-    for (var e, _pj_c = 0, _pj_a = xml.findall(".//*[@{}]".format(attribute)), _pj_b = _pj_a.length; (_pj_c < _pj_b); _pj_c += 1) {
-        e = _pj_a[_pj_c];
+    for (let e of xml.findall(".//*[@{}]".format(attribute))) {
         if ((new_attrib === null)) {
             e.attrib[attribute] += ("_" + id_base);
         } else {
@@ -51,91 +50,146 @@ function clean_svg(svg, id_base) {
     }
     xml = etree.fromstring(svg);
     xml.tag = "{http://www.w3.org/2000/svg}g";
+
     w = xml.attrib.get("width", null);
     h = xml.attrib.get("height", null);
+
     s = xml.attrib.get("style", "N 0").split();
     va = ((s[0] === "vertical-align:") ? s[1].slice(0, (- 1)) : null);
+
+
     vb = xml.attrib.get("viewBox", null);
     xml.attrib.clear();
     title = xml.find("{http://www.w3.org/2000/svg}title");
     if ((title !== null)) {
         xml.remove(title);
     }
+
+
     suffix_ids(xml, "id", id_base);
     suffix_ids(xml, "{http://www.w3.org/1999/xlink}href", id_base);
+
     return [etree.tostring(xml, {"encoding": "unicode"}), [w, h, va, vb]];
 }
 
 //==============================================================================
 
+//let mathJaxLoaded = false;
 
-// Based on answer at https://stackoverflow.com/questions/34924033
-
-window.MathJax = {
-  jax: ["input/TeX", "output/SVG"],
-  extensions: ["tex2jax.js"],
-  showMathMenu: false,
-  showProcessingMessages: false,
-  messageStyle: "none",
-  SVG: {
-    useGlobalCache: false
-  },
-  TeX: {
-    extensions: ["AMSmath.js", "AMSsymbols.js", "autoload-all.js"]
-  },
-  AuthorInit: function() {
-    MathJax.Hub.Register.StartupHook("End", function() {
-      var mj2img = function(texstring, callback) {
-        var input = texstring;
-        var wrapper = document.createElement("div");
-        wrapper.innerHTML = input;
-        MathJax.Hub.Queue(["Typeset", MathJax.Hub, wrapper]);
-        MathJax.Hub.Queue(function() {
-          var mjOut = wrapper.getElementsByTagName("svg")[0];
-          mjOut.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-          callback(mjOut.outerHTML);
-        });
-      }
-      mj2img("\\[f: X \\to Y\\]", function(svg){
-        document.getElementById("target").innerText = svg;
-      });
-    });
-  }
-};
-
-//  Load MathJax into the DOM
-function StartMathJax() {
-  let script = document.createElement("script");
-  script.src = MathJaxPath;
-  document.head.appendChild(script);
+export function loadMathJax()
+//===========================
+{
 }
 
+//    if (mathJaxLoaded)
+//        return;
+/*
+(function () {
+    const config = document.createElement('script');
+    config.setAttribute('type', 'text/x-mathjax-config');
+    config.textContent = `MathJax.Hub.Config({
+                            jax: ["input/TeX", "output/SVG"],
+                            messageStyle: "none",
+                            showProcessingMessages: false,
+                            skipStartupTypeset: true,
+                            showMathMenu: false,
+                            showMathMenuMSIE: false,
+                            TeX: {
+                                extensions: window.Array(
+                                    "AMSmath.js",
+                                    "AMSsymbols.js",
+                                    "autoload-all.js"
+                                )
+                            },
+                            SVG: {
+                                font: "STIX-Web",
+                                useFontCache: true,
+                                useGlobalCache: false,  // Can we set true and extract global <defs> ??
+                                EqnChunk: 1000000,
+                                EqnDelay: 0
+                            },
+                            tex2jax: {
+                                inlineMath: [['$','$'],['\\(','\\)']]
+                            }
+                        });`;
+    document.head.appendChild(config);
+    const script = document.createElement("script");
+    script.setAttribute('type', 'text/javascript');
+    script.setAttribute('src', MATHJAX_PATH);
+    document.head.appendChild(script);
+})();
+*/
 
-export function typeset(latex, id_base) {
-    var headers, http_client, mathjax, request, response, svg;
-    if ((latex.startsWith("$") && latex.endsWith("$"))) {
-        latex = latex.slice(1, (- 1));
+//    mathJaxLoaded = true;
+
+
+//==============================================================================
+
+export class TypeSetter
+{
+    constructor(latex, x, y, rotation, nodeId)
+    {
+        this.x = x;
+        this.y = y;
+        this.rotation = rotation;
+        this.nodeId = nodeId;
+        this.content = document.createElement("span");
+        this.content.setAttribute('style', 'display: none');
+
+        const math = document.createElement("script");
+        math.setAttribute('type', 'math/tex');
+        math.textContent = latex;
+        this.content.appendChild(math);
+
+        document.body.appendChild(this.content);
+
+        const typesetPromise = new Promise(function(resolve, reject) {
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub, math, resolve]);
+        });
+        return typesetPromise.then(TypeSetter.saveSvg(this));
     }
-    mathjax = json.dumps({"format": "TeX", "math": latex, "svg": true, "width": 10000, "linebreaks": false});
-    headers = {"Content-Type": "application/json"};
-    request = new HTTPRequest("http://localhost:8003/", {"method": "POST", "headers": headers, "body": mathjax});
-    http_client = new HTTPClient();
-    try {
-        response = http_client.fetch(request);
-        svg = clean_svg(response.body, id_base);
-    } catch(e) {
-        if ((e instanceof HTTPError)) {
-            svg = "<text>ERROR 1</text>";
-        } else {
-            if ((e instanceof IOError)) {
-                svg = "<text>ERROR 2</text>";
-            } else {
-                throw e;
-            }
+
+    static saveSvg(self)
+    {
+        return function() {
+            var jax = MathJax.Hub.getAllJax(self.content)[0];
+            if (!jax) return;
+
+            const script = jax.SourceElement();
+            const svg = script.previousSibling.getElementsByTagName("svg")[0];
+            const width = svg.getAttribute('width');
+            const height = svg.getAttribute('height');
+            const style = svg.getAttribute('style');
+
+            const w = 6*Number.parseFloat(width.slice(0, -2));  // `6*`` == ex --> ??
+            const h = 6*Number.parseFloat(height.slice(0, -2));
+            const va = 6*Number.parseFloat(style.split(' ')[1].slice(0, -3));
+
+/*        const [w, h, va] = [(6 * Number.parseFloat(size[0].slice(0, (-2)))),
+                            (6 * Number.parseFloat(size[1].slice(0, (-2)))),
+                            (6 * Number.parseFloat(size[2].slice(0, (-2))))];
+*/
+            const destination = document.getElementById(self.nodeId);
+            destination.setAttribute('transform', `translate(${self.x - w/2}, ${self.y + h/2 + va}) scale(0.015)`);
+            destination.insertAdjacentHTML('afterbegin', svg.innerHTML);
+
+            // can now delete content node...
+
+            self.content.remove();
         }
     }
-    http_client.close();
-    return svg;
+}
+
+//==============================================================================
+
+export function typeset(latex, id_base)
+{
+    // Note: \color command...
+    if (latex.startsWith('$') && latex.endsWith('$')) {
+        latex = latex.slice(1, -1);
+    }
+
+
 }
 
 //==============================================================================

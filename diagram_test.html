@@ -19,6 +19,36 @@
                 border: 2px solid #888;
             }
         </style>
+        <script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+                jax: ["input/TeX", "output/SVG"],
+                messageStyle: "none",
+                showProcessingMessages: false,
+                skipStartupTypeset: true,
+                showMathMenu: false,
+                showMathMenuMSIE: false,
+                TeX: {
+                    extensions: window.Array(
+                        "AMSmath.js",
+                        "AMSsymbols.js",
+                        "autoload-all.js"
+                    )
+                },
+                SVG: {
+                    font: "STIX-Web",
+                    useFontCache: true,
+                    useGlobalCache: false,  // Can we set true and extract global <defs> ??
+                    EqnChunk: 1000000,
+                    EqnDelay: 0
+                } /* ,
+                tex2jax: {
+                    inlineMath: [['$','$'],['\\(','\\)']]
+                } */
+            });
+        </script>
+        <script type="text/javascript"
+                src="./thirdparty/MathJax/unpacked/MathJax.js">
+        </script>
     </head>
     <body>
 

@@ -22,7 +22,7 @@ limitations under the License.
 
 //==============================================================================
 
-//import * as mathjax from './mathjax.js';
+import * as mathjax from './mathjax.js';
 import {List, format, setAttributes} from './utils.js';
 
 //==============================================================================
@@ -490,20 +490,28 @@ export function svgLine(lineString, colour, lineStyle='')
 
 export class Text
 {
-    static nextId() {
+    static nextId()
+    {
         Text._nextId += 1;
         return `_TEXT_${Text._nextId}_`;
     }
 
-    static typeset(s, x, y, rotation=0) {
-        const [svg, size] = mathjax.typeset(s, Text.nextId());
-        const [w, h, va] = [(6 * Number.parseFloat(size[0].slice(0, (-2)))),
-                            (6 * Number.parseFloat(size[1].slice(0, (-2)))),
-                            (6 * Number.parseFloat(size[2].slice(0, (-2))))];
-        return `<g transform="translate(${x - w/2}, ${y + h/2}) scale(0.015)">${svg}</g>`;
+    static typeset(latex, x, y, rotation=0)
+    {
+        const nodeId = Text.nextId();
+        const svgNode = document.createElementNS(SVG_NS, 'g');
+        svgNode.id = nodeId;
+        Text._promises.push(new mathjax.TypeSetter(latex, x, y, rotation, nodeId));
+        return svgNode;
+    }
+
+    static promises()
+    {
+        return Text._promises;
     }
 }
 
 Text._nextId = 0;
+Text._promises = [];
 
 //==============================================================================

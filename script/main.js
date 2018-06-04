@@ -25,6 +25,7 @@ limitations under the License.
 import {CellDiagram} from './cellDiagram.js';
 import {Parser} from './parser.js';
 import {StyleSheet} from './stylesheet.js';
+import {Text} from './svgElements.js';
 
 //==============================================================================
 
@@ -49,6 +50,8 @@ function main(cellDL, svgElementId)
                         const svgElement = document.getElementById(svgElementId);
 //                        svgElement.appendChild(cellDiagram.generateSvg());
                         svgElement.innerHTML = cellDiagram.generateSvg().outerHTML;
+
+                        Promise.all(Text.promises());  // Use then() to make element visible??
                     });
             } catch (error) {
                 console.trace(error);

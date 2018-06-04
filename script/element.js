@@ -25,6 +25,7 @@ limitations under the License.
 import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
+import * as svgElements from './svgElements.js';
 
 import {CellDiagram} from './cellDiagram.js';
 import {List, setAttributes} from './utils.js';
@@ -184,17 +185,10 @@ export class DiagramElement {
     {
         const [x, y] = this.coordinates;
         if (this.label.startsWith('$')) {
-            // TEMP...
-            const svgNode = document.createElementNS(SVG_NS, 'text');
-            setAttributes(svgNode, { x: x, y: y, 'text-anchor': "middle",
-                                     'dominant-baseline': "central"
-                         });
-            svgNode.textContent = this.name;
-            return svgNode;
             // Pass this.textcolour to MathJax...
             // see https://groups.google.com/forum/#!msg/mathjax-users/fo93aucG5Bo/7dH3s8szbNYJ
-//            const rotation = Number.parseFloat(this.getStyleAsString("text-rotation", "0"));
-//            return svgElements.Text.typeset(this.label, x, y, rotation);
+            const rotation = Number.parseFloat(this.getStyleAsString("text-rotation", "0"));
+            return svgElements.Text.typeset(this.label.slice(1, -1), x, y, rotation);
         } else {
             const svgNode = document.createElementNS(SVG_NS, 'text');
             setAttributes(svgNode, { x: x, y: y, 'text-anchor': "middle",
