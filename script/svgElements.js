@@ -23,7 +23,12 @@ limitations under the License.
 //==============================================================================
 
 //import * as mathjax from './mathjax.js';
-import {List, format} from './utils.js';
+import {List, format, setAttributes} from './utils.js';
+
+//==============================================================================
+
+export const SVG_NS = 'http://www.w3.org/2000/svg';
+export const SVG_VERSION = '1.1';
 
 //==============================================================================
 
@@ -56,7 +61,15 @@ export class DefinesStore
     }
 
     static defines() {
-        return new List(DefinesStore._defines.values());
+        const defs = ['<defs>'];
+        for (let defines of DefinesStore._defines.values()) {
+            defs.push(defines);
+        }
+        defs.push('</defs>');
+
+        const parser = new DOMParser();
+        const svgNode = parser.parseFromString(defs.join(' '), "application/xml");
+        return svgNode.documentElement;
     }
 }
 
@@ -455,16 +468,22 @@ Arrow._nextId = 0;
 
 //==============================================================================
 
-export function svgLine(lineString, colour, {display='', style=''}={})
+export function svgLine(lineString, colour, lineStyle='')
 {
     const points = lineString.coordinates;
-    const dash = (style === 'dashed') ? ' stroke-dasharray="10,5"' : '';
     let pointLocations = [];
     for (let point of points.slice(1)) {
         pointLocations.push(`L${point[0]},${point[1]}`);
     }
-    return `<path fill="none" stroke="${colour}" stroke-width="${LINE_WIDTH}" ${display} ${dash} marker-end="${Arrow.url(colour)}"
-  d="M${points[0][0]},${points[0][1]}${pointLocations.join('')}"/>`;
+    const svgNode = document.createElementNS(SVG_NS, 'path');
+    setAttributes(svgNode, {fill: "none", stroke: colour,
+                            'stroke-width': LINE_WIDTH,
+                            'marker-end': Arrow.url(colour),
+                            d: `M${points[0][0]},${points[0][1]}${pointLocations.join('')}`
+                  });
+    if (lineStyle === 'dashed') setAttributes(svgNode, {'stroke-dasharray': '10,5'});
+
+    return svgNode;
 }
 
 //==============================================================================

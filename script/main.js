@@ -43,13 +43,12 @@ function main(cellDL, svgElementId)
                 const parser = new Parser();
                 parser.parseDocument(xmlDocument)
                     .then(() => {
-                        const svgElement = document.getElementById(svgElementId);
-
                         const cellDiagram = CellDiagram.instance();
                         cellDiagram.layout();
 
-                        const svg = cellDiagram.generateSvg();
-                        svgElement.insertAdjacentHTML('afterbegin', svg);
+                        const svgElement = document.getElementById(svgElementId);
+//                        svgElement.appendChild(cellDiagram.generateSvg());
+                        svgElement.innerHTML = cellDiagram.generateSvg().outerHTML;
                     });
             } catch (error) {
                 console.trace(error);

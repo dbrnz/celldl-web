@@ -34,6 +34,7 @@ import * as svgElements from './svgElements.js';
 
 import {DiagramElement} from './element.js';
 import {List} from './utils.js';
+import {SVG_NS, SVG_VERSION} from './svgElements.js';
 
 //==============================================================================
 
@@ -205,22 +206,24 @@ export class CellDiagram {
     {
         svgElements.DefinesStore.reset()
 
-        let svg = new List(['<?xml version="1.0" encoding="UTF-8"?>']);
-        svg.append(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  version="1.1" preserveAspectRatio="none"
-  viewBox="0 0 ${this.width} ${this.height}">`);
+        const svgNode = document.createElementNS(SVG_NS, 'svg');
+        svgNode.setAttribute('xmlns', SVG_NS);
+        svgNode.setAttribute('version', SVG_VERSION);
+        svgNode.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
+
 //        for (let c of this.compartments) {
 //            svg.extend(c.svg());
 //        }
-        svg.extend(bondgraph.generateSvg());
+
+        svgNode.appendChild(bondgraph.generateSvg(svgNode));
+
 //        for (let transporter of this.transporters) {
 //            svg.extend(transporter.svg());
 //        }
-        svg.append('<defs>');
-        svg.extend(svgElements.DefinesStore.defines());
-        svg.append('</defs>');
-        svg.append('</svg>');
-        return svg.join('\n');
+
+        svgNode.appendChild(svgElements.DefinesStore.defines());
+
+        return svgNode;
     }
 }
 

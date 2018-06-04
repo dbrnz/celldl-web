@@ -269,3 +269,18 @@ export function parseColourValue(tokens)
 }
 
 //==============================================================================
+
+export function styleAsString(styling, name, defaultValue='')
+{
+    if (name in styling) {
+        const tokens = styling[name];
+        if (['ID', 'HASH', 'NUMBER'].indexOf(tokens.type) >= 0) {
+            return tokens.value;
+        } else if (['DIMENSION', 'PERCENTAGE'].indexOf(tokens.type) >= 0) {
+            return `${tokens.value}${tokens.unit}`;
+        }
+    }
+    return defaultValue;
+}
+
+//==============================================================================

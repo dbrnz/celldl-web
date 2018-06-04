@@ -27,8 +27,9 @@ import * as geo from './geometry.js';
 import * as layout from './layout.js';
 
 import {CellDiagram} from './cellDiagram.js';
-import {List} from './utils.js';
-import {parseColour, StyleSheet} from './stylesheet.js';
+import {List, setAttributes} from './utils.js';
+import {parseColour, styleAsString, StyleSheet} from './stylesheet.js';
+import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
 
@@ -99,7 +100,7 @@ export class DiagramElement {
     //===========
     {
         const d = this.getStyleAsString("display");
-        return d ? ` display="${d}"` : '';
+        return d ? {display: d} : {};
     }
 
     get textColour()
@@ -124,15 +125,7 @@ export class DiagramElement {
     getStyleAsString(name, defaultValue='')
     //=====================================
     {
-        if (name in this.style) {
-            const tokens = this.style[name];
-            if (['ID', 'HASH', 'NUMBER'].indexOf(tokens.type) >= 0) {
-                return tokens.value;
-            } else if (['DIMENSION', 'PERCENTAGE'].indexOf(tokens.type) >= 0) {
-                return `${tokens.value}${tokens.unit}`;
-            }
-        }
-        return defaultValue;
+        return styleAsString(this.style, name, defaultValue);
     }
 
     hasClass(name)
@@ -144,12 +137,10 @@ export class DiagramElement {
     idClass()
     //=======
     {
-        let s = [''];
-        if (this.id !== null)
-            s.push(`id="${this.id.substr(1)}"`);
-        if (this.classes.length > 0)
-            s.push(`class="${this.classes.join(" ")}"`);
-        return s.join(' ');
+        let result = {};
+        if (this.id !== null) result.id = this.id.substr(1);
+        if (this.classes.length > 0) this.class = this.classes.join(" ");
+        return result;
     }
 
     get coordinates()
@@ -162,7 +153,6 @@ export class DiagramElement {
     //==============================
     {
         this.position.assignCoordinates(unitConverter);
-        console.log(`${this.toString()} at ${this.coordinates}`)
     }
 
     get hasCoordinates()
@@ -194,26 +184,46 @@ export class DiagramElement {
     {
         const [x, y] = this.coordinates;
         if (this.label.startsWith('$')) {
-            return `  <text text-anchor="middle" dominant-baseline="central" x="${x}" y="${y}">${this.name}</text>`;
+            // TEMP...
+            const svgNode = document.createElementNS(SVG_NS, 'text');
+            setAttributes(svgNode, { x: x, y: y, 'text-anchor': "middle",
+                                     'dominant-baseline': "central"
+                         });
+            svgNode.textContent = this.name;
+            return svgNode;
             // Pass this.textcolour to MathJax...
+            // see https://groups.google.com/forum/#!msg/mathjax-users/fo93aucG5Bo/7dH3s8szbNYJ
 //            const rotation = Number.parseFloat(this.getStyleAsString("text-rotation", "0"));
 //            return svgElements.Text.typeset(this.label, x, y, rotation);
         } else {
-            return `  <text text-anchor="middle" dominant-baseline="central" x="${x}" y="${y}" fill="${this.textColour}">${this.label}</text>`;
+            const svgNode = document.createElementNS(SVG_NS, 'text');
+            setAttributes(svgNode, { x: x, y: y, 'text-anchor': "middle",
+                                     'dominant-baseline': "central",
+                                     fill: this.textColour
+                         });
+            svgNode.textContent = this.label;
+            return svgNode;
         }
     }
 
     generateSvg(radius=layout.ELEMENT_RADIUS)
     //=======================================
     {
-        let svg = new List([`<g${this.idClass()}${this.display}>`]);
+        const svgNode = document.createElementNS(SVG_NS, 'g');
+        setAttributes(svgNode, this.idClass(), this.display);
+
         if (this.hasCoordinates) {
             const [x, y] = this.coordinates;
-            svg.append(`  <circle r="${radius}" cx="${x}" cy="${y}" stroke="${this.stroke}" stroke-width="${this.strokeWidth}" fill="${this.colour}"/>`);
-            svg.append(this.labelAsSvg());
+            const node = document.createElementNS(SVG_NS, 'circle');
+
+            setAttributes(node, { r: radius, cx: x, cy: y, stroke: this.stroke,
+                                  'stroke-width': this.strokeWidth, fill: this.colour
+                         });
+            svgNode.appendChild(node);
+            svgNode.appendChild(this.labelAsSvg());
         }
-        svg.append('</g>');
-        return svg;
+
+        return svgNode;
     }
 }
 

@@ -67,3 +67,15 @@ export function format(template, params)
 }
 
 //==============================================================================
+
+export function setAttributes(domNode, ...attributeObjects)
+{
+    for (let attributeObject of attributeObjects) {
+        for (let attributePair of Object.entries(attributeObject)) {
+            if (attributePair[1] !== '')
+                domNode.setAttribute(...attributePair);
+        }
+    }
+}
+
+//==============================================================================

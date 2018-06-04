@@ -28,8 +28,9 @@ import * as layout from './layout.js';
 import {CellDiagram} from './cellDiagram.js';
 import {DiagramElement} from './element.js';
 import {List} from './utils.js';
-import {parseColour, StyleSheet} from './stylesheet.js';
-import {svgLine} from './svgElements.js';
+import {parseColour, styleAsString, StyleSheet} from './stylesheet.js';
+import {SVG_NS, svgLine} from './svgElements.js';
+import {setAttributes} from './utils.js';
 
 //==============================================================================
 
@@ -37,36 +38,34 @@ const LINE_OFFSET = 3.5;  // TODO: Initial/default value from CSS
 
 //==============================================================================
 
-function drawEdges(svg)
-//=====================
+function drawEdges(svgNode)
+//=========================
 {
     for (let edge of CellDiagram.instance().edges()) {
-        svg.append(edge.generateSvg());
+        svgNode.appendChild(edge.generateSvg());
     }
 }
 
-function drawElements(svg, elementClass)
-//======================================
+function drawElements(svgNode, elementClass)
+//==========================================
 {
     for (let element of CellDiagram.instance().elements(elementClass)) {
-        svg.extend(element.generateSvg());
+        svgNode.appendChild(element.generateSvg());
     }
 }
 
 export function generateSvg()
 //===========================
 {
-    let svg = new List();
-
-    drawEdges(svg);
-    drawElements(svg, Flow);
-    drawElements(svg, Gyrator);
-    drawElements(svg, Potential);
-    drawElements(svg, Quantity);
-    drawElements(svg, Reaction);
-    drawElements(svg, Transformer);
-
-    return svg;
+    const svgNode = document.createElementNS(SVG_NS, 'g');
+    drawEdges(svgNode);
+    drawElements(svgNode, Flow);
+    drawElements(svgNode, Gyrator);
+    drawElements(svgNode, Potential);
+    drawElements(svgNode, Quantity);
+    drawElements(svgNode, Reaction);
+    drawElements(svgNode, Transformer);
+    return svgNode;
 }
 
 //==============================================================================
@@ -156,7 +155,7 @@ export class Edge
     generateSvg()
     //===========
     {
-        return svgLine(this.path, this.lineColour);
+        return svgLine(this.path, this.lineColour, styleAsString(this.style, 'line-style'));
     }
 
 }
@@ -346,15 +345,22 @@ export class Quantity extends DiagramElement
     generateSvg(radius=layout.ELEMENT_RADIUS)
     //=======================================
     {
-        let svg = new List([`<g${this.idClass()}${this.display}>`]);
+        const svgNode = document.createElementNS(SVG_NS, 'g');
+        setAttributes(svgNode, this.idClass(), this.display);
+
         if (this.hasCoordinates) {
             const [x, y] = this.coordinates;
             const [w, h] = [layout.QUANTITY_WIDTH, layout.QUANTITY_HEIGHT];
-            svg.append(`  <rect rx="${0.375 * w}" ry="${0.375 * h}" x="${x - w/2}" y="${y - h/2}" width="${w}" height="${h}" stroke="none" fill="${this.colour}"/>`);
-            svg.append(this.labelAsSvg());
+            const node = document.createElementNS(SVG_NS, 'rect');
+
+            setAttributes(node, { rx: 0.375*w, ry: 0.375*h, x: x - w/2, y: y - h/2,
+                                  width: w, height: h, stroke: 'none', fill: this.colour
+                         });
+            svgNode.appendChild(node);
+            svgNode.appendChild(this.labelAsSvg());
         }
-        svg.append('</g>');
-        return svg;
+
+        return svgNode;
     }
 }
 
