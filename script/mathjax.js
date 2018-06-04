@@ -24,53 +24,7 @@ limitations under the License.
 
 const MATHJAX_PATH = './thirdparty/MathJax/unpacked/MathJax.js';
 
-//==============================================================================
-
-import * as exception from './exception.js';
-
-//==============================================================================
-
-function suffix_ids(xml, attribute, id_base, new_attrib = null) {
-    for (let e of xml.findall(".//*[@{}]".format(attribute))) {
-        if ((new_attrib === null)) {
-            e.attrib[attribute] += ("_" + id_base);
-        } else {
-            e.attrib[new_attrib] = ((e.attrib[attribute] + "_") + id_base);
-            delete e.attrib[attribute];
-        }
-    }
-}
-
-//==============================================================================
-
-function clean_svg(svg, id_base) {
-    var h, s, title, va, vb, w, xml;
-    if ((! svg.startsWith("<svg "))) {
-        throw new exception.ValueError(svg);
-    }
-    xml = etree.fromstring(svg);
-    xml.tag = "{http://www.w3.org/2000/svg}g";
-
-    w = xml.attrib.get("width", null);
-    h = xml.attrib.get("height", null);
-
-    s = xml.attrib.get("style", "N 0").split();
-    va = ((s[0] === "vertical-align:") ? s[1].slice(0, (- 1)) : null);
-
-
-    vb = xml.attrib.get("viewBox", null);
-    xml.attrib.clear();
-    title = xml.find("{http://www.w3.org/2000/svg}title");
-    if ((title !== null)) {
-        xml.remove(title);
-    }
-
-
-    suffix_ids(xml, "id", id_base);
-    suffix_ids(xml, "{http://www.w3.org/1999/xlink}href", id_base);
-
-    return [etree.tostring(xml, {"encoding": "unicode"}), [w, h, va, vb]];
-}
+const XLINK_NS = 'http://www.w3.org/1999/xlink';
 
 //==============================================================================
 
@@ -149,17 +103,34 @@ export class TypeSetter
         return typesetPromise.then(TypeSetter.saveSvg(this));
     }
 
+    static suffixIds(rootNode, attribute, id_base, NS=null)
+    //=====================================================
+    {
+        const idElements = (NS === null) ? rootNode.querySelectorAll(`[${attribute}]`)
+                                         : rootNode.querySelectorAll(`[*|${attribute}]`);
+        for (let e of idElements) {
+            const idAttribute = e.attributes[attribute];
+            if (NS === idAttribute.namespaceURI) {
+                idAttribute.value += `_${id_base}`;
+            }
+        }
+    }
+
     static saveSvg(self)
+    //==================
     {
         return function() {
             var jax = MathJax.Hub.getAllJax(self.content)[0];
             if (!jax) return;
 
             const script = jax.SourceElement();
-            const svg = script.previousSibling.getElementsByTagName("svg")[0];
-            const width = svg.getAttribute('width');
-            const height = svg.getAttribute('height');
-            const style = svg.getAttribute('style');
+            const svgNode = script.previousSibling.getElementsByTagName("svg")[0];
+            TypeSetter.suffixIds(svgNode, 'id', self.destinationNode.id);
+            TypeSetter.suffixIds(svgNode, 'href', self.destinationNode.id, XLINK_NS);
+
+            const width = svgNode.getAttribute('width');
+            const height = svgNode.getAttribute('height');
+            const style = svgNode.getAttribute('style');
 
             const w = 6*Number.parseFloat(width.slice(0, -2));  // `6*`` == ex --> ??
             const h = 6*Number.parseFloat(height.slice(0, -2));
@@ -168,7 +139,7 @@ export class TypeSetter
             // Prepend ids with self.destinationNode.id...
 
             self.destinationNode.setAttribute('transform', `translate(${self.x - w/2}, ${self.y + h/2 + va}) scale(0.015)`);
-            self.destinationNode.insertAdjacentHTML('afterbegin', svg.innerHTML);
+            self.destinationNode.insertAdjacentHTML('afterbegin', svgNode.innerHTML);
 
             // We can now delete the content node
 
