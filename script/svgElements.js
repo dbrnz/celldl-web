@@ -22,6 +22,7 @@ limitations under the License.
 
 //==============================================================================
 
+import * as layout from './layout.js';
 import * as mathjax from './mathjax.js';
 import {List, format, setAttributes} from './utils.js';
 
@@ -30,9 +31,7 @@ import {List, format, setAttributes} from './utils.js';
 export const SVG_NS = 'http://www.w3.org/2000/svg';
 export const SVG_VERSION = '1.1';
 
-//==============================================================================
-
-const LINE_WIDTH = 2;
+export const XLINK_NS = 'http://www.w3.org/1999/xlink';
 
 //==============================================================================
 
@@ -496,7 +495,7 @@ export function svgLine(lineString, colour, lineStyle='')
     }
     const svgNode = document.createElementNS(SVG_NS, 'path');
     setAttributes(svgNode, {fill: "none", stroke: colour,
-                            'stroke-width': LINE_WIDTH,
+                            'stroke-width': layout.STROKE_WIDTH,
                             'marker-end': Arrow.url(colour),
                             d: `M${points[0][0]},${points[0][1]}${pointLocations.join('')}`
                   });
@@ -510,12 +509,14 @@ export function svgLine(lineString, colour, lineStyle='')
 export class Text
 {
     static nextId()
+    //=============
     {
         Text._nextId += 1;
         return `_TEXT_${Text._nextId}_`;
     }
 
     static typeset(latex, x, y, rotation=0)
+    //=====================================
     {
         const nodeId = Text.nextId();
         const svgNode = document.createElementNS(SVG_NS, 'g');
@@ -526,6 +527,7 @@ export class Text
     }
 
     static promises()
+    //===============
     {
         return Text._promises;
     }

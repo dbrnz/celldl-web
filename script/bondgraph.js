@@ -342,19 +342,20 @@ export class Quantity extends DiagramElement
         this.potential = null;
     }
 
-    generateSvg(radius=layout.ELEMENT_RADIUS)
-    //=======================================
+    generateSvg(width=layout.QUANTITY_WIDTH, height=layout.QUANTITY_HEIGHT)
+    //=====================================================================
     {
         const svgNode = document.createElementNS(SVG_NS, 'g');
         setAttributes(svgNode, this.idClass(), this.display);
 
         if (this.hasCoordinates) {
             const [x, y] = this.coordinates;
-            const [w, h] = [layout.QUANTITY_WIDTH, layout.QUANTITY_HEIGHT];
             const node = document.createElementNS(SVG_NS, 'rect');
 
-            setAttributes(node, { rx: 0.375*w, ry: 0.375*h, x: x - w/2, y: y - h/2,
-                                  width: w, height: h, stroke: 'none', fill: this.colour
+            setAttributes(node, { rx: 0.375*width, ry: 0.375*height,
+                                  x: x - width/2, y: y - height/2,
+                                  width: width, height: height,
+                                  stroke: 'none', fill: this.colour
                          });
             svgNode.appendChild(node);
             svgNode.appendChild(this.labelAsSvg());

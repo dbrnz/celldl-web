@@ -22,9 +22,11 @@ limitations under the License.
 
 //==============================================================================
 
-const MATHJAX_PATH = './thirdparty/MathJax/unpacked/MathJax.js';
+import {SVG_NS, XLINK_NS} from './svgElements.js'
 
-const XLINK_NS = 'http://www.w3.org/1999/xlink';
+//==============================================================================
+
+const MATHJAX_PATH = './thirdparty/MathJax/unpacked/MathJax.js';
 
 //==============================================================================
 
@@ -121,7 +123,7 @@ export class TypeSetter
             if (!jax) return;
 
             const script = jax.SourceElement();
-            const svgNode = script.previousSibling.getElementsByTagName("svg")[0];
+            const svgNode = script.previousSibling.getElementsByTagName('svg')[0];
             TypeSetter.suffixIds(svgNode, 'id', self.destinationNode.id);
             TypeSetter.suffixIds(svgNode, 'href', self.destinationNode.id, XLINK_NS);
 
@@ -133,7 +135,6 @@ export class TypeSetter
             const h = 6*Number.parseFloat(height.slice(0, -2));
             const va = 6*Number.parseFloat(style.split(' ')[1].slice(0, -3));
 
-            // Prepend ids with self.destinationNode.id...
             const textNode = document.createElementNS(SVG_NS, 'g');
             textNode.setAttribute('transform', `translate(${-w/2 - 2}, ${h/2 + va + 2}) scale(0.02)`);
 
