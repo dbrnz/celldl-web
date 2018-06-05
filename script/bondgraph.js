@@ -374,6 +374,12 @@ export class Reaction extends DiagramElement
         super(element, 'Reaction');
         if (!this.label.startsWith('$')) this.label = `RE:${this.label}`;
     }
+
+    generateSvg(radius=layout.TRANSPORTER_RADIUS)
+    //===========================================
+    {
+        return super.generateSvg(radius);
+    }
 }
 
 //==============================================================================

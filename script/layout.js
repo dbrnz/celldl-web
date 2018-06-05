@@ -36,13 +36,15 @@ import {List} from './utils.js';
 
 export const ELEMENT_RADIUS = 15;
 
+export const STROKE_WIDTH = 2.5;
+
 export const FLOW_OFFSET = {value: 60, unit: 'x'};
 
 export const QUANTITY_OFFSET = {value: 60, unit: 'x'};
 export const QUANTITY_WIDTH = 50;
 export const QUANTITY_HEIGHT = 35;
 
-export const TRANSPORTER_RADIUS = 25;
+export const TRANSPORTER_RADIUS = 20;
 export const TRANSPORTER_EXTRA = {value: 25, unit: 'x'};
 export const TRANSPORTER_WIDTH = {value: 10, unit: 'x'};
 
