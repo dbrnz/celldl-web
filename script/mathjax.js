@@ -81,11 +81,8 @@ export function loadMathJax()
 
 export class TypeSetter
 {
-    constructor(latex, x, y, rotation, destinationNode)
+    constructor(latex, destinationNode)
     {
-        this.x = x;
-        this.y = y;
-        this.rotation = rotation;
         this.destinationNode = destinationNode;
         this.content = document.createElement("span");
         this.content.setAttribute('style', 'display: none');
@@ -137,9 +134,12 @@ export class TypeSetter
             const va = 6*Number.parseFloat(style.split(' ')[1].slice(0, -3));
 
             // Prepend ids with self.destinationNode.id...
+            const textNode = document.createElementNS(SVG_NS, 'g');
+            textNode.setAttribute('transform', `translate(${-w/2 - 2}, ${h/2 + va + 2}) scale(0.02)`);
 
-            self.destinationNode.setAttribute('transform', `translate(${self.x - w/2}, ${self.y + h/2 + va}) scale(0.015)`);
-            self.destinationNode.insertAdjacentHTML('afterbegin', svgNode.innerHTML);
+            const svg = svgNode.innerHTML;
+            textNode.insertAdjacentHTML('afterbegin', svg);
+            self.destinationNode.appendChild(textNode);
 
             // We can now delete the content node
 

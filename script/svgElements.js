@@ -520,7 +520,8 @@ export class Text
         const nodeId = Text.nextId();
         const svgNode = document.createElementNS(SVG_NS, 'g');
         svgNode.id = nodeId;
-        Text._promises.push(new mathjax.TypeSetter(latex, x, y, rotation, svgNode));
+        svgNode.setAttribute('transform', `translate(${x}, ${y})`);
+        Text._promises.push(new mathjax.TypeSetter(latex, svgNode));
         return svgNode;
     }
 
