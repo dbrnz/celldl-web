@@ -85,6 +85,13 @@ export class TypeSetter
 {
     constructor(latex, destinationNode)
     {
+        if (TypeSetter._cache.has(latex)) {
+            const textNode = TypeSetter._cache.get(latex);
+            destinationNode.appendChild(textNode);
+            return Promise.resolve(null);
+        }
+
+        this.latex = latex;
         this.destinationNode = destinationNode;
         this.content = document.createElement("span");
         this.content.setAttribute('style', 'display: none');
@@ -140,6 +147,8 @@ export class TypeSetter
 
             const svg = svgNode.innerHTML;
             textNode.insertAdjacentHTML('afterbegin', svg);
+
+            TypeSetter._cache.set(self.latex, textNode);
             self.destinationNode.appendChild(textNode);
 
             // We can now delete the content node
@@ -148,5 +157,7 @@ export class TypeSetter
         }
     }
 }
+
+TypeSetter._cache = new Map();
 
 //==============================================================================
