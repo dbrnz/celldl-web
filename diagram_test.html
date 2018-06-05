@@ -6,10 +6,10 @@
                 float: left;
             }
             .leftcolumn {
-                width: 45%;
+                width: 50%;
             }
             .rightcolumn {
-                width: 55%;
+                width: 50%;
             }
             .CodeMirror {
                 border: 2px solid #888;
@@ -17,6 +17,10 @@
             #cell_diagram {
                 height: 100%;
                 border: 2px solid #888;
+            }
+            input {
+                margin-left: 20px;
+                margin-top: 20px;
             }
         </style>
         <script type="text/x-mathjax-config">
@@ -49,6 +53,55 @@
         <script type="text/javascript"
                 src="./thirdparty/MathJax/unpacked/MathJax.js">
         </script>
+
+        <script type="module">
+            import displayDiagram from './script/main.js';
+
+            function upLoadedFileAsText(file)
+            {
+                const reader = new FileReader();
+
+                return new Promise((resolve, reject) => {
+                    reader.onerror = () => {
+                        reader.abort();
+                        reject(reader.error);
+                    }
+                    reader.onload = () => {
+                        resolve(reader.result);
+                    }
+
+                    reader.readAsText(file);
+                });
+            }
+
+            function loadCellDl(files) {
+                for (let file of files) {
+                    upLoadedFileAsText(file).then(text => {
+                        editor.setValue(text);
+                    });
+                }
+            }
+
+            function saveCellDl() {
+                const text = editor.getValue();
+                alert(text);
+            }
+
+            function previewSvg() {
+                displayDiagram(editor.getValue(), 'cell-diagram');
+            }
+
+            function exportSvg() {
+
+            }
+
+            // Expose module's functions to HTML elements
+
+            window.loadCellDl = loadCellDl;
+            window.saveCellDl = saveCellDl;
+            window.previewSvg = previewSvg;
+            window.exportSvg = exportSvg;
+        </script>
     </head>
     <body>
 
@@ -56,33 +109,52 @@
         <div id="canvas" style="height: 50%;"></div>
         <script src="./thirdparty/d3.v3.js"></script>
 -->
-        <section style="height: 90%;">
-            <div class="float leftcolumn">
-                <textarea id="celldl_text" class="border"></textarea>
-            </div>
-            <div class="float rightcolumn">
-                <div id="cell_diagram"></div>
-            </div>
+        <section class="float leftcolumn" style="height: 100%;">
+            <section style="height: 90%;">
+                <textarea id="editor-text" class="border"></textarea>
+            </section>
+            <section style="height: 10%;">
+                <input type="file" id="loadCellDlFile" accept=".xml, .celldl" style="display:none" onchange="loadCellDl(this.files)">
+                <input type="button" value="Load CellDL" onclick="loadCellDlFile.click()"/>
+
+                <input type="button" value="Save CellDL" onclick="saveCellDl()"/>
+                <input type="button" value="Preview SVG" onclick="previewSvg()"/>
+            </section>
         </section>
-        <section style="height: 10%;">
+        <section class="float rightcolumn" style="height: 100%;">
+            <section style="height: 90%;">
+                <div id="cell-diagram"></div>
+            </section>
+            <section style="height: 10%;">
+                <input type="button" value="Export SVG"  onclick="exportSvg()"/>
+            </section>
         </section>
 
-        <!-- Create a simple CodeMirror instance -->
+            <!-- have some way of specifying local sheets?
+                 file:// means we use FileReader API instead of fetch() ??
+  https://developer.mozilla.org/en-US/docs/Web/API/File/Using_files_from_web_applications
+  and trigger a download to save data.
+            -->
+
+<!--        <script src="./thirdparty/d3.v3.js"></script> -->
+
+<!-- Create a simple CodeMirror instance
+
+Or use Ace editor  - - https://ace.c9.io/ ??
+
+Have separate XML and CSS editors?? Or define or own mixed mode??
+-->
+
         <link rel="stylesheet" href="./thirdparty/codemirror/lib/codemirror.css">
         <script src="./thirdparty/codemirror/lib/codemirror.js"></script>
         <script src="./thirdparty/codemirror/mode/xml/xml.js"></script>
         <script>
-            const celldlElement = document.getElementById("celldl_text");
+            const celldlElement = document.getElementById("editor-text");
             const editor = CodeMirror.fromTextArea(celldlElement,
                                                 { lineNumbers: true }
             );
             editor.setSize("100%", "100%");
         </script>
 
-        <script type="module">
-            import main from './script/main.js';
-
-            main('http://localhost:8080/svg/web/ion_channel.xml', 'cell_diagram');
-        </script>
     </body>
 </html>

@@ -29,39 +29,42 @@ import {Text} from './svgElements.js';
 
 //==============================================================================
 
-function main(cellDL, svgElementId)
+function displayDiagram(cellDlText, svgNodeId)
 {
-    fetch(cellDL)
-        .then(response => response.text())
-        .catch(error => console.error('Error getting XML:', error))
-        .then(text => {
-            const domParser = new DOMParser();
-            const xmlDocument = domParser.parseFromString(text, "application/xml");
-            try {
-                CellDiagram.instance().reset();
-                StyleSheet.instance().reset();
+    const domParser = new DOMParser();
+    const xmlDocument = domParser.parseFromString(cellDlText, "application/xml");
+    try {
+        CellDiagram.instance().reset();
+        StyleSheet.instance().reset();
 
-                const parser = new Parser();
-                parser.parseDocument(xmlDocument)
-                    .then(() => {
-                        const cellDiagram = CellDiagram.instance();
-                        cellDiagram.layout();  // Pass width/height to use as defaults...
+        const parser = new Parser();
+        parser.parseDocument(xmlDocument)
+            .then(() => {
+                const cellDiagram = CellDiagram.instance();
+                cellDiagram.layout();  // Pass width/height to use as defaults...
 
-                        const svgDiagram = cellDiagram.generateSvg();
+                const svgDiagram = cellDiagram.generateSvg();
 
-                        Promise.all(Text.promises()).then(() => {
-                            const svgElement = document.getElementById(svgElementId);
-                            svgElement.insertAdjacentHTML('afterbegin', svgDiagram.outerHTML);
-                        });
-                    });
-            } catch (error) {
-                console.trace(error);
-                alert(error);
-            }
-    });
+                Promise.all(Text.promises()).then(() => {
+                    const svgNode = document.getElementById(svgNodeId);
 
+                    // Remove any children from the node we are displaying SVG in
+
+                    for (let child of svgNode.children) {
+                        child.remove();
+                    }
+
+                    // Show the SVG diagram
+
+                    svgNode.insertAdjacentHTML('afterbegin', svgDiagram.outerHTML);
+                });
+            });
+    } catch (error) {
+        console.trace(error);
+        alert(error);
+    }
 }
 
-export default main;
+export default displayDiagram;
 
 //==============================================================================
