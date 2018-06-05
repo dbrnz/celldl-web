@@ -29,7 +29,7 @@ import {Text} from './svgElements.js';
 
 //==============================================================================
 
-function displayDiagram(cellDlText, svgNodeId)
+function displayDiagram(cellDlText, svgContainerNode)
 {
     const domParser = new DOMParser();
     const xmlDocument = domParser.parseFromString(cellDlText, "application/xml");
@@ -48,17 +48,15 @@ function displayDiagram(cellDlText, svgNodeId)
                 const svgDiagram = cellDiagram.generateSvg();
 
                 Promise.all(Text.promises()).then(() => {
-                    const svgNode = document.getElementById(svgNodeId);
+                    // Remove any children from our SVG container
 
-                    // Remove any children from the node we are displaying SVG in
-
-                    for (let child of svgNode.children) {
+                    for (let child of svgContainerNode.children) {
                         child.remove();
                     }
 
                     // Show the SVG diagram
 
-                    svgNode.insertAdjacentHTML('afterbegin', svgDiagram.outerHTML);
+                    svgContainerNode.insertAdjacentHTML('afterbegin', svgDiagram.outerHTML);
                     document.body.style.cursor = 'default';
                 });
             });

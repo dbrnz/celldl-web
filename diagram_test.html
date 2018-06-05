@@ -56,6 +56,10 @@
 
         <script type="module">
             import displayDiagram from './script/main.js';
+            import {saveAs} from './thirdparty/FileSaver.js';
+
+            let nameOfLoadedFile = '';
+            const svgContainerNode = document.getElementById('cell-diagram');
 
             function upLoadedFileAsText(file)
             {
@@ -70,6 +74,7 @@
                         resolve(reader.result);
                     }
 
+                    nameOfLoadedFile = file.name;
                     reader.readAsText(file);
                 });
             }
@@ -84,15 +89,21 @@
 
             function saveCellDl() {
                 const text = editor.getValue();
-                alert(text);
+                const blob = new Blob([text], { type: "application/xml;charset=utf-8" });
+
+                saveAs(blob, nameOfLoadedFile);
             }
 
             function previewSvg() {
-                displayDiagram(editor.getValue(), 'cell-diagram');
+                displayDiagram(editor.getValue(), svgContainerNode);
             }
 
             function exportSvg() {
+                const svg = svgContainerNode.innerHTML;
+                const blob = new Blob([svg], { type: "image/svg+xml" });
+                const svgFileName = `${nameOfLoadedFile.split('.')[0]}.svg`
 
+                saveAs(blob, svgFileName);
             }
 
             // Expose module's functions to HTML elements
