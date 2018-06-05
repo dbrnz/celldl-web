@@ -11,7 +11,7 @@
             .rightcolumn {
                 width: 50%;
             }
-            .CodeMirror {
+            .CodeMirror, .border {
                 border: 2px solid #888;
             }
             #cell_diagram {
@@ -122,18 +122,17 @@
 -->
         <section class="float leftcolumn" style="height: 100%;">
             <section style="height: 90%;">
-                <textarea id="editor-text" class="border"></textarea>
+                <textarea id="editor-text"></textarea>
             </section>
             <section style="height: 10%;">
                 <input type="file" id="loadCellDlFile" accept=".xml, .celldl" style="display:none" onchange="loadCellDl(this.files)">
                 <input type="button" value="Load CellDL" onclick="loadCellDlFile.click()"/>
-
                 <input type="button" value="Save CellDL" onclick="saveCellDl()"/>
                 <input type="button" value="Preview SVG" onclick="previewSvg()"/>
             </section>
         </section>
         <section class="float rightcolumn" style="height: 100%;">
-            <section style="height: 90%;">
+            <section style="height: 90%;" class="border">
                 <div id="cell-diagram"></div>
             </section>
             <section style="height: 10%;">
