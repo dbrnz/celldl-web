@@ -33,6 +33,8 @@ function displayDiagram(cellDlText, svgNodeId)
 {
     const domParser = new DOMParser();
     const xmlDocument = domParser.parseFromString(cellDlText, "application/xml");
+    document.body.style.cursor = 'wait';
+
     try {
         CellDiagram.instance().reset();
         StyleSheet.instance().reset();
@@ -57,9 +59,11 @@ function displayDiagram(cellDlText, svgNodeId)
                     // Show the SVG diagram
 
                     svgNode.insertAdjacentHTML('afterbegin', svgDiagram.outerHTML);
+                    document.body.style.cursor = 'default';
                 });
             });
     } catch (error) {
+        document.body.style.cursor = 'default';
         console.trace(error);
         alert(error);
     }
