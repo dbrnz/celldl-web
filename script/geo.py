@@ -95,6 +95,21 @@ class Point(object):
     def __str__(self):
         return 'Point({}, {})'.format(self.x, self.y)
 
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __ne__(self, other):
+        return self.x != other.x or self.y != other.y
+
+    def __add__(self, offset):
+        return Point(self.x + offset[0], self.y + offset[1])
+
+    def __sub__(self, offset):
+        return Point(self.x - offset[0], self.y - offset[1])
+
+    def offset(self, other):
+        return (self.x - other.x, self.y - other.y)
+
 
 class ProjectiveLine(object):
     def __init__(self, A, B, C):
@@ -110,83 +125,14 @@ class ProjectiveLine(object):
     def __str__(self):
         return 'Line ({}, {}, {})'.format(A, B, C)
 
-    def intersect_circle(self, circle):
-        # Note: formulae were derived by using Sympy to find
-        #       intersection points
-
-        # Translate our line so that it corresponds to the circle
-        # having its centre at the origin
-        if circle.centre.x == 0 and circle.centre.y == 0:
-            line = self
-        else:
-            line = self.translate(-circle.centre.x, -circle.centre.y)
-
-        if line.A == 0:
-            y = -line.C/line.B
-            x2 = circle.radius**2 - y**2
-            y += circle.centre.y
-            if x2 < 0:
-                return []
-            elif x2 == 0:
-                return [Point(circle.centre.x, y)]
-            else:
-                x = sqrt(x2) + circle.centre.x
-                return [Point(-x, y), Point(x, y)]
-        else:
-            a = -line.C*line.B/line.norm2
-            b = line.norm2*circle.radius**2 - line.C**2
-            if b < 0:
-                return []
-            elif b == 0:
-                return [Point(-(line.C + a*line.B)/line.A + circle.centre.x, a + circle.centre.y)]
-            else:
-                c = -line.A*sqrt(b)/line.norm2
-                return [Point(-(line.C + (a + c)*line.B)/line.A + circle.centre.x, (a + c) + circle.centre.y),
-                        Point(-(line.C + (a - c)*line.B)/line.A + circle.centre.x, (a - c) + circle.centre.y)]
-
-    def intersect_ellipse(self, ellipse):
-        # Note: formulae were derived by using Sympy to find
-        #       intersection points
-
-        # Translate our line so that it corresponds to the ellipse
-        # having its centre at the origin
-        if ellipse.centre.x == 0 and ellipse.centre.y == 0:
-            line = self
-        else:
-            line = self.translate(-ellipse.centre.x, -ellipse.centre.y)
-
-        if line.A == 0:
-            y = -line.C/line.B
-            x2 = ellipse.x_radius**2 - (y*ellipse.x_radius/ellipse.y_radius)**2
-            y += ellipse.centre.y
-            if x2 < 0:
-                return []
-            elif x2 == 0:
-                return [Point(ellipse.centre.x, y)]
-            else:
-                x = sqrt(x2) + ellipse.centre.x
-                return [Point(-x, y), Point(x, y)]
-        else:
-            d2 = (line.A*ellipse.x_radius)**2 + (line.B*ellipse.y_radius)**2
-            a = -(line.C*line.B*ellipse.y_radius**2)/d2
-            b = d2 - line.C**2
-            if b < 0:
-                return []
-            elif b == 0:
-                return [Point(-(line.C + a*line.B)/line.A + ellipse.centre.x, a + ellipse.centre.y)]
-            else:
-                c = -line.A*ellipse.x_radius*ellipse.y_radius*sqrt(b)/d2
-                return [Point(-(line.C + (a + c)*line.B)/line.A + ellipse.centre.x, (a + c) + ellipse.centre.y),
-                        Point(-(line.C + (a - c)*line.B)/line.A + ellipse.centre.x, (a - c) + ellipse.centre.y)]
-
     def parallel_line(self, offset):
         return ProjectiveLine(self.A, self.B, self.C + offset*sqrt(self.norm2))
 
     def distance_from(self, point):
         return abs(point.x*self.A + point.y*self.B + self.C)/sqrt(self.norm2)
 
-    def translate(self, x_offset, y_offset):
-        return ProjectiveLine(self.A, self.B, self.C - (x_offset*self.A + y_offset*self.B))
+    def translate(self, offset):
+        return ProjectiveLine(self.A, self.B, self.C - (offset[0]*self.A + offset[1]*self.B))
 
 
 class LineSegment(ProjectiveLine):
@@ -201,15 +147,62 @@ class LineSegment(ProjectiveLine):
         self.start = start
         self.end = end
 
+
 class Ellipse(object):
     def __init__(self, centre, x_radius, y_radius):
+        if x_radius == 0 or y_radius == 0:
+            raise ValueError('Invalid radius')
+        if isinstance(centre, tuple):
+            centre = Point(*centre)
         self.centre = centre
         self.x_radius = x_radius
         self.y_radius = y_radius
 
+    def line_intersect(self, line):
+        # Note: formulae were derived by using Sympy to find
+        #       intersection points
+
+        # Translate our line so that it corresponds to the ellipse
+        # having its centre at the origin
+        if self.centre.x != 0 or self.centre.y != 0:
+            line = line.translate((-self.centre.x, -self.centre.y))
+
+        if line.A == 0:
+            y = -line.C/line.B
+            x2 = self.x_radius**2 - (y*self.x_radius/self.y_radius)**2
+            y += self.centre.y
+            if x2 < 0:
+                return []
+            elif x2 == 0:
+                return [Point(self.centre.x, y)]
+            else:
+                x = sqrt(x2) + self.centre.x
+                return [Point(-x, y), Point(x, y)]
+        else:
+            d2 = (line.A*self.x_radius)**2 + (line.B*self.y_radius)**2
+            a = -(line.C*line.B*self.y_radius**2)/d2
+            b = d2 - line.C**2
+            if b < 0:
+                return []
+            elif b == 0:
+                return [Point(-(line.C + a*line.B)/line.A, a) + (self.centre.x, self.centre.y)]
+            else:
+                c = -line.A*self.x_radius*self.y_radius*sqrt(b)/d2
+                return [Point(-(line.C + (a + c)*line.B)/line.A, (a + c)) + (self.centre.x, self.centre.y),
+                        Point(-(line.C + (a - c)*line.B)/line.A, (a - c)) + (self.centre.x, self.centre.y)]
+
+    def contains(self, point):
+        return (((point.x - self.centre.x)/self.x_radius)**2
+              + ((point.y - self.centre.y)/self.y_radius)**2) < 1.0
+
+    def translate(self, offset):
+        return Ellipse(self.centre + offset, self.x_radius, self.y_radius)
+
 
 class Circle(Ellipse):
     def __init__(self, centre, radius):
+        if isinstance(centre, tuple):
+            centre = Point(*centre)
         super().__init__(centre, radius, radius)
         self.radius = radius
 
@@ -230,17 +223,58 @@ class Polygon(object):
 
 class Rectangle(Polygon):
     def __init__(self, top_left, bottom_right):
-        pass
+        if isinstance(top_left, tuple):
+            top_left = Point(*top_left)
+        if isinstance(bottom_right, tuple):
+            bottom_right = Point(*bottom_right)
+        if top_left == bottom_right:
+            raise ValueError('Rectangle has no size')
+        self.width = abs(top_left.x - bottom_right.x)
+        self.height = abs(top_left.y - bottom_right.y)
+        self.centre = Point((top_left.x + bottom_right.x)/2.0,
+                            (top_left.y + bottom_right.y)/2.0)
+        self.top_left = self.centre - (self.width/2.0, self.height/2.0)
+        self.bottom_right = self.centre + (self.width/2.0, self.height/2.0)
+
+    def contains(self, point):
+        return ((0 < (point.x - self.centre.x) < self.width)
+            and (0 < (point.y - self.centre.y) < self.height))
 
 class RoundedRectangle(object):
-    def __init__(self, top_left, bottom_right, corner_radius):
-        pass
+    def __init__(self, top_left, bottom_right, x_corner_radius=0, y_corner_radius=0):
+        super().__init__(top_left, bottom_right)
+        if y_corner_radius == 0:
+            y_corner_radius = x_corner_radius
+        if (x_corner_radius < 0 or x_corner_radius > self.width/2.0
+         or y_corner_radius < 0 or y_corner_radius > self.height/2.0):
+            raise ValueError('Invalid corner radius')
+        self.x_corner_radius = x_corner_radius
+        self.y_corner_radius = y_corner_radius
+        if x_corner_radius == 0 and y_corner_radius == 0:
+            self.inner_rectangle = self.super()
+        else:
+            w_2 = (self.width - x_corner_radius)/2.0
+            h_2 = (self.height - y_corner_radius)/2.0
+            self.inner_rectangle = Rectangle(Point(self.centre.x) - (w_2, h_2),
+                                             Point(self.centre.x) + (w_2, h_2))
+            self.corner_ellipse = Ellipse(self.centre, x_corner_radius, y_corner_radius)
+
+    def contains(self, point):
+        if x_corner_radius == 0 and y_corner_radius == 0:
+            return super().contains(point)
+        else:
+            return (self.inner_rectangle.contains(point)
+                 or self.corner_ellipse.translate(-self.width/2.0, -self.height/2.0).contains(point)
+                 or self.corner_ellipse.translate(-self.width/2.0,  self.height/2.0).contains(point)
+                 or self.corner_ellipse.translate( self.width/2.0, -self.height/2.0).contains(point)
+                 or self.corner_ellipse.translate( self.width/2.0,  self.height/2.0).contains(point))
 
 
 if __name__ == '__main__':
     c0 = Circle(Point(0, 0), 8)
     cx = Circle(Point(2, 0), 8)
     cy = Circle(Point(0, 2), 8)
+    circles = [c0, cx, cy]
 
     l0 = LineSegment(Point(0, -1), (0, 1))
     lx = LineSegment(Point(2, -1), (2, 1))
@@ -248,13 +282,5 @@ if __name__ == '__main__':
     lines = [l0, lx, ly]
 
     for l in lines:
-        print([str(p) for p in l.intersect_circle(c0)])
-        print([str(p) for p in l.intersect_ellipse(c0)])
-
-    for l in lines:
-        print([str(p) for p in l.intersect_circle(cx)])
-        print([str(p) for p in l.intersect_ellipse(cx)])
-
-    for l in lines:
-        print([str(p) for p in l.intersect_circle(cy)])
-        print([str(p) for p in l.intersect_ellipse(cy)])
+        for c in circles:
+            print([str(p) for p in c.line_intersect(l)])
