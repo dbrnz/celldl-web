@@ -240,7 +240,7 @@ class Rectangle(Polygon):
         return ((0 < (point.x - self.centre.x) < self.width)
             and (0 < (point.y - self.centre.y) < self.height))
 
-class RoundedRectangle(object):
+class RoundedRectangle(Rectangle):
     def __init__(self, top_left, bottom_right, x_corner_radius=0, y_corner_radius=0):
         super().__init__(top_left, bottom_right)
         if y_corner_radius == 0:
@@ -251,7 +251,8 @@ class RoundedRectangle(object):
         self.x_corner_radius = x_corner_radius
         self.y_corner_radius = y_corner_radius
         if x_corner_radius == 0 and y_corner_radius == 0:
-            self.inner_rectangle = self.super()
+            self.inner_rectangle = Rectangle(top_left, bottom_right)
+            self.corner_ellipse = None
         else:
             w_2 = (self.width - x_corner_radius)/2.0
             h_2 = (self.height - y_corner_radius)/2.0
