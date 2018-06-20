@@ -30,6 +30,12 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 
 //==============================================================================
 
+// Two numbers are considered equal if closer than EPISILON
+
+const EPISILON = 1.0e-6
+
+//==============================================================================
+
 class GeoObject
 {
     drawSvg(parentNode)
@@ -55,12 +61,13 @@ export class Point extends GeoObject
 
     equal(other)
     {
-        return ((this.x === other.x) && (this.y === other.y));
+        return (Math.abs(this.x - other.x) < EPISILON)
+            && (Math.abs(this.y - other.y) < EPISILON);
     }
 
     notEqual(other)
     {
-        return ((this.x !== other.x) || (this.y !== other.y));
+        return !this.equal(other)
     }
 
     add(offset)
@@ -76,6 +83,12 @@ export class Point extends GeoObject
     offset(other)
     {
         return [(this.x - other.x), (this.y - other.y)];
+    }
+
+    distance(other)
+    {
+        return Math.sqrt(Math.pow((this.x - other.x), 2)
+                       + Math.pow((this.y - other.y), 2));
     }
 
     drawSvg(parentNode)
@@ -101,19 +114,24 @@ export class ProjectiveLine extends GeoObject
         this.A = A;
         this.B = B;
         this.C = C;
-        this.norm2 = Math.pow(this.A, 2) + Math.pow(this.B, 2);
+        this.normSquared = Math.pow(this.A, 2) + Math.pow(this.B, 2);
     }
 
     toString() {
         return `Line (${A}, ${B}, ${C})`;
     }
 
-    parallel_line(offset) {
-        return new ProjectiveLine(this.A, this.B, this.C + offset*Math.sqrt(this.norm2));
+    contains(point)
+    {
+        return Math.abs(this.A*point.x + this.B*point.y + this.C) < EPISILON;
     }
 
-    distance_from(point) {
-        return abs(point.x*this.A + point.y*this.B + this.C)/Math.sqrt(this.norm2);
+    parallelLine(offset) {
+        return new ProjectiveLine(this.A, this.B, this.C + offset*Math.sqrt(this.normSquared));
+    }
+
+    distanceFrom(point) {
+        return Math.abs(point.x*this.A + point.y*this.B + this.C)/Math.sqrt(this.normSquared);
     }
 
     translate(offset) {
@@ -146,8 +164,16 @@ export class LineSegment extends ProjectiveLine
             end = new Point(...end);
         }
         super(end.y - start.y, start.x - end.x, end.x*start.y - start.x*end.y);
+        this.length = Math.sqrt(this.normSquared);
         this.start = start;
         this.end = end;
+    }
+
+    contains(point)
+    {
+        return super.contains(point)
+            && (this.start.distance(point) <= this.length)
+            && (this.start.distance(point) <= this.length);
     }
 
     translate(offset) {
@@ -242,8 +268,8 @@ export class Rectangle extends GeoObject
             throw new exception.ValueError("Rectangle has no size");
         }
         super();
-        this.width = abs(topLeft.x - bottomRight.x);
-        this.height = abs(topLeft.y - bottomRight.y);
+        this.width = Math.abs(topLeft.x - bottomRight.x);
+        this.height = Math.abs(topLeft.y - bottomRight.y);
         this.centre = new Point((topLeft.x + bottomRight.x)/2.0, (topLeft.y + bottomRight.y)/2.0);
         this.topLeft = this.centre.subtract([this.width/2.0, this.height/2.0]);
         this.bottomRight = this.centre.add([this.width/2.0, this.height/2.0]);
@@ -341,40 +367,33 @@ export class Ellipse extends GeoObject
 
     line_intersect(line)
     {
-        // if line is a LineSegment then only want points on the line...
-        if ((this.centre.x !== 0) || (this.centre.y !== 0)) {
-            line = line.translate([-this.centre.x, -this.centre.y]);
-        }
-        if (line.A === 0) {
-            let y = -line.C/line.B;
+        const l = (this.centre.x !== 0) || (this.centre.y !== 0)
+                ? line.translate([-this.centre.x, -this.centre.y])
+                : line;
+        const points = [];
+        if (l.A === 0) {
+            let y = -l.C/l.B;
             const x2 = Math.pow(this.xRadius, 2) - Math.pow(y*this.xRadius/this.yRadius, 2);
-            if (x2 < 0) {
-                return [];
-            } else {
-                if (x2 === 0) {
-                    return [new Point(0, y).add([this.centre.x, this.centre.y])];
-                } else {
-                    const x = Math.sqrt(x2);
-                    return [new Point(-x, y).add([this.centre.x, this.centre.y]),
-                            new Point( x, y).add([this.centre.x, this.centre.y])];
-                }
+            if (x2 === 0) {
+                points.push(new Point(0, y).add([this.centre.x, this.centre.y]));
+            } else if ( x2 > 0) {
+                const x = Math.sqrt(x2);
+                points.push(new Point(-x, y).add([this.centre.x, this.centre.y]));
+                points.push(new Point( x, y).add([this.centre.x, this.centre.y]));
             }
         } else {
-            const d2 = Math.pow(line.A*this.xRadius, 2) + Math.pow(line.B*this.yRadius, 2);
-            const a = -line.C*line.B*Math.pow(this.yRadius, 2)/d2;
-            const b = d2 - Math.pow(line.C, 2);
-            if (b < 0) {
-                return [];
-            } else {
-                if (b === 0) {
-                    return [new Point(-(line.C + a*line.B)/line.A, a).add([this.centre.x, this.centre.y])];
-                } else {
-                    const c = -line.A*this.xRadius*this.yRadius*Math.sqrt(b)/d2;
-                    return [new Point(-(line.C + (a + c)*line.B)/line.A, a + c).add([this.centre.x, this.centre.y]),
-                            new Point(-(line.C + (a - c)*line.B)/line.A, a - c).add([this.centre.x, this.centre.y])];
-                }
+            const d2 = Math.pow(l.A*this.xRadius, 2) + Math.pow(l.B*this.yRadius, 2);
+            const a = -l.C*l.B*Math.pow(this.yRadius, 2)/d2;
+            const b = d2 - Math.pow(l.C, 2);
+            if (b === 0) {
+                points.push(new Point(-(l.C + a*l.B)/l.A, a).add([this.centre.x, this.centre.y]));
+            } else if (b > 0) {
+                const c = -l.A*this.xRadius*this.yRadius*Math.sqrt(b)/d2;
+                points.push(new Point(-(l.C + (a + c)*l.B)/l.A, a + c).add([this.centre.x, this.centre.y]));
+                points.push(new Point(-(l.C + (a - c)*l.B)/l.A, a - c).add([this.centre.x, this.centre.y]));
             }
         }
+        return points.filter(p => line.contains(p));
     }
 
     contains(point)
@@ -432,13 +451,13 @@ export function test()
                      new Circle(new Point(200, 400), 80)
                     ];
 
-    const lines = [new LineSegment(new Point(200, 100), [200, 300]),
-                   new LineSegment(new Point(400, 100), [400, 300]),
-                   new LineSegment(new Point(100, 400), [300, 400])
+    const lines = [new LineSegment(new Point(200, 100), new Point(200, 300)),
+                   new LineSegment(new Point(400, 100), new Point(400, 300)),
+                   new LineSegment(new Point(100, 400), new Point(300, 400)),
+                   new LineSegment(new Point(  0,   0), new Point(200, 200))
                   ];
 
-    const lxy = new LineSegment(new Point(200, 300), [400, 100]);
-
+    const lxy = new LineSegment(new Point(200, 300), new Point(400, 100));
     const pxy = new ProjectiveLine(lxy.A, lxy.B, lxy.C);
     lines.push(pxy);
     lines.push(pxy.translate([50, 50]));
