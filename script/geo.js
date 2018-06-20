@@ -117,7 +117,19 @@ export class ProjectiveLine extends GeoObject
     }
 
     translate(offset) {
-        return new ProjectiveLine(this.A, this.B, this.C - offset[0]*this.A + offset[1]*this.B);
+        return new ProjectiveLine(this.A, this.B, this.C - (offset[0]*this.A + offset[1]*this.B));
+    }
+
+    drawSvg(parentNode)
+    {
+        const svgNode = document.createElementNS(SVG_NS, 'path');
+        // check that A and B are both non-zero
+        const start = new Point(0, -this.C/this.B);
+        const end = new Point(-this.C/this.A, 0);
+        setAttributes(svgNode, { class: this.constructor.name.toLowerCase(),
+                                 d: `M${start.x},${start.y}L${end.x},${end.y}`,
+                                 stroke: 'green'});
+        parentNode.appendChild(svgNode);
     }
 }
 
@@ -136,6 +148,10 @@ export class LineSegment extends ProjectiveLine
         super(end.y - start.y, start.x - end.x, end.x*start.y - start.x*end.y);
         this.start = start;
         this.end = end;
+    }
+
+    translate(offset) {
+        return new LineSegment(this.start.add(offset), this.end.add(offset));
     }
 
     drawSvg(parentNode)
@@ -327,7 +343,7 @@ export class Ellipse extends GeoObject
     {
         // if line is a LineSegment then only want points on the line...
         if ((this.centre.x !== 0) || (this.centre.y !== 0)) {
-            line = line.translate([-this.centre.x, this.centre.y]);
+            line = line.translate([-this.centre.x, -this.centre.y]);
         }
         if (line.A === 0) {
             let y = -line.C/line.B;
@@ -418,9 +434,14 @@ export function test()
 
     const lines = [new LineSegment(new Point(200, 100), [200, 300]),
                    new LineSegment(new Point(400, 100), [400, 300]),
-                   new LineSegment(new Point(100, 400), [300, 400]),
-                   new LineSegment(new Point(200, 100), [400, 300])
+                   new LineSegment(new Point(100, 400), [300, 400])
                   ];
+
+    const lxy = new LineSegment(new Point(200, 300), [400, 100]);
+
+    const pxy = new ProjectiveLine(lxy.A, lxy.B, lxy.C);
+    lines.push(pxy);
+    lines.push(pxy.translate([50, 50]));
 
     const elements = new List();
     elements.extend(circles).extend(lines);
