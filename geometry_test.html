@@ -1,0 +1,95 @@
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <script type="module">
+            import * as geo from './script/geo.js';
+
+            const GRID_SVG = `
+<g>
+    <path stroke="blue" stroke-width="0.1"
+        d = "M10,0
+                 v500m10,-500v500m10,-500v500m10,-500v500m20,-500
+                 v500m10,-500v500m10,-500v500m10,-500v500m20,-500
+                 v500m10,-500v500m10,-500v500m10,-500v500m20,-500
+                 v500m10,-500v500m10,-500v500m10,-500v500m20,-500
+                 v500m10,-500v500m10,-500v500m10,-500v500m20,-500
+                 v500m10,-500v500m10,-500v500m10,-500v500m20,-500
+                 v500m10,-500v500m10,-500v500m10,-500v500m20,-500
+                 v500m10,-500v500m10,-500v500m10,-500v500m20,-500
+                 v500m10,-500v500m10,-500v500m10,-500v500m20,-500
+                 v500m10,-500v500m10,-500v500m10,-500v500m20,-500"
+        />
+    <path stroke="blue" stroke-width="0.2"
+        d = "M50,0
+                 v500m100,-500v500m100,-500v500m100,-500v500m100,-500 v500m100,-500
+            "
+        />
+    <path stroke="blue" stroke-width="0.4"
+        d = "M0,0
+                 v500m100,-500v500m100,-500v500m100,-500v500m100,-500 v500m100,-500 v500m100,-500
+            "
+        />
+    <path stroke="blue" stroke-width="0.1"
+        d = "M0,10
+                 h500m-500,10h500m-500,10h500m-500,10h500m-500,20
+                 h500m-500,10h500m-500,10h500m-500,10h500m-500,20
+                 h500m-500,10h500m-500,10h500m-500,10h500m-500,20
+                 h500m-500,10h500m-500,10h500m-500,10h500m-500,20
+                 h500m-500,10h500m-500,10h500m-500,10h500m-500,20
+                 h500m-500,10h500m-500,10h500m-500,10h500m-500,20
+                 h500m-500,10h500m-500,10h500m-500,10h500m-500,20
+                 h500m-500,10h500m-500,10h500m-500,10h500m-500,20
+                 h500m-500,10h500m-500,10h500m-500,10h500m-500,20
+                 h500m-500,10h500m-500,10h500m-500,10h500m-500,20"
+        />
+    <path stroke="blue" stroke-width="0.2"
+        d = "M0,50
+                 h500m-500,100h500m-500,100h500m-500,100h500m-500,100 h500m-500,100
+            "
+        />
+    <path stroke="blue" stroke-width="0.4"
+        d = "M0,0
+                 h500m-500,100
+                 h500m-500,100
+                 h500m-500,100
+                 h500m-500,100
+                 h500m-500,100
+                 h500m-500,100
+            "
+        />
+    </g>`;
+
+            function displaySvg(parentNode, width, height, elements)
+            {
+                const SVG_NS = 'http://www.w3.org/2000/svg';
+                const SVG_VERSION = '1.1';
+
+                const svgNode = document.createElementNS(SVG_NS, 'svg');
+                svgNode.setAttribute('xmlns', SVG_NS);
+                svgNode.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+                svgNode.setAttribute('version', SVG_VERSION);
+                svgNode.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+                const parser = new DOMParser();
+                const gridSvg = parser.parseFromString(GRID_SVG, "image/svg+xml");
+                svgNode.appendChild(gridSvg.childNodes[0]);
+
+                for (let element of elements) {
+                    element.drawSvg(svgNode);
+                }
+                const svg = svgNode.outerHTML;
+                parentNode.innerHTML = svg;
+            }
+
+            const parentNode = document.getElementById('diagram');
+            const elements = geo.test();
+
+            displaySvg(parentNode, 1000, 1000, elements);
+        </script>
+    </head>
+    <body>
+        <section style="width: 100%; height: 100%;">
+            <div id="diagram"></div>
+        </section>
+    </body>
+</html>
