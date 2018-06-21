@@ -214,6 +214,30 @@ export class LineSegment extends ProjectiveLine
 
 //==============================================================================
 
+export class LineSegmentSet extends GeoObject
+{
+    constructor(lineSegments) {
+        super();
+        this.lineSegments = new List(lineSegments);
+    }
+
+    add(lineSegment)
+    {
+        this.lineSegments.append(lineSegment);
+    }
+
+    lineIntersections(line)
+    {
+        const points = [];
+        for (let lineSegment of this.lineSegments) {
+            points.push(lineSegment.intersection(line));
+        }
+        return points.filter(p => (p !== null));
+    }
+}
+
+//==============================================================================
+
 export class LineString extends GeoObject
 {
     constructor(points, closed=false) {
@@ -257,15 +281,12 @@ export class Polygon extends GeoObject
     {
         super();
         this.boundary = new LineString(points, true);
+        this.edges = new LineSegmentSet(this.boundary.lineSegments);
     }
 
     lineIntersections(line)
     {
-        const points = [];
-        for (let lineSegment of this.boundary.lineSegments) {
-            points.push(lineSegment.intersection(line));
-        }
-        return points.filter(p => (p !== null)); //.filter(p => line.contains(p));
+        return this.edges.lineIntersections(line);
     }
 
     drawSvg(parentNode)
@@ -331,27 +352,30 @@ export class RoundedRectangle extends Rectangle
     constructor(topLeft, bottomRight, xCornerRadius = 0, yCornerRadius = 0)
     {
         super(topLeft, bottomRight);
-        if (yCornerRadius === 0) {
+        if (yCornerRadius === 0
+         || xCornerRadius === 0) {   // This catches a degenerate case
             yCornerRadius = xCornerRadius;
         }
-        if ((xCornerRadius < 0) || (xCornerRadius > this.width/2.0)
-         || (yCornerRadius < 0) || (yCornerRadius > this.height/2.0)) {
+        if (xCornerRadius < 0 || xCornerRadius > this.width/2.0
+         || yCornerRadius < 0 || yCornerRadius > this.height/2.0) {
             throw new exception.ValueError("Invalid corner radius");
         }
+        this.edges = new LineSegmentSet([new LineSegment(topLeft.add([xCornerRadius, 0]),
+                                                         topLeft.add([this.width - xCornerRadius, 0])),
+                                         new LineSegment(bottomRight.subtract([0, this.height - yCornerRadius]),
+                                                         bottomRight.subtract([0, yCornerRadius])),
+                                         new LineSegment(bottomRight.subtract([xCornerRadius, 0]),
+                                                         bottomRight.subtract([this.width - xCornerRadius, 0])),
+                                         new LineSegment(topLeft.add([0, this.height - yCornerRadius]),
+                                                         topLeft.add([0, yCornerRadius]))
+                                        ]);
         this.xCornerRadius = xCornerRadius;
         this.yCornerRadius = yCornerRadius;
-        if (xCornerRadius === 0 && yCornerRadius === 0) {
-            this.innerRectangle = new Rectangle(topLeft, bottomRight);
-            this.cornerEllipse = null;
-        } else {
-            const w_2 = (this.width - xCornerRadius)/2.0;
-            const h_2 = (this.height - yCornerRadius)/2.0;
-            this.innerRectangle = new Rectangle(new Point(this.centre.x).subtract([w_2, h_2]),
-                                                new Point(this.centre.x).add([w_2, h_2]));
-            this.cornerEllipse = new Ellipse(this.centre, xCornerRadius, yCornerRadius);
-        }
+        this.cornerEllipse = (xCornerRadius !== 0 && yCornerRadius !== 0)
+                           ? new Ellipse(this.centre, xCornerRadius, yCornerRadius)
+                           : null;
     }
-
+/*
     contains(point)
     {
         if (xCornerRadius === 0 && yCornerRadius === 0) {
@@ -364,6 +388,29 @@ export class RoundedRectangle extends Rectangle
                 || this.cornerEllipse.translate([ this.width/2.0,  this.height/2.0]).contains(point);
                 // Or the side lobes...
         }
+    }
+*/
+    lineIntersections(line)
+    {
+        const points = new List(this.edges.lineIntersections(line));
+
+        // Add points on corner 1/4 ellipses.
+        const w2 = this.width/2.0 - this.xCornerRadius;
+        const h2 = this.height/2.0 - this.yCornerRadius;
+
+        points.extend(this.cornerEllipse.translate([-w2, -h2])
+                      .lineIntersections(line).filter(p => (p.x <= this.centre.x - w2)
+                                                        && (p.y <= this.centre.y - h2)));
+        points.extend(this.cornerEllipse.translate([ w2, -h2])
+                      .lineIntersections(line).filter(p => (p.x >= this.centre.x + w2)
+                                                        && (p.y <= this.centre.y - h2)));
+        points.extend(this.cornerEllipse.translate([ w2,  h2])
+                      .lineIntersections(line).filter(p => (p.x >= this.centre.x + w2)
+                                                        && (p.y >= this.centre.y + h2)));
+        points.extend(this.cornerEllipse.translate([-w2,  h2])
+                      .lineIntersections(line).filter(p => (p.x <= this.centre.x - w2)
+                                                        && (p.y >= this.centre.y + h2)));
+        return points;
     }
 
     drawSvg(parentNode)
@@ -487,8 +534,8 @@ export function test()
                    new LineSegment(new Point(400, 100), new Point(400, 300)),
                    new LineSegment(new Point(100, 400), new Point(300, 400)),
                    new LineSegment(new Point(  0, 100), new Point(200, 200)),
-                   new LineSegment(new Point(170, 370), new Point(400, 500)),
-                   new LineSegment(new Point(250, 500), new Point(335, 350)),
+                   new LineSegment(new Point(170, 370), new Point(410, 500)),
+                   new LineSegment(new Point(250, 500), new Point(355, 330)),
                   ];
 
     const lxy = new LineSegment(new Point(200, 300), new Point(400, 100));
