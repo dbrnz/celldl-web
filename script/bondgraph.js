@@ -143,13 +143,48 @@ export class Edge
         this.line.parse();
     }
 
+    getLineStringAsPath(unitConverter, fromElement, toElement)
+    //========================================================
+    {
+        const path = this.line.toLineString(unitConverter,
+                                            fromElement.coordinates,
+                                            toElement.coordinates);
+        const lines = path.lineSegments;
+        const coords = path.coordinates;
+        for (let n = 0; n < lines.length; ++n) {
+            if (fromElement.geometry.outside(lines[n].end)) {
+                const start = fromElement.geometry.lineIntersections(lines[n])[0];
+                lines[n] = new geo.LineSegment(start, lines[n].end);
+                coords[n] = start;
+                break;
+            } else {
+                lines[n] = null;
+                coords[n] = null;
+            }
+        }
+        for (let n = lines.length - 1; n >= 0; --n) {
+            if (lines[n] !== null && toElement.geometry.outside(lines[n].start)) {
+                const end = toElement.geometry.lineIntersections(lines[n])[0];
+                lines[n] = new geo.LineSegment(lines[n].start, end);
+                coords[n+1] = end;
+                break;
+            } else {
+                lines[n] = null;
+                coords[n+1] = null;
+            }
+        }
+    path.lineSegments = lines.filter(line => (line !== null));
+    path.coordinates = coords.filter(coord => (coord !== null));
+    return path;
+    }
+
     assignPath(unitConverter)
     //=======================
     {
         if (this.toParent) {
-            this.path = this.line.toLineString(unitConverter, this.other.coordinates, this.parent.coordinates);
+            this.path = this.getLineStringAsPath(unitConverter, this.other, this.parent);
         } else {
-            this.path = this.line.toLineString(unitConverter, this.parent.coordinates, this.other.coordinates);
+            this.path = this.getLineStringAsPath(unitConverter, this.parent, this.other);
         }
     }
 
@@ -386,10 +421,10 @@ export class Reaction extends DiagramElement
         if (!this.label.startsWith('$')) this.label = `RE:${this.label}`;
     }
 
-    generateSvg(radius=layout.TRANSPORTER_RADIUS)
-    //===========================================
+    assignGeometry(radius=layout.TRANSPORTER_RADIUS)
+    //==============================================
     {
-        return super.generateSvg(radius);
+        return super.assignGeometry(radius);
     }
 }
 
