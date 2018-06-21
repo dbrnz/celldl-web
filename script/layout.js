@@ -119,7 +119,7 @@ export class Position
     static centroid(dependencies)
     //===========================
     {
-        let coordinates = [0.0, 0.0];
+        let coordinates = [0, 0];
         for (let dependency of dependencies) {
             if (!dependency.hasCoordinates) {
                 throw new exception.ReferenceError(`No coordinates for the '${dependency}' element`);
@@ -226,12 +226,12 @@ export class Position
     {
         /*
         :return: tuple(tuple(x, y), index) where index == 0 means
-        horizontal and 1 means vertical.
+                 horizontal and 1 means vertical.
         */
         let coordinates = Position.centroid(dependencies);
         let index = Position.orientation[reln];
         if (index >= 0) {
-            let adjust = unitConverter.toPixels(offset, index, false);
+            const adjust = unitConverter.toPixels(offset, index, false);
             if (["left", "above"].indexOf(reln) >= 0) {
                 coordinates[index] -= adjust;
             } else {
@@ -467,7 +467,7 @@ export class LinePath
         points.push(lineEnd);
         if (this.reversePath) points.reverse();
 
-        return new geo.LineString(...points);
+        return new geo.LineString(points);
     }
 }
 
@@ -496,6 +496,7 @@ export class UnitConverter
     toPixels(length, index, addOffset=true)
     //=====================================
     {
+        let pixels = 0;
         if (length !== null) {
             const unit = length.unit;
             if (unit.indexOf('x') >= 0) {
@@ -505,12 +506,12 @@ export class UnitConverter
             }
             if (unit.startsWith("%")) {
                 const offset = length.offset*this.localSize[index]/ 100.0;
-                return (addOffset ? this.localOffset[index] : 0) + offset;
+                pixels = (addOffset ? this.localOffset[index] : 0) + offset;
             } else {
-                return length.offset*this.globalSize[index]/1000.0;
+                pixels = length.offset*this.globalSize[index]/1000.0;
             }
         }
-        return 0;
+        return pixels;
     }
 
     toPixelPair(coords, addOffset=true)

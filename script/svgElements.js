@@ -450,7 +450,7 @@ export class PMRChannelInOut extends PMRChannel
 
 //==============================================================================
 
-class Arrow
+export class Arrow
 {
     static nextId()
     {
@@ -483,26 +483,6 @@ class Arrow
 
 Arrow.ColourToId = {};
 Arrow._nextId = 0;
-
-//==============================================================================
-
-export function svgLine(lineString, colour, lineStyle='')
-{
-    const points = lineString.coordinates;
-    let pointLocations = [];
-    for (let point of points.slice(1)) {
-        pointLocations.push(`L${point[0]},${point[1]}`);
-    }
-    const svgNode = document.createElementNS(SVG_NS, 'path');
-    setAttributes(svgNode, {fill: "none", stroke: colour,
-                            'stroke-width': layout.STROKE_WIDTH,
-                            'marker-end': Arrow.url(colour),
-                            d: `M${points[0][0]},${points[0][1]}${pointLocations.join('')}`
-                  });
-    if (lineStyle === 'dashed') setAttributes(svgNode, {'stroke-dasharray': '10,5'});
-
-    return svgNode;
-}
 
 //==============================================================================
 

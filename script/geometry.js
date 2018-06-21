@@ -343,6 +343,12 @@ export class RoundedRectangle extends Rectangle
 {
     constructor(topLeft, bottomRight, xCornerRadius = 0, yCornerRadius = 0)
     {
+        if (topLeft instanceof Array) {
+            topLeft = new Point(...topLeft);
+        }
+        if (bottomRight instanceof Array) {
+            bottomRight = new Point(...bottomRight);
+        }
         super(topLeft, bottomRight);
         if (yCornerRadius === 0
          || xCornerRadius === 0) {   // This catches a degenerate case

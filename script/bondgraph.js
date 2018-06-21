@@ -23,13 +23,14 @@ limitations under the License.
 //==============================================================================
 
 import * as exception from './exception.js';
+import * as geo from './geometry.js';
 import * as layout from './layout.js';
 
 import {CellDiagram} from './cellDiagram.js';
 import {DiagramElement} from './element.js';
 import {List} from './utils.js';
 import {parseColour, styleAsString, StyleSheet} from './stylesheet.js';
-import {SVG_NS, svgLine} from './svgElements.js';
+import {SVG_NS, Arrow} from './svgElements.js';
 import {setAttributes} from './utils.js';
 
 //==============================================================================
@@ -155,9 +156,15 @@ export class Edge
     generateSvg()
     //===========
     {
-        return svgLine(this.path, this.lineColour, styleAsString(this.style, 'line-style'));
+        const svgNode = this.path.svgNode();
+        setAttributes(svgNode, {fill: 'none', stroke: this.lineColour,
+                                'stroke-width': layout.STROKE_WIDTH,
+                                'marker-end': Arrow.url(this.lineColour)});
+        if (styleAsString(this.style, 'line-style') === 'dashed') {
+            setAttributes(svgNode, {'stroke-dasharray': '10,5'});
+        }
+        return svgNode;
     }
-
 }
         /*
         const componentPoints = new List(this.lines["start"].points(this.fromPotential.coordinates, {"flow": this.flow}));
@@ -167,7 +174,7 @@ export class Edge
         for (let to of this.toPotentials) {
             const points = new List(componentPoints);
             points.extend(this.lines["end"].points(to.coordinates, {"flow": this.flow, "reverse": true}));
-            const line = new geo.LineString(...points);
+            const line = new geo.LineString(points);
 
 
 
@@ -342,25 +349,29 @@ export class Quantity extends DiagramElement
         this.potential = null;
     }
 
-    generateSvg(width=layout.QUANTITY_WIDTH, height=layout.QUANTITY_HEIGHT)
-    //=====================================================================
+    assignGeometry(width=layout.QUANTITY_WIDTH, height=layout.QUANTITY_HEIGHT)
+    //========================================================================
+    {
+        if (this.hasCoordinates) {
+            const [x, y] = this.coordinates;
+            this.geometry = new geo.RoundedRectangle([x - width/2, y - height/2],
+                                                     [x + width/2, y + height/2],
+                                                     0.375*width, 0.375*height);
+        }
+    }
+
+    generateSvg()
+    //===========
     {
         const svgNode = document.createElementNS(SVG_NS, 'g');
         setAttributes(svgNode, this.idClass(), this.display);
 
-        if (this.hasCoordinates) {
-            const [x, y] = this.coordinates;
-            const node = document.createElementNS(SVG_NS, 'rect');
-
-            setAttributes(node, { rx: 0.375*width, ry: 0.375*height,
-                                  x: x - width/2, y: y - height/2,
-                                  width: width, height: height,
-                                  stroke: 'none', fill: this.colour
-                         });
+        if (this.geometry !== null) {
+            const node = this.geometry.svgNode();
+            setAttributes(node, { stroke: 'none', fill: this.colour });
             svgNode.appendChild(node);
             svgNode.appendChild(this.labelAsSvg());
         }
-
         return svgNode;
     }
 }

@@ -185,6 +185,7 @@ export class CellDiagram {
         const unitConverter = new layout.UnitConverter([this.width, this.height], [this.width, this.height]);
         for (let node of jsnx.topologicalSort(dependencyGraph)) {
             node.assignCoordinates(unitConverter);
+            node.assignGeometry();
 //                if (node instanceof Compartment) {
 //                    node.setPixelSize(node.container.unitConverter.toPixelPair(node.size.size, false));
 //                    node.setUnitConverter(new layout.UnitConverter(this.pixelSize, node.pixelSize, node.position.pixels));

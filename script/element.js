@@ -52,6 +52,7 @@ export class DiagramElement {
         if (this.id !== '') {
             CellDiagram.instance().addElement(this);
         }
+        this.geometry = null;
     }
 
     fromAttribute(attributeName, elementClasses=[DiagramElement])
@@ -180,6 +181,14 @@ export class DiagramElement {
         }
     }
 
+    assignGeometry(radius=layout.ELEMENT_RADIUS)
+    //==========================================
+    {
+        if (this.hasCoordinates) {
+            this.geometry = new geo.Circle(this.coordinates, radius);
+        }
+    }
+
     labelAsSvg()
     //==========
     {
@@ -191,10 +200,9 @@ export class DiagramElement {
             return svgElements.Text.typeset(this.label.slice(1, -1), x, y, rotation);
         } else {
             const svgNode = document.createElementNS(SVG_NS, 'text');
-            setAttributes(svgNode, { x: x, y: y, 'text-anchor': "middle",
+            setAttributes(svgNode, { x: x, y: y, fill: this.textColour,
                                      'dominant-baseline': "central",
-                                     fill: this.textColour
-                         });
+                                     'text-anchor': "middle"});
             svgNode.textContent = this.label;
             return svgNode;
         }
@@ -206,13 +214,10 @@ export class DiagramElement {
         const svgNode = document.createElementNS(SVG_NS, 'g');
         setAttributes(svgNode, this.idClass(), this.display);
 
-        if (this.hasCoordinates) {
-            const [x, y] = this.coordinates;
-            const node = document.createElementNS(SVG_NS, 'circle');
-
-            setAttributes(node, { r: radius, cx: x, cy: y, stroke: this.stroke,
-                                  'stroke-width': this.strokeWidth, fill: this.colour
-                         });
+        if (this.geometry !== null) {
+            const node = this.geometry.svgNode();
+            setAttributes(node, { stroke: this.stroke, fill: this.colour,
+                                  'stroke-width': this.strokeWidth});
             svgNode.appendChild(node);
             svgNode.appendChild(this.labelAsSvg());
         }
