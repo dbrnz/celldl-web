@@ -155,7 +155,7 @@ export class Edge
             if (fromElement.geometry.outside(lines[n].end)) {
                 const start = fromElement.geometry.lineIntersections(lines[n])[0];
                 lines[n] = new geo.LineSegment(start, lines[n].end);
-                coords[n] = start;
+                coords[n] = lines[n].start;
                 break;
             } else {
                 lines[n] = null;
@@ -165,8 +165,8 @@ export class Edge
         for (let n = lines.length - 1; n >= 0; --n) {
             if (lines[n] !== null && toElement.geometry.outside(lines[n].start)) {
                 const end = toElement.geometry.lineIntersections(lines[n])[0];
-                lines[n] = new geo.LineSegment(lines[n].start, end);
-                coords[n+1] = end;
+                lines[n] = (new geo.LineSegment(lines[n].start, end)).truncateEnd(5);
+                coords[n+1] = lines[n].end;
                 break;
             } else {
                 lines[n] = null;

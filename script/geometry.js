@@ -201,6 +201,26 @@ export class LineSegment extends ProjectiveLine
         return new LineSegment(this.start.add(offset), this.end.add(offset));
     }
 
+    truncateEnd(length)
+    {
+        if (length >= this.length) {
+            throw new exception.ValueError("Cannot truncate line to nothing...");
+        }
+        return new LineSegment(this.start,
+                               this.end.subtract([(this.end.x - this.start.x)*length/this.length,
+                                                  (this.end.y - this.start.y)*length/this.length]));
+    }
+
+    truncateStart(length)
+    {
+        if (length >= this.length) {
+            throw new exception.ValueError("Cannot truncate line to nothing...");
+        }
+        return new LineSegment(this.start.add([(this.end.x - this.start.x)*length/this.length,
+                                               (this.end.y - this.start.y)*length/this.length]),
+                               this.end);
+    }
+
     svgNode()
     {
         const svgNode = document.createElementNS(SVG_NS, 'path');
