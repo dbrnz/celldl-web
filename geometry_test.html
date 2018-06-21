@@ -74,9 +74,8 @@
                 const gridSvg = parser.parseFromString(GRID_SVG, "image/svg+xml");
                 svgNode.appendChild(gridSvg.childNodes[0]);
 
-                for (let element of elements) {
-                    element.drawSvg(svgNode);
-                }
+                svgNode.appendChild(elements);
+
                 const svg = svgNode.outerHTML;
                 parentNode.innerHTML = svg;
             }

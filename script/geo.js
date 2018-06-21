@@ -23,10 +23,8 @@ limitations under the License.
 //==============================================================================
 
 import * as exception from './exception.js';
+import {SVG_NS} from './svgElements.js';
 import {setAttributes, List} from './utils.js';
-
-// TEMP
-const SVG_NS = 'http://www.w3.org/2000/svg';
 
 //==============================================================================
 
@@ -91,12 +89,17 @@ export class Point extends GeoObject
                        + Math.pow((this.y - other.y), 2));
     }
 
-    drawSvg(parentNode)
+    outside(other)
+    {
+        return this.notEqual(other);
+    }
+
+    drawSvg(parentNode, radius=4, fill='red')
     {
         const svgNode = document.createElementNS(SVG_NS, 'circle');
         setAttributes(svgNode, { class: this.constructor.name.toLowerCase(),
-                                 cx: this.x, cy: this.y, r: 4,
-                                 fill: 'red'});
+                                 cx: this.x, cy: this.y, r: radius,
+                                 fill: fill});
         parentNode.appendChild(svgNode);
     }
 }
@@ -121,9 +124,9 @@ export class ProjectiveLine extends GeoObject
         return `Line (${A}, ${B}, ${C})`;
     }
 
-    contains(point)
+    outside(point)
     {
-        return Math.abs(this.A*point.x + this.B*point.y + this.C) < EPISILON;
+        return Math.abs(this.A*point.x + this.B*point.y + this.C) >= EPISILON;
     }
 
     parallelLine(offset) {
@@ -177,11 +180,11 @@ export class LineSegment extends ProjectiveLine
         this.end = end;
     }
 
-    contains(point)
+    outside(point)
     {
-        return super.contains(point)
-            && (this.start.distance(point) <= this.length)
-            && (this.end.distance(point) <= this.length);
+        return super.outside(point)
+            || (this.start.distance(point) > this.length)
+            || (this.end.distance(point) > this.length);
     }
 
     intersection(other)
@@ -327,11 +330,11 @@ export class Rectangle extends Polygon
         this.bottomRight = this.centre.add([this.width/2.0, this.height/2.0]);
     }
 
-    contains(point)
+    outside(point)
     {
         const offset = point.offset(this.centre);
-        return 0 < offset[0] && offset[0] < this.width
-            && 0 < offset[1] && offset[1] < this.height;
+        return Math.abs(offset[0]) > this.width/2.0
+            || Math.abs(offset[1]) > this.height/2.0;
     }
 
     drawSvg(parentNode)
@@ -375,21 +378,28 @@ export class RoundedRectangle extends Rectangle
                            ? new Ellipse(this.centre, xCornerRadius, yCornerRadius)
                            : null;
     }
-/*
-    contains(point)
+
+    outside(point)
     {
-        if (xCornerRadius === 0 && yCornerRadius === 0) {
-            return super.contains(point);
-        } else {
-            return this.innerRectangle.contains(point)
-                || this.cornerEllipse.translate([-this.width/2.0, -this.height/2.0]).contains(point)
-                || this.cornerEllipse.translate([-this.width/2.0,  this.height/2.0]).contains(point)
-                || this.cornerEllipse.translate([ this.width/2.0, -this.height/2.0]).contains(point)
-                || this.cornerEllipse.translate([ this.width/2.0,  this.height/2.0]).contains(point);
-                // Or the side lobes...
+        let outside = super.outside(point);
+
+        // Check if outside corner 1/4 ellipses.
+        if (!outside && this.cornerEllipse !== null) {
+            const w2 = this.width/2.0 - this.xCornerRadius;
+            const h2 = this.height/2.0 - this.yCornerRadius;
+            outside = (point.x <= this.centre.x - w2 && point.y <= this.centre.y - h2)
+                        ? this.cornerEllipse.translate([-w2, -h2]).outside(point)
+                     : (point.x >= this.centre.x + w2 && point.y <= this.centre.y - h2)
+                        ? this.cornerEllipse.translate([ w2, -h2]).outside(point)
+                     : (point.x >= this.centre.x + w2 && point.y >= this.centre.y + h2)
+                        ? this.cornerEllipse.translate([ w2,  h2]).outside(point)
+                     : (point.x <= this.centre.x - w2 && point.y >= this.centre.y + h2)
+                        ? this.cornerEllipse.translate([-w2,  h2]).outside(point)
+                     : false;
         }
+        return outside;
     }
-*/
+
     lineIntersections(line)
     {
         const points = new List(this.edges.lineIntersections(line));
@@ -471,13 +481,13 @@ export class Ellipse extends GeoObject
                 points.push(new Point(-(l.C + (a - c)*l.B)/l.A, a - c).add([this.centre.x, this.centre.y]));
             }
         }
-        return points.filter(p => line.contains(p));
+        return points.filter(p => !line.outside(p));
     }
 
-    contains(point)
+    outside(point)
     {
         return (Math.pow((point.x - this.centre.x)/this.xRadius, 2)
-              + Math.pow((point.y - this.centre.y)/this.yRadius, 2) < 1.0);
+              + Math.pow((point.y - this.centre.y)/this.yRadius, 2) > 1.0);
     }
 
     translate(offset)
@@ -524,10 +534,12 @@ export class Circle extends Ellipse
 
 export function test()
 {
+    const rr = new RoundedRectangle(new Point(280, 340), new Point(460, 440), 25, 20);
+
     const regions = [new Ellipse(new Point(200, 200), 150, 100),
                      new Circle(new Point(400, 200), 80),
                      new Rectangle(new Point(140, 340), new Point(240, 440)),
-                     new RoundedRectangle(new Point(280, 340), new Point(460, 440), 25, 20),
+                     rr
                     ];
 
     const lines = [new LineSegment(new Point(200, 100), new Point(200, 300)),
@@ -543,6 +555,8 @@ export function test()
     lines.push(pxy);
     lines.push(pxy.translate([50, 50]));
 
+    const points = [new Point(455, 345), new Point(450, 350), rr.centre, new Point(400, 340)];
+
     const elements = new List();
     elements.extend(regions).extend(lines);
 
@@ -557,7 +571,17 @@ export function test()
         }
     }
 
-    return elements;
+    const svgNode = document.createElementNS(SVG_NS, 'g');
+
+    for (let element of elements) {
+        element.drawSvg(svgNode);
+    }
+
+    for (let p of points) {
+        p.drawSvg(svgNode, 2, rr.outside(p) ? 'blue' : 'red');
+    }
+
+    return svgNode;
 }
 
 //==============================================================================
