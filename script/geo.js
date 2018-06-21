@@ -138,6 +138,14 @@ export class ProjectiveLine extends GeoObject
         return new ProjectiveLine(this.A, this.B, this.C - (offset[0]*this.A + offset[1]*this.B));
     }
 
+    intersection(other)
+    {
+        let c = this.A*other.B - other.A*this.B
+        return (c === 0.0) ? null
+                           : new Point((this.B*other.C - other.B*this.C)/c,
+                                       (other.A*this.C - this.A*other.C)/c);
+    }
+
     drawSvg(parentNode)
     {
         const svgNode = document.createElementNS(SVG_NS, 'path');
@@ -173,7 +181,21 @@ export class LineSegment extends ProjectiveLine
     {
         return super.contains(point)
             && (this.start.distance(point) <= this.length)
-            && (this.start.distance(point) <= this.length);
+            && (this.end.distance(point) <= this.length);
+    }
+
+    intersection(other)
+    {
+        let point = super.intersection(other);
+        let validPoint = point !== null
+                      && this.start.distance(point) <= this.length
+                      && this.end.distance(point) <= this.length;
+        if (other instanceof LineSegment) {
+            validPoint = validPoint
+                      && other.start.distance(point) <= other.length
+                      && other.end.distance(point) <= other.length;
+        }
+        return validPoint ? point : null;
     }
 
     translate(offset) {
@@ -194,22 +216,22 @@ export class LineSegment extends ProjectiveLine
 
 export class LineString extends GeoObject
 {
-    constructor(endPoints, closed=false) {
+    constructor(points, closed=false) {
         super();
-        this._segments = [];
+        this.lineSegments = [];
         this.coordinates = []
-        if (endPoints.length > 0) {
-            for (let n = 0; n < (endPoints.length - 1); n += 1) {
-                const segment = new LineSegment(endPoints[n], endPoints[n + 1]);
-                this._segments.push(segment);
+        if (points.length > 0) {
+            for (let n = 0; n < (points.length - 1); n += 1) {
+                const segment = new LineSegment(points[n], points[n + 1]);
+                this.lineSegments.push(segment);
                 this.coordinates.push(segment.start);
             }
             if (closed) {
-                const segment = new LineSegment(endPoints.slice(-1)[0], endPoints[0]);
-                this._segments.push(segment);
+                const segment = new LineSegment(points.slice(-1)[0], points[0]);
+                this.lineSegments.push(segment);
                 this.coordinates.push(segment.start);
             }
-            this.coordinates.push(this._segments.slice(-1)[0].end);
+            this.coordinates.push(this.lineSegments.slice(-1)[0].end);
         }
     }
 
@@ -234,12 +256,21 @@ export class Polygon extends GeoObject
     constructor(points)
     {
         super();
-        this._boundary = new LineString(points, true);
+        this.boundary = new LineString(points, true);
+    }
+
+    lineIntersections(line)
+    {
+        const points = [];
+        for (let lineSegment of this.boundary.lineSegments) {
+            points.push(lineSegment.intersection(line));
+        }
+        return points.filter(p => (p !== null)); //.filter(p => line.contains(p));
     }
 
     drawSvg(parentNode)
     {
-        const points = this._boundary.coordinates;
+        const points = this.boundary.coordinates;
         let pointCoords = [];
         for (let point of points.slice(1)) {
             pointCoords.push(`${point.x},${point.y}`);
@@ -254,7 +285,7 @@ export class Polygon extends GeoObject
 
 //==============================================================================
 
-export class Rectangle extends GeoObject
+export class Rectangle extends Polygon
 {
     constructor(topLeft, bottomRight)
     {
@@ -267,7 +298,7 @@ export class Rectangle extends GeoObject
         if ((topLeft === bottomRight)) {
             throw new exception.ValueError("Rectangle has no size");
         }
-        super();
+        super([topLeft, [bottomRight.x, topLeft.y], bottomRight, [topLeft.x, bottomRight.y]]);
         this.width = Math.abs(topLeft.x - bottomRight.x);
         this.height = Math.abs(topLeft.y - bottomRight.y);
         this.centre = new Point((topLeft.x + bottomRight.x)/2.0, (topLeft.y + bottomRight.y)/2.0);
@@ -288,7 +319,7 @@ export class Rectangle extends GeoObject
         setAttributes(svgNode, { class: this.constructor.name.toLowerCase(),
                                  x: this.topLeft.x, y: this.topLeft.y,
                                  width: this.width, height: this.height,
-                                 fill: 'none'});
+                                 fill: 'none', stroke: 'blue'});
         parentNode.appendChild(svgNode);
     }
 }
@@ -342,7 +373,7 @@ export class RoundedRectangle extends Rectangle
                                  x: this.topLeft.x, y: this.topLeft.y,
                                  width: this.width, height: this.height,
                                  rx: this.xCornerRadius, ry: this.yCornerRadius,
-                                 fill: 'none'});
+                                 fill: 'none', stroke: 'blue'});
         parentNode.appendChild(svgNode);
     }
 }
@@ -365,7 +396,7 @@ export class Ellipse extends GeoObject
         this.yRadius = yRadius;
     }
 
-    line_intersect(line)
+    lineIntersections(line)
     {
         const l = (this.centre.x !== 0) || (this.centre.y !== 0)
                 ? line.translate([-this.centre.x, -this.centre.y])
@@ -446,15 +477,18 @@ export class Circle extends Ellipse
 
 export function test()
 {
-    const circles = [new Ellipse(new Point(200, 200), 150, 100),
+    const regions = [new Ellipse(new Point(200, 200), 150, 100),
                      new Circle(new Point(400, 200), 80),
-                     new Circle(new Point(200, 400), 80)
+                     new Rectangle(new Point(140, 340), new Point(240, 440)),
+                     new RoundedRectangle(new Point(280, 340), new Point(460, 440), 25, 20),
                     ];
 
     const lines = [new LineSegment(new Point(200, 100), new Point(200, 300)),
                    new LineSegment(new Point(400, 100), new Point(400, 300)),
                    new LineSegment(new Point(100, 400), new Point(300, 400)),
-                   new LineSegment(new Point(  0,   0), new Point(200, 200))
+                   new LineSegment(new Point(  0, 100), new Point(200, 200)),
+                   new LineSegment(new Point(170, 370), new Point(400, 500)),
+                   new LineSegment(new Point(250, 500), new Point(335, 350)),
                   ];
 
     const lxy = new LineSegment(new Point(200, 300), new Point(400, 100));
@@ -463,12 +497,12 @@ export function test()
     lines.push(pxy.translate([50, 50]));
 
     const elements = new List();
-    elements.extend(circles).extend(lines);
+    elements.extend(regions).extend(lines);
 
     for (let l of lines) {
-        for (let c of circles) {
+        for (let r of regions) {
             let s = [];
-            for (let p of c.line_intersect(l)) {
+            for (let p of r.lineIntersections(l)) {
                 elements.push(p);
                 s.push(p.toString());
             }
