@@ -45,6 +45,7 @@ export class DiagramElement {
         this.id = ('id' in this.attributes) ? `#${this.attributes.id.textContent}` : '';
         this.name = ('name' in this.attributes) ? this.attributes.name.textContent : this.id.substr(1);
         this.classes = ('class' in this.attributes) ? this.attributes.class.textContent.split(/\s+/) : [];
+        this.classes.push('draggable');
         this.label = ('label' in this.attributes) ? this.attributes.label.textContent : this.name;
         this.style = StyleSheet.instance().style(domElement);
         this.className = className;
@@ -53,6 +54,7 @@ export class DiagramElement {
             CellDiagram.instance().addElement(this);
         }
         this.geometry = null;
+        this.edges = [];
     }
 
     fromAttribute(attributeName, elementClasses=[DiagramElement])
@@ -141,7 +143,7 @@ export class DiagramElement {
     {
         let result = {};
         if (this.id !== null) result.id = this.id.substr(1);
-        if (this.classes.length > 0) this.class = this.classes.join(" ");
+        if (this.classes.length > 0) result.class = this.classes.join(" ");
         return result;
     }
 
@@ -189,6 +191,12 @@ export class DiagramElement {
         }
     }
 
+    addEdge(edge)
+    //===========
+    {
+        this.edges.push(edge);
+    }
+
     labelAsSvg()
     //==========
     {
@@ -221,8 +229,15 @@ export class DiagramElement {
             svgNode.appendChild(node);
             svgNode.appendChild(this.labelAsSvg());
         }
-
         return svgNode;
+    }
+
+    updateSvg()
+    //=========
+    {
+        const svgNode = this.generateSvg();
+        const currentNode = document.getElementById(this.id.slice(1));
+        currentNode.outerHTML = svgNode.outerHTML;
     }
 }
 

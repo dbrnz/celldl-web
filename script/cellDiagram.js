@@ -170,6 +170,10 @@ export class CellDiagram {
             }
         }
 
+        for (let edge of this._edges) {
+            edge.resolveReferences();
+        }
+
         if (drawDependencyGraph) {
             jsnx.draw(dependencyGraph, {
                 element: '#canvas',
@@ -193,7 +197,6 @@ export class CellDiagram {
         }
 
         for (let edge of this._edges) {
-            edge.resolveReferences();
             edge.parseLine();
             edge.assignPath(unitConverter);
         }
@@ -217,7 +220,7 @@ export class CellDiagram {
 //            svg.extend(c.svg());
 //        }
 
-        svgNode.appendChild(bondgraph.generateSvg(svgNode));
+        const bondgraphElement = bondgraph.generateSvg(svgNode);
 
 //        for (let transporter of this.transporters) {
 //            svg.extend(transporter.svg());
@@ -225,7 +228,26 @@ export class CellDiagram {
 
         svgNode.appendChild(svgElements.DefinesStore.defines());
 
+        svgNode.appendChild(bondgraphElement);
+
         return svgNode;
+    }
+
+    reposition(element, offset)
+    {
+        element.position.addOffset(offset);
+        element.assignGeometry();
+
+        for (let edge of element.edges) {
+            edge.reassignPath();
+            edge.updateSvg();
+        }
+
+        // get all edges that start or end on element and recalculate linestrings `updatePath()`
+
+        // get all edges that start or end on element and `updateSvg()`
+
+        element.updateSvg();
     }
 }
 

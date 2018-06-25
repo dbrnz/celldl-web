@@ -89,12 +89,14 @@ export class Edge
         this.other = null;
         this.toParent = toParent;
         this.parent = parent;
+        this.parent.addEdge(this);
         this.validClasses = validClasses;
         this.style = null;
         this.styleElementId = styleElementId;
         this.line = null;
         this.path = null;
-        this.id = toParent ? `${this.otherId} ${parent.id}` : `${parent.id} ${this.otherId}`;
+        this.id = toParent ? `${this.otherId.slice(1)}-${parent.id.slice(1)}`
+                           : `${parent.id.slice(1)}-${this.otherId.slice(1)}`;
         CellDiagram.instance().addEdge(this);
     }
 
@@ -118,6 +120,7 @@ export class Edge
                                             ? CellDiagram.instance().findElement(this.styleElementId).domElement
                                             : this.domElement;
                 this.style = StyleSheet.instance().style(styleDomElement);
+                this.other.addEdge(this);
                 return;
             }
         }
@@ -143,10 +146,10 @@ export class Edge
         this.line.parse();
     }
 
-    getLineStringAsPath(unitConverter, fromElement, toElement)
-    //========================================================
+    getLineStringAsPath(fromElement, toElement)
+    //=========================================
     {
-        const path = this.line.toLineString(unitConverter,
+        const path = this.line.toLineString(this.unitConverter,
                                             fromElement.coordinates,
                                             toElement.coordinates);
         const lines = path.lineSegments;
@@ -181,18 +184,32 @@ export class Edge
     assignPath(unitConverter)
     //=======================
     {
+        this.unitConverter = unitConverter;
         if (this.toParent) {
-            this.path = this.getLineStringAsPath(unitConverter, this.other, this.parent);
+            this.path = this.getLineStringAsPath(this.other, this.parent);
         } else {
-            this.path = this.getLineStringAsPath(unitConverter, this.parent, this.other);
+            this.path = this.getLineStringAsPath(this.parent, this.other);
         }
+    }
+
+    reassignPath()
+    //===============
+    {
+        // either parent's or other's position has changed
+        if (this.toParent) {
+            this.path = this.getLineStringAsPath(this.other, this.parent);
+        } else {
+            this.path = this.getLineStringAsPath(this.parent, this.other);
+        }
+        // we could save unitconvertor above and simply assignPath
     }
 
     generateSvg()
     //===========
     {
         const svgNode = this.path.svgNode();
-        setAttributes(svgNode, {fill: 'none', stroke: this.lineColour,
+        setAttributes(svgNode, {id: this.id, fill: 'none',
+                                stroke: this.lineColour,
                                 'stroke-width': layout.STROKE_WIDTH,
                                 'marker-end': Arrow.url(this.lineColour)});
         if (styleAsString(this.style, 'line-style') === 'dashed') {
@@ -200,6 +217,15 @@ export class Edge
         }
         return svgNode;
     }
+
+    updateSvg()
+    //=========
+    {
+        const svgNode = this.generateSvg();
+        const currentNode = document.getElementById(this.id);
+        currentNode.outerHTML = svgNode.outerHTML;
+    }
+
 }
         /*
         const componentPoints = new List(this.lines["start"].points(this.fromPotential.coordinates, {"flow": this.flow}));

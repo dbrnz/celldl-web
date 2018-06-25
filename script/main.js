@@ -23,13 +23,18 @@ limitations under the License.
 //==============================================================================
 
 import {CellDiagram} from './cellDiagram.js';
+import {DiagramEditor} from './diagramEditor.js';
 import {Parser} from './parser.js';
 import {StyleSheet} from './stylesheet.js';
 import {Text} from './svgElements.js';
 
 //==============================================================================
 
-function displayDiagram(cellDlText, svgContainerNode)
+const diagramEditorInstance = new DiagramEditor();
+
+//==============================================================================
+
+export function displayDiagram(cellDlText, svgContainerNode, drawDependencyGraph=false)
 {
     const domParser = new DOMParser();
     const xmlDocument = domParser.parseFromString(cellDlText, "application/xml");
@@ -43,21 +48,30 @@ function displayDiagram(cellDlText, svgContainerNode)
         parser.parseDocument(xmlDocument)
             .then(() => {
                 const cellDiagram = CellDiagram.instance();
-                cellDiagram.layout();  // Pass width/height to use as defaults...
+                cellDiagram.layout(drawDependencyGraph);  // Pass width/height to use as defaults...
 
                 const svgDiagram = cellDiagram.generateSvg();
 
+                // Wait until all MathJax text has been rendered
+
                 Promise.all(Text.promises()).then(() => {
-                    // Remove any children from our SVG container
+                    // Remove any existing content from our SVG container
 
                     for (let child of svgContainerNode.children) {
                         child.remove();
                     }
 
                     // Show the SVG diagram
+                    // Note: If we use `appendChild` then `url()` links in the SVG
+                    //       document are not resolved
 
                     svgContainerNode.insertAdjacentHTML('afterbegin', svgDiagram.outerHTML);
+
+                    // Reset busy wheel
                     document.body.style.cursor = 'default';
+
+                    const svgNode = svgContainerNode.children[0];
+                    diagramEditorInstance.svgLoaded(svgNode);
                 });
             });
     } catch (error) {
@@ -66,7 +80,5 @@ function displayDiagram(cellDlText, svgContainerNode)
         alert(error);
     }
 }
-
-export default displayDiagram;
 
 //==============================================================================

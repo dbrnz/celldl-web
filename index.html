@@ -22,6 +22,10 @@
                 margin-left: 20px;
                 margin-top: 20px;
             }
+            svg .draggable {
+                cursor: move;
+                pointer-events: visible;
+            }
         </style>
         <script type="text/x-mathjax-config">
             MathJax.Hub.Config({
@@ -53,9 +57,77 @@
         <script type="text/javascript"
                 src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js">
         </script>
+    </head>
+    <body>
+<!--
+        <script src="./thirdparty/d3.v3.js"></script>
+        <div style="height: 50%;">
+            <section class="float leftcolumn">
+                <div id="canvas1" class="border" style="height: 100%;"></div>
+            </section>
+            <section class="float rightcolumn">
+                <div id="canvas2" class="border" style="height: 100%;"></div>
+            </section>
+        </div>
+-->
+        <section class="float leftcolumn" style="height: 100%;">
+            <section style="height: 90%;">
+                <textarea id="editor-text"></textarea>
+            </section>
+            <section style="height: 10%;">
+                <input type="file" id="loadCellDlFile" accept=".xml, .celldl" style="display:none" onchange="loadCellDl(this.files)">
+                <input type="button" value="Load CellDL" onclick="loadCellDlFile.click()"/>
+                <input type="button" value="Save CellDL" onclick="saveCellDl()"/>
+                <input type="button" value="Preview SVG" onclick="previewSvg()"/>
+            </section>
+        </section>
+<!-- WIP...
+        <section class="divider">
+            <section style="height: 90%;">
+                <div id="resize-bar"></div>
+            </section>
+        </section>
+-->
+        <section class="float rightcolumn" style="height: 100%;">
+            <section style="height: 90%;" class="border">
+                <div id="cell-diagram"></div>
+            </section>
+            <section style="height: 10%;">
+                <input type="button" value="Export SVG"  onclick="exportSvg()"/>
+            </section>
+        </section>
 
+            <!-- have some way of specifying local sheets?
+                 file:// means we use FileReader API instead of fetch() ??
+  https://developer.mozilla.org/en-US/docs/Web/API/File/Using_files_from_web_applications
+  and trigger a download to save data.
+            -->
+
+<!--        <script src="./thirdparty/d3.v3.js"></script> -->
+
+<!-- Create a simple CodeMirror instance
+
+Or use Ace editor  - - https://ace.c9.io/ ??
+
+Have separate XML and CSS editors?? Or define or own mixed mode??
+-->
+
+        <link rel="stylesheet" href="./thirdparty/codemirror/lib/codemirror.css">
+        <script src="./thirdparty/codemirror/lib/codemirror.js"></script>
+        <script src="./thirdparty/codemirror/mode/css/css.js"></script>
+        <script src="./thirdparty/codemirror/mode/xml/xml.js"></script>
+        <script src="./thirdparty/codemirror/mode/htmlmixed/htmlmixed.js"></script>
         <script type="module">
-            import displayDiagram from './script/main.js';
+            const celldlElement = document.getElementById("editor-text");
+            const editor = CodeMirror.fromTextArea(celldlElement,
+                                                { lineNumbers: true }
+            );
+            editor.setSize("100%", "100%");
+
+            // Check editor.isClean() before loading a new file or closing window
+            // and then editor.markClean()
+
+            import {displayDiagram} from './script/main.js';
             import {saveAs} from './thirdparty/FileSaver.js';
 
             let nameOfLoadedFile = '';
@@ -90,7 +162,6 @@
             function saveCellDl() {
                 const text = editor.getValue();
                 const blob = new Blob([text], { type: "application/xml;charset=utf-8" });
-
                 saveAs(blob, nameOfLoadedFile);
             }
 
@@ -113,60 +184,5 @@
             window.previewSvg = previewSvg;
             window.exportSvg = exportSvg;
         </script>
-    </head>
-    <body>
-
-<!--
-        <div id="canvas" style="height: 50%;"></div>
-        <script src="./thirdparty/d3.v3.js"></script>
--->
-        <section class="float leftcolumn" style="height: 100%;">
-            <section style="height: 90%;">
-                <textarea id="editor-text"></textarea>
-            </section>
-            <section style="height: 10%;">
-                <input type="file" id="loadCellDlFile" accept=".xml, .celldl" style="display:none" onchange="loadCellDl(this.files)">
-                <input type="button" value="Load CellDL" onclick="loadCellDlFile.click()"/>
-                <input type="button" value="Save CellDL" onclick="saveCellDl()"/>
-                <input type="button" value="Preview SVG" onclick="previewSvg()"/>
-            </section>
-        </section>
-        <section class="float rightcolumn" style="height: 100%;">
-            <section style="height: 90%;" class="border">
-                <div id="cell-diagram"></div>
-            </section>
-            <section style="height: 10%;">
-                <input type="button" value="Export SVG"  onclick="exportSvg()"/>
-            </section>
-        </section>
-
-            <!-- have some way of specifying local sheets?
-                 file:// means we use FileReader API instead of fetch() ??
-  https://developer.mozilla.org/en-US/docs/Web/API/File/Using_files_from_web_applications
-  and trigger a download to save data.
-            -->
-
-<!--        <script src="./thirdparty/d3.v3.js"></script> -->
-
-<!-- Create a simple CodeMirror instance
-
-Or use Ace editor  - - https://ace.c9.io/ ??
-
-Have separate XML and CSS editors?? Or define or own mixed mode??
--->
-
-        <link rel="stylesheet" href="./thirdparty/codemirror/lib/codemirror.css">
-        <script src="./thirdparty/codemirror/lib/codemirror.js"></script>
-        <script src="./thirdparty/codemirror/mode/css/css.js"></script>
-        <script src="./thirdparty/codemirror/mode/xml/xml.js"></script>
-        <script src="./thirdparty/codemirror/mode/htmlmixed/htmlmixed.js"></script>
-        <script>
-            const celldlElement = document.getElementById("editor-text");
-            const editor = CodeMirror.fromTextArea(celldlElement,
-                                                { lineNumbers: true }
-            );
-            editor.setSize("100%", "100%");
-        </script>
-
     </body>
 </html>

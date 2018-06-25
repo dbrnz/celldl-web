@@ -90,6 +90,12 @@ export class Position
         return (this.coordinates !== null);
     }
 
+    addOffset(offset)
+    {
+        this.coordinates[0] += offset[0]
+        this.coordinates[1] += offset[1]
+    }
+
     addDependency(dependency)
     //=======================
     {
