@@ -24,9 +24,7 @@ limitations under the License.
 
 import {CellDiagram} from './cellDiagram.js';
 
-// Code and ideas from http://www.petercollingridge.co.uk/tutorials/svg/interactive/dragging/
-// and from http://www.codedread.com/blog/archives/2005/12/21/how-to-enable-dragging-in-svg/
-
+//==============================================================================
 
 export class DiagramEditor
 {
@@ -34,6 +32,8 @@ export class DiagramEditor
     {
         this.svgNode = null
         this.selectedNode = null;
+        this.diagramElement = null;
+        this.startposition = [ 0, 0];
     }
 
     svgLoaded(svgNode)
@@ -72,31 +72,6 @@ export class DiagramEditor
                     this.diagramElement = diagramElement;
                     this.selectedNode = node;
                     this.startPosition = this.getMousePosition(event);
-/*
-                // Get all the transforms currently on this node
-
-                const transforms = this.selectedNode.transform.baseVal;
-
-                // Ensure the first transform is a translate transform
-
-                if (transforms.length === 0
-                 || transforms.getItem(0).type !== SVGTransform.SVG_TRANSFORM_TRANSLATE) {
-                    // Create an transform that translates by (0, 0)
-
-                    const translate = this.svgNode.createSVGTransform();
-                    translate.setTranslate(0, 0);
-
-                    // Add the translation to the front of the transforms list
-                    this.selectedNode.transform.baseVal.insertItemBefore(translate, 0);
-                }
-                // Get initial translation amount
-
-                this.transform = transforms.getItem(0);
-                this.offset.x -= this.transform.matrix.e;
-                this.offset.y -= this.transform.matrix.f;
-
-                // set this.diagramElement from svgNode.id
-*/
                     break;
                 }
             } else if (node.tagName === 'svg') {
@@ -110,10 +85,6 @@ export class DiagramEditor
         if (this.selectedNode) {
             event.preventDefault();
             const position = this.getMousePosition(event);
-            // call diagramElement.move() ??
-            /* Ideally want Element.svgNode to be actual node on screen but this
-               would require us not to set innerHTML...
-            */
             CellDiagram.instance().reposition(this.diagramElement,
                                              [position.x - this.startPosition.x,
                                               position.y - this.startPosition.y]);
@@ -124,7 +95,7 @@ export class DiagramEditor
 
     endMouseMove(event) {
         this.selectedNode = null;
-        // clear diagramElement;
+        this.diagramElement = null;
     }
 }
 
