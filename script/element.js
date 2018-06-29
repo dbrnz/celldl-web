@@ -200,7 +200,8 @@ export class DiagramElement {
     labelAsSvg()
     //==========
     {
-        const [x, y] = this.coordinates;
+        const x = this.coordinates.x;
+        const y = this.coordinates.y;
         if (this.label.startsWith('$')) {
             // Pass this.textcolour to MathJax...
             // see https://groups.google.com/forum/#!msg/mathjax-users/fo93aucG5Bo/7dH3s8szbNYJ

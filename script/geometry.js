@@ -57,6 +57,30 @@ export class Point extends GeoObject
         return `Point(${this.x}, ${this.y})`;
     }
 
+    valueAt(index)
+    {
+        return (index === 0) ? this.x
+             : (index === 1) ? this.y
+             : undefined;
+    }
+
+    setValueAt(index, value)
+    {
+        if      (index === 0) this.x = value;
+        else if (index === 1) this.y = value;
+    }
+
+    asOffset()
+    {
+        return [this.x, this.y];
+    }
+
+    assign(other)
+    {
+        this.x = other.x;
+        this.y = other.y;
+    }
+
     equal(other)
     {
         return (Math.abs(this.x - other.x) < EPISILON)

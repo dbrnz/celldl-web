@@ -91,9 +91,9 @@ export class Position
     }
 
     addOffset(offset)
+    //===============
     {
-        this.coordinates[0] += offset[0]
-        this.coordinates[1] += offset[1]
+        this.coordinates = this.coordinates.add(offset);
     }
 
     addDependency(dependency)
@@ -125,17 +125,15 @@ export class Position
     static centroid(dependencies)
     //===========================
     {
-        let coordinates = [0, 0];
+        let coordinates = new geo.Point(0, 0);
         for (let dependency of dependencies) {
             if (!dependency.hasCoordinates) {
                 throw new exception.ReferenceError(`No coordinates for the '${dependency}' element`);
             }
-            coordinates[0] += dependency.coordinates[0];
-            coordinates[1] += dependency.coordinates[1];
+            coordinates = coordinates.add(dependency.coordinates.asOffset());
         }
-        coordinates[0] /= dependencies.length;
-        coordinates[1] /= dependencies.length;
-        return coordinates;
+        return new geo.Point(coordinates.x/dependencies.length,
+                             coordinates.y/dependencies.length);
     }
 
     parseComponent(tokens, previousDirn, defaultOffset, defaultDependency)
@@ -238,11 +236,13 @@ export class Position
         let index = Position.orientation[reln];
         if (index >= 0) {
             const adjust = unitConverter.toPixels(offset, index, false);
+            let value = coordinates.valueAt(index);
             if (["left", "above"].indexOf(reln) >= 0) {
-                coordinates[index] -= adjust;
+                value -= adjust;
             } else {
-                coordinates[index] += adjust;
+                value += adjust;
             }
+            coordinates.setValueAt(index, value);
         }
         return [coordinates, index];
     }
@@ -251,16 +251,16 @@ export class Position
     //==============================
     {
         if (this.lengths !== null) {
-            this.coordinates = unitConverter.toPixelPair(this.lengths);
+            this.coordinates = new geo.Point(...unitConverter.toPixelPair(this.lengths));
 
-        } else if (this.coordinates === null || this.coordinates.indexOf(null) >= 0) {
-            this.coordinates = [0, 0];
+        } else if (this.coordinates === null) {
             if (this.relationships.length === 1) {
                 const offset = this.relationships[0].offset;
                 const reln = this.relationships[0].relation;
                 const dependencies = this.relationships[0].dependencies;
                 this.coordinates = Position.getCoordinates(unitConverter, offset, reln, dependencies)[0];
             } else {
+                this.coordinates = new geo.Point(0, 0);
                 for (let relationship of this.relationships) {
                     const offset = relationship.offset;
                     const reln = relationship.relation;
@@ -269,7 +269,7 @@ export class Position
                     if (offset === null) {
                         index -= 1;
                     }
-                    this.coordinates[index] = coordinates[index];
+                    this.coordinates.setValueAt(index, coordinates.valueAt(index));
                 }
             }
         }
@@ -438,7 +438,7 @@ export class LinePath
         const lineEnd = this.reversePath ? startCoordinates : endCoordinates;
 
         let currentPoint = lineStart;
-        const points = [currentPoint];
+        const points = [currentPoint.asOffset()];
 
         for (let constraint of this.constraints) {
             const angle = constraint.angle;
@@ -446,11 +446,11 @@ export class LinePath
             const targetPoint = Position.centroid(constraint.dependencies);
             let x, y;
             if (constraint.limit === -1) {              // until-x
-                x = targetPoint[0] + offset[0];
-                y = currentPoint[1] - (x - currentPoint[0])*Math.tan(angle*Math.PI/180);
+                x = targetPoint.x + offset[0];
+                y = currentPoint.y - (x - currentPoint.x)*Math.tan(angle*Math.PI/180);
             } else if (constraint.limit === 1) {        // until-y
-                y = targetPoint[1] + offset[1];
-                x = currentPoint[0] + (y - currentPoint[1])*Math.tan((angle-90)*Math.PI/180);
+                y = targetPoint.y + offset[1];
+                x = currentPoint.x + (y - currentPoint.y)*Math.tan((angle-90)*Math.PI/180);
             }
             if (constraint.lineOffset !== null) {
                 const lineOffset = unitConverter.toPixelPair(constraint.lineOffset, false);
@@ -460,7 +460,7 @@ export class LinePath
                 y += lineOffset[1];
             }
             points.push([x, y]);
-            currentPoint = [x, y];
+            currentPoint = new geo.Point(x, y);
         }
 /*
         if ((flow.transporter !== null)) {
@@ -470,7 +470,7 @@ export class LinePath
             }
         }
 */
-        points.push(lineEnd);
+        points.push(lineEnd.asOffset());
         if (this.reversePath) points.reverse();
 
         return new geo.LineString(points);
