@@ -27,7 +27,6 @@ import * as geo from './geometry.js';
 import * as layout from './layout.js';
 import * as svgElements from './svgElements.js';
 
-import {CellDiagram} from './cellDiagram.js';
 import {List, setAttributes} from './utils.js';
 import {parseColour, styleAsString, StyleSheet} from './stylesheet.js';
 import {SVG_NS} from './svgElements.js';
@@ -35,11 +34,12 @@ import {SVG_NS} from './svgElements.js';
 //==============================================================================
 
 export class DiagramElement {
-    constructor(domElement, className='Element', requireId=true)
+    constructor(diagram, domElement, className='Element', requireId=true)
     {
         if (requireId && !('id' in domElement.attributes)) {
             throw new exception.SyntaxError(domElement, "A diagram element must have an 'id'")
         }
+        this.diagram = diagram
         this.domElement = domElement;
         this.attributes = domElement.attributes;
         this.id = ('id' in this.attributes) ? `#${this.attributes.id.textContent}` : '';
@@ -49,9 +49,9 @@ export class DiagramElement {
         this.label = ('label' in this.attributes) ? this.attributes.label.textContent : this.name;
         this.style = StyleSheet.instance().style(domElement);
         this.className = className;
-        this.position = new layout.Position();
+        this.position = new layout.Position(diagram);
         if (this.id !== '') {
-            CellDiagram.instance().addElement(this);
+            diagram.addElement(this);
         }
         this.geometry = null;
         this.edges = [];
@@ -63,7 +63,7 @@ export class DiagramElement {
         if (attributeName in this.attributes) {
             const elementId = `#${this.attributes[attributeName].textContent}`;
             for (let elementClass of elementClasses) {
-                const element = CellDiagram.instance().findElement(elementId, elementClass);
+                const element = this.diagram.findElement(elementId, elementClass);
                 if (element !== null) {
                     return element;
                 }

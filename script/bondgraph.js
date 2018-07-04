@@ -26,7 +26,6 @@ import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
 
-import {CellDiagram} from './cellDiagram.js';
 import {DiagramElement} from './element.js';
 import {List} from './utils.js';
 import {parseColour, styleAsString, StyleSheet} from './stylesheet.js';
@@ -39,33 +38,33 @@ const LINE_OFFSET = 3.5;  // TODO: Initial/default value from CSS
 
 //==============================================================================
 
-function drawEdges(svgNode)
-//=========================
+function drawEdges(diagram, svgNode)
+//==================================
 {
-    for (let edge of CellDiagram.instance().edges()) {
+    for (let edge of diagram.edges()) {
         svgNode.appendChild(edge.generateSvg());
     }
 }
 
-function drawElements(svgNode, elementClass)
-//==========================================
+function drawElements(diagram, svgNode, elementClass)
+//===================================================
 {
-    for (let element of CellDiagram.instance().elements(elementClass)) {
+    for (let element of diagram.elements(elementClass)) {
         svgNode.appendChild(element.generateSvg());
     }
 }
 
-export function generateSvg()
-//===========================
+export function generateSvg(diagram)
+//==================================
 {
     const svgNode = document.createElementNS(SVG_NS, 'g');
-    drawEdges(svgNode);
-    drawElements(svgNode, Flow);
-    drawElements(svgNode, Gyrator);
-    drawElements(svgNode, Potential);
-    drawElements(svgNode, Quantity);
-    drawElements(svgNode, Reaction);
-    drawElements(svgNode, Transformer);
+    drawEdges(diagram, svgNode);
+    drawElements(diagram, svgNode, Flow);
+    drawElements(diagram, svgNode, Gyrator);
+    drawElements(diagram, svgNode, Potential);
+    drawElements(diagram, svgNode, Quantity);
+    drawElements(diagram, svgNode, Reaction);
+    drawElements(diagram, svgNode, Transformer);
     return svgNode;
 }
 
@@ -73,9 +72,9 @@ export function generateSvg()
 
 export class Node extends DiagramElement
 {
-    constructor(element, className='Node')
+    constructor(diagram, element, className='Node')
     {
-        super(element, className);
+        super(diagram, element, className);
     }
 }
 
@@ -83,7 +82,8 @@ export class Node extends DiagramElement
 
 export class Edge
 {
-    constructor(domElement, fromId, toParent, parent, validClasses, styleElementId=null) {
+    constructor(diagram, domElement, fromId, toParent, parent, validClasses, styleElementId=null) {
+        this.diagram = diagram;
         this.domElement = domElement;
         this.otherId = `#${fromId}`;
         this.other = null;
@@ -97,16 +97,16 @@ export class Edge
         this.path = null;
         this.id = toParent ? `${this.otherId.slice(1)}-${parent.id.slice(1)}`
                            : `${parent.id.slice(1)}-${this.otherId.slice(1)}`;
-        CellDiagram.instance().addEdge(this);
+        diagram.addEdge(this);
     }
 
-    static fromAttribute(domElement, attributeName, toParent, parent, validClasses)
-    //=============================================================================
+    static fromAttribute(diagram, domElement, attributeName, toParent, parent, validClasses)
+    //======================================================================================
     {
         if (!(attributeName in domElement.attributes)) {
             throw new exception.KeyError(domElement, `Expected ${attributeName} attribute`);
         }
-        return new Edge(domElement, domElement.attributes[attributeName].textContent,
+        return new Edge(diagram, domElement, domElement.attributes[attributeName].textContent,
                         toParent, parent, validClasses);
     }
 
@@ -114,10 +114,10 @@ export class Edge
     //=================
     {
         for (let elementClass of this.validClasses) {
-            this.other = CellDiagram.instance().findElement(this.otherId, elementClass);
+            this.other = this.diagram.findElement(this.otherId, elementClass);
             if (this.other !== null) {
                 const styleDomElement = (this.styleElementId !== null)
-                                            ? CellDiagram.instance().findElement(this.styleElementId).domElement
+                                            ? this.diagram.findElement(this.styleElementId).domElement
                                             : this.domElement;
                 this.style = StyleSheet.instance().style(styleDomElement);
                 this.other.addEdge(this);
@@ -142,7 +142,7 @@ export class Edge
     parseLine()
     //=========
     {
-        this.line = new layout.LinePath(this.style, 'line-path');
+        this.line = new layout.LinePath(this.diagram, this.style, 'line-path');
         this.line.parse();
     }
 
@@ -265,28 +265,28 @@ export class Edge
 
 export class FlowEdge extends Edge
 {
-    constructor(element, fromId, toParent, parent, validClasses, direction, count)
+    constructor(diagram, element, fromId, toParent, parent, validClasses, direction, count)
     {
-        super(element, fromId, toParent, parent, validClasses);
+        super(diagram, element, fromId, toParent, parent, validClasses);
         this.direction = direction;
         this.count = count;
     }
 
-    static fromAttribute(element, direction, toParent, parent, validClasses)
+    static fromAttribute(diagram, element, direction, toParent, parent, validClasses)
     //======================================================================
     {
         if (!(direction in element.attributes)) {
             throw new exception.KeyError(element, `Expected ${direction} attribute`);
         }
         const count = ('count' in element.attributes) ? Number(attributes.count.textContent) : 1;
-        return new FlowEdge(element, element.attributes[direction].textContent,
+        return new FlowEdge(diagram, element, element.attributes[direction].textContent,
                             toParent, parent, validClasses, direction, count);
     }
 
     parseLine()
     //=========
     {
-        this.line = new layout.LinePath(this.style, `${this.direction}-line-path`);
+        this.line = new layout.LinePath(this.diagram, this.style, `${this.direction}-line-path`);
         this.line.parse();
     }
 
@@ -296,9 +296,9 @@ export class FlowEdge extends Edge
 
 export class Flow extends Node
 {
-    constructor(element)
+    constructor(diagram, element)
     {
-        super(element, "Flow");
+        super(diagram, element, "Flow");
 //        this.componentOffsets = [];
 //        const transporterId = ('transporter' in element.attributes) ? element.attributes.transporter : null;
 //        this.transporter = this.fromAttribute('transporter', [diagramTransporter])
@@ -380,9 +380,9 @@ export class Flow extends Node
 
 export class Gyrator extends DiagramElement
 {
-    constructor(element)
+    constructor(diagram, element)
     {
-        super(element, 'Gyrator');
+        super(diagram, element, 'Gyrator');
         if (!this.label.startsWith('$')) this.label = `GY:${this.label}`;
     }
 }
@@ -391,12 +391,12 @@ export class Gyrator extends DiagramElement
 
 export class Potential extends Node
 {
-    constructor(element)
+    constructor(diagram, element)
     {
-        super(element, 'Potential');
+        super(diagram, element, 'Potential');
         if ('quantity' in element.attributes) {
             const quantityId = element.attributes.quantity.textContent;
-            new Edge(element, quantityId, false, this, [Quantity], `#${quantityId}`);
+            new Edge(diagram, element, quantityId, false, this, [Quantity], `#${quantityId}`);
         }
     }
 }
@@ -405,8 +405,8 @@ export class Potential extends Node
 
 export class Quantity extends DiagramElement
 {
-    constructor(element) {
-        super(element, 'Quantity');
+    constructor(diagram, element) {
+        super(diagram, element, 'Quantity');
         this.potential = null;
     }
 
@@ -442,9 +442,9 @@ export class Quantity extends DiagramElement
 
 export class Reaction extends DiagramElement
 {
-    constructor(element)
+    constructor(diagram, element)
     {
-        super(element, 'Reaction');
+        super(diagram, element, 'Reaction');
         if (!this.label.startsWith('$')) this.label = `RE:${this.label}`;
     }
 
@@ -459,9 +459,9 @@ export class Reaction extends DiagramElement
 
 export class Transformer extends DiagramElement
 {
-    constructor(element)
+    constructor(diagram, element)
     {
-        super(element, 'Transformer');
+        super(diagram, element, 'Transformer');
         if (!this.label.startsWith('$')) this.label = `TF:${this.label}`;
     }
 }

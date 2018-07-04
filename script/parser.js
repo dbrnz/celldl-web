@@ -30,7 +30,6 @@ import * as SPECIFICITY from '../thirdparty/specificity.js';
 import * as bondgraph from './bondgraph.js';
 import * as exception from './exception.js';
 
-import {CellDiagram} from './cellDiagram.js';
 import {StyleSheet} from './stylesheet.js';
 
 //import * as dia from './diagram.js';
@@ -43,7 +42,8 @@ var CELLDL_NAMESPACE = "http://www.cellml.org/celldl/1.0#";
 
 export class Parser
 {
-    constructor() {
+    constructor(diagram) {
+        this.diagram = diagram;
         this.bondGraphElement = null;
         this.diagramElement = null;
     }
@@ -108,7 +108,7 @@ export class Parser
     parseFlow(element)
     //================
     {
-        const flow = new bondgraph.Flow(element);
+        const flow = new bondgraph.Flow(this.diagram, element);
 
 //        let container = (flow.transporter !== null) ? flow.transporter.container : null;
         for (let e of element.children) {
@@ -118,10 +118,10 @@ export class Parser
                 }
                 const flowConnectsTo = [bondgraph.Gyrator, bondgraph.Potential, bondgraph.Reaction];
                 if ('input' in e.attributes) {
-                    bondgraph.FlowEdge.fromAttribute(e, 'input', true, flow, flowConnectsTo);
+                    bondgraph.FlowEdge.fromAttribute(this.diagram, e, 'input', true, flow, flowConnectsTo);
                 }
                 if ('output' in e.attributes) {
-                    bondgraph.FlowEdge.fromAttribute(e, 'output', false, flow, flowConnectsTo);
+                    bondgraph.FlowEdge.fromAttribute(this.diagram, e, 'output', false, flow, flowConnectsTo);
                 }
             } else {
                 throw new exception.SyntaxError(e, `Unexpected <flow> element`);
@@ -151,12 +151,12 @@ export class Parser
     parseGyrator(element)
     //===================
     {
-        const gyrator = new bondgraph.Gyrator(element);
+        const gyrator = new bondgraph.Gyrator(this.diagram, element);
         for (let e of element.children) {
             if        (e.nodeName === 'input') {
-                bondgraph.Edge.fromAttribute(e, 'flow', true, gyrator, [bondgraph.Flow]);
+                bondgraph.Edge.fromAttribute(this.diagram, e, 'flow', true, gyrator, [bondgraph.Flow]);
             } else if (e.nodeName === 'output') {
-                bondgraph.Edge.fromAttribute(e, 'flow', false, gyrator, [bondgraph.Flow]);
+                bondgraph.Edge.fromAttribute(this.diagram, e, 'flow', false, gyrator, [bondgraph.Flow]);
             } else {
                 throw new exception.SyntaxError(e, `Unexpected <gyrator> element`);
             }
@@ -166,26 +166,26 @@ export class Parser
     parsePotential(element)
     //=====================
     {
-        const potential = new bondgraph.Potential(element);
+        const potential = new bondgraph.Potential(this.diagram, element);
     }
 
     parseQuantity(element)
     //====================
     {
-        const quantity = new bondgraph.Quantity(element);
+        const quantity = new bondgraph.Quantity(this.diagram, element);
     }
 
     parseReaction(element)
     //====================
     {
-        const reaction = new bondgraph.Reaction(element);
+        const reaction = new bondgraph.Reaction(this.diagram, element);
         for (let e of element.children) {
             if (e.nodeName === 'input') {
-                bondgraph.Edge.fromAttribute(e, 'flow', true, reaction, [bondgraph.Flow]);
+                bondgraph.Edge.fromAttribute(this.diagram, e, 'flow', true, reaction, [bondgraph.Flow]);
             } else if (e.nodeName === 'output') {
-                bondgraph.Edge.fromAttribute(e, 'flow', false, reaction, [bondgraph.Flow]);
+                bondgraph.Edge.fromAttribute(this.diagram, e, 'flow', false, reaction, [bondgraph.Flow]);
             } else if (e.nodeName === 'modulator') {
-                bondgraph.Edge.fromAttribute(e, 'potential', true, reaction, [bondgraph.Potential]);
+                bondgraph.Edge.fromAttribute(this.diagram, e, 'potential', true, reaction, [bondgraph.Potential]);
             } else {
                 throw new exception.SyntaxError(e, `Unexpected <reaction> element`);
             }
@@ -195,12 +195,12 @@ export class Parser
     parseTransformer(element)
     //=======================
     {
-        const transformer = new bondgraph.Transformer(element);
+        const transformer = new bondgraph.Transformer(this.diagram, element);
         for (let e of element.children) {
             if (e.nodeName === 'input') {
-                bondgraph.Edge.fromAttribute(e, 'potential', true, transformer, [bondgraph.Potential]);
+                bondgraph.Edge.fromAttribute(this.diagram, e, 'potential', true, transformer, [bondgraph.Potential]);
             } else if (e.nodeName === 'output') {
-                bondgraph.Edge.fromAttribute(e, 'potential', false, transformer, [bondgraph.Potential]);
+                bondgraph.Edge.fromAttribute(this.diagram, e, 'potential', false, transformer, [bondgraph.Potential]);
             } else {
                 throw new exception.SyntaxError(e, `Unexpected <transformer> element`);
             }
@@ -250,7 +250,7 @@ export class Parser
 
         return Promise.all(stylePromises)
                       .then(() => {
-                            CellDiagram.instance().initialise(StyleSheet.instance().style(xmlRoot));
+                            this.diagram.initialise(StyleSheet.instance().style(xmlRoot));
 //                            if (this.diagramElement !== null) {
 //                                this.diagram = new dia.Diagram(this.diagramElement.attributes,
 //                                                               StyleSheet.instance().style(this.diagramElement));

@@ -29,7 +29,6 @@ import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as stylesheet from './stylesheet.js';
 
-import {CellDiagram} from './cellDiagram.js';
 import {List} from './utils.js';
 
 //==============================================================================
@@ -70,8 +69,9 @@ export class Offset {
 
 export class Position
 {
-    constructor()
+    constructor(diagram)
     {
+        this.diagram = diagram
         this.lengths = null;             // Position as a pair of Offsets
         this.relationships = [];
         this.coordinates = null;         // Resolved position in pixels
@@ -165,7 +165,7 @@ export class Position
                 break;
               case 2:
                 if (token.type === 'HASH') {
-                    const dependency = CellDiagram.instance().findElement(token.value);
+                    const dependency = this.diagram.findElement(token.value);
                     if (dependency === null) {
                         throw new exception.StyleError(tokens, `Unknown element ${token.value}`);
                     }
@@ -299,8 +299,9 @@ export class Size
 
 export class LinePath
 {
-    constructor(style, pathAttribute)
+    constructor(diagram, style, pathAttribute)
     {
+        this.diagram = diagram;
         this.tokens = (pathAttribute in style) ? style[pathAttribute] : null;
         this.reversePath = false;
         this.constraints = [];
@@ -353,7 +354,7 @@ export class LinePath
 
               case 4:
                 if (token.type === 'HASH') {
-                    const dependency = CellDiagram.instance().findElement(token.value);
+                    const dependency = this.diagram.findElement(token.value);
                     if (dependency === null) {
                         throw new exception.StyleError(tokens, `Unknown element ${token.value}`);
                     }

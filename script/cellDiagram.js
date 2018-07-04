@@ -38,20 +38,10 @@ import {SVG_NS, SVG_VERSION} from './svgElements.js';
 
 //==============================================================================
 
-// The cell diagram we are creating
-
-let cellDiagramInstance = null;
-
-//==============================================================================
-
 export class CellDiagram {
     constructor()
     {
-        if (cellDiagramInstance === null) {
-            cellDiagramInstance = this;
-            this.reset();
-        }
-        return cellDiagramInstance;
+        this.reset();
     }
 
     reset()
@@ -62,16 +52,6 @@ export class CellDiagram {
         this._edges = [];
         this.width = 0;
         this.height = 0;
-    }
-
-    static instance()
-    //===============
-    {
-        if (cellDiagramInstance === null) {
-            return new CellDiagram();
-        } else {
-            return cellDiagramInstance;
-        }
     }
 
     initialise(style)
@@ -220,7 +200,7 @@ export class CellDiagram {
 //            svg.extend(c.svg());
 //        }
 
-        const bondgraphElement = bondgraph.generateSvg(svgNode);
+        const bondgraphElement = bondgraph.generateSvg(this);
 
 //        for (let transporter of this.transporters) {
 //            svg.extend(transporter.svg());

@@ -22,14 +22,14 @@ limitations under the License.
 
 //==============================================================================
 
-import {CellDiagram} from './cellDiagram.js';
 
 //==============================================================================
 
 export class DiagramEditor
 {
-    constructor()
+    constructor(diagram)
     {
+        this.diagram = diagram;
         this.svgNode = null
         this.selectedNode = null;
         this.diagramElement = null;
@@ -67,7 +67,7 @@ export class DiagramEditor
     {
         for (let node of event.composedPath()) {
             if (node.classList.contains('draggable')) {
-                const diagramElement = CellDiagram.instance().findElement(`#${node.id}`);
+                const diagramElement = this.diagram.findElement(`#${node.id}`);
                 if (diagramElement !== null) {
                     this.diagramElement = diagramElement;
                     this.selectedNode = node;
@@ -85,9 +85,9 @@ export class DiagramEditor
         if (this.selectedNode) {
             event.preventDefault();
             const position = this.getMousePosition(event);
-            CellDiagram.instance().reposition(this.diagramElement,
-                                             [position.x - this.startPosition.x,
-                                              position.y - this.startPosition.y]);
+            this.diagram.reposition(this.diagramElement,
+                                    [position.x - this.startPosition.x,
+                                     position.y - this.startPosition.y]);
             this.startPosition = position;
         }
         event.stopPropagation();

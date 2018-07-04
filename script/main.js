@@ -30,10 +30,6 @@ import {Text} from './svgElements.js';
 
 //==============================================================================
 
-const diagramEditorInstance = new DiagramEditor();
-
-//==============================================================================
-
 export function displayDiagram(cellDlText, svgContainerNode, drawDependencyGraph=false)
 {
     const domParser = new DOMParser();
@@ -41,13 +37,14 @@ export function displayDiagram(cellDlText, svgContainerNode, drawDependencyGraph
     document.body.style.cursor = 'wait';
 
     try {
-        CellDiagram.instance().reset();
+        const cellDiagram = new CellDiagram();
+        const diagramEditor = new DiagramEditor(cellDiagram);
+
         StyleSheet.instance().reset();
 
-        const parser = new Parser();
+        const parser = new Parser(cellDiagram);
         parser.parseDocument(xmlDocument)
             .then(() => {
-                const cellDiagram = CellDiagram.instance();
                 cellDiagram.layout(drawDependencyGraph);  // Pass width/height to use as defaults...
 
                 const svgDiagram = cellDiagram.generateSvg();
@@ -71,7 +68,7 @@ export function displayDiagram(cellDlText, svgContainerNode, drawDependencyGraph
                     document.body.style.cursor = 'default';
 
                     const svgNode = svgContainerNode.children[0];
-                    diagramEditorInstance.svgLoaded(svgNode);
+                    diagramEditor.svgLoaded(svgNode);
                 });
             });
     } catch (error) {
