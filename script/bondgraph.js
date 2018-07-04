@@ -119,7 +119,7 @@ export class Edge
                 const styleDomElement = (this.styleElementId !== null)
                                             ? this.diagram.findElement(this.styleElementId).domElement
                                             : this.domElement;
-                this.style = StyleSheet.instance().style(styleDomElement);
+                this.style = this.diagram.stylesheet.style(styleDomElement);
                 this.other.addEdge(this);
                 return;
             }

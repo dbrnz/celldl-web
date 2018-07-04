@@ -223,6 +223,7 @@ export class Parser
             throw new exception.SyntaxError(xmlroot, "Root tag must be <cell-diagram>");
         }
 
+        const stylesheet = this.diagram.stylesheet;
         let stylePromises = [];
         for (let element of xmlRoot.children) {
             if (element.nodeName === 'bond-graph') {
@@ -239,9 +240,9 @@ export class Parser
                 }
             } else if (element.nodeName === 'style') {
                 if ('src' in element.attributes) {
-                    stylePromises.push(StyleSheet.instance().fetchStyles(element.attributes.src.textContent));
+                    stylePromises.push(stylesheet.fetchStyles(element.attributes.src.textContent));
                 } else {
-                    StyleSheet.instance().addStyles(element.textContent);
+                    stylesheet.addStyles(element.textContent);
                 }
             } else {
                 throw new exception.SyntaxError(element, "Unknown XML element");
@@ -250,10 +251,10 @@ export class Parser
 
         return Promise.all(stylePromises)
                       .then(() => {
-                            this.diagram.initialise(StyleSheet.instance().style(xmlRoot));
+                            this.diagram.initialise(stylesheet.style(xmlRoot));
 //                            if (this.diagramElement !== null) {
 //                                this.diagram = new dia.Diagram(this.diagramElement.attributes,
-//                                                               StyleSheet.instance().style(this.diagramElement));
+//                                                               stylesheet.style(this.diagramElement));
 //                                this.parseContainer(this.diagramElement, this.diagram);
 //                            } else {
 //                                this.diagram = new dia.Diagram();

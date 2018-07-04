@@ -39,14 +39,9 @@ import {SVG_NS, SVG_VERSION} from './svgElements.js';
 //==============================================================================
 
 export class CellDiagram {
-    constructor()
+    constructor(stylesheet)
     {
-        this.reset();
-    }
-
-    reset()
-    //=====
-    {
+        this.stylesheet = stylesheet;
         this._elements = [];
         this._elementsById = {};
         this._edges = [];

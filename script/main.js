@@ -37,12 +37,11 @@ export function displayDiagram(cellDlText, svgContainerNode, drawDependencyGraph
     document.body.style.cursor = 'wait';
 
     try {
-        const cellDiagram = new CellDiagram();
+        const stylesheet = new StyleSheet();
+        const cellDiagram = new CellDiagram(stylesheet);
         const diagramEditor = new DiagramEditor(cellDiagram);
-
-        StyleSheet.instance().reset();
-
         const parser = new Parser(cellDiagram);
+
         parser.parseDocument(xmlDocument)
             .then(() => {
                 cellDiagram.layout(drawDependencyGraph);  // Pass width/height to use as defaults...

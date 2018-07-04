@@ -48,7 +48,7 @@ export class DiagramElement {
         this.classes.push('draggable');
         this.classes.push(className.toLowerCase());
         this.label = ('label' in this.attributes) ? this.attributes.label.textContent : this.name;
-        this.style = StyleSheet.instance().style(domElement);
+        this.style = diagram.stylesheet.style(domElement);
         this.className = className;
         this.position = new layout.Position(diagram);
         this.geometry = null;
