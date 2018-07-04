@@ -22,6 +22,74 @@ limitations under the License.
 
 //==============================================================================
 
+class HistoryEvent {
+    constructor(operation, element, attributes={})
+    {
+        this.operation = operation;
+        this.element = element;
+        this.attributes = attributes;
+    }
+
+    undo()
+    //====
+    {
+
+    }
+
+    redo()
+    //====
+    {
+
+    }
+}
+
+//==============================================================================
+
+class HistoryStack {
+    constructor()
+    {
+        this.reset();
+    }
+
+    reset()
+    {
+        this.history = [];
+        this.nextEventPos = 0;
+    }
+
+    push(operation, element, attributes={})
+    //=====================================
+    {
+        // do we limit size and wrap??
+        const event = new HistoryEvent(operation, element, attributes);
+
+        if (this.nextEventPos < this.history.length) {
+            this.history[this.nextEventPos] = event;
+        }
+        else {
+            this.history.push(event);
+        }
+        this.nextEventPos += 1;
+    }
+
+    undo()
+    //====
+    {
+        if (this.nextEventPos > 0) {
+            this.nextEventPos -= 1;
+            this.history[this.nextEventPos].undo();
+        }
+    }
+
+    redo()
+    //====
+    {
+        if (this.nextEventPos < this.history.length) {
+            this.history[this.nextEventPos].redo();
+            this.nextEventPos += 1;
+        }
+    }
+}
 
 //==============================================================================
 
@@ -33,6 +101,7 @@ export class DiagramEditor
         this.svgNode = null
         this.selectedNode = null;
         this.diagramElement = null;
+        this.undoStack = new HistoryStack();
     }
 
     svgLoaded(svgNode)
@@ -47,6 +116,10 @@ export class DiagramEditor
         svgNode.addEventListener('touchend', this.endMouseMove.bind(this));
         svgNode.addEventListener('touchleave', this.endMouseMove.bind(this));
         svgNode.addEventListener('touchcancel', this.endMouseMove.bind(this));
+
+        // Also listen for keys, for example `^Z`, `Shift^Z` (undo, redo)
+
+        this.undoStack.reset();
     }
 
     getMousePosition(event)
@@ -71,6 +144,8 @@ export class DiagramEditor
                     this.diagramElement = diagramElement;
                     this.selectedNode = node;
                     this.startPosition = this.getMousePosition(event);
+                    this.elementStartCoordinates = diagramElement.coordinates;
+                    this.elementCurrentCoordinates = diagramElement.coordinates;
                     break;
                 }
             } else if (node.tagName === 'svg') {
@@ -88,11 +163,14 @@ export class DiagramEditor
                                     [position.x - this.startPosition.x,
                                      position.y - this.startPosition.y]);
             this.startPosition = position;
+            this.elementCurrentCoordinates = this.diagramElement.coordinates;
         }
         event.stopPropagation();
     }
 
     endMouseMove(event) {
+        // push operation, element, starting attributes,
+        // ending attributes on history stack
         this.selectedNode = null;
         this.diagramElement = null;
     }
