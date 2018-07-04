@@ -46,6 +46,7 @@ export class DiagramElement {
         this.name = ('name' in this.attributes) ? this.attributes.name.textContent : this.id.substr(1);
         this.classes = ('class' in this.attributes) ? this.attributes.class.textContent.split(/\s+/) : [];
         this.classes.push('draggable');
+        this.classes.push(className.toLowerCase());
         this.label = ('label' in this.attributes) ? this.attributes.label.textContent : this.name;
         this.style = StyleSheet.instance().style(domElement);
         this.className = className;
