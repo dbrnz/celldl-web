@@ -22,11 +22,11 @@ limitations under the License.
 
 //==============================================================================
 
-import {SVG_NS, XLINK_NS} from './svgElements.js'
+import {SVG_NS, XLINK_NS} from './svgElements.js';
 
 //==============================================================================
 
-const MATHJAX_PATH = './thirdparty/MathJax/unpacked/MathJax.js';
+//const MATHJAX_PATH = './thirdparty/MathJax/unpacked/MathJax.js';
 
 //==============================================================================
 
@@ -155,7 +155,7 @@ export class TypeSetter
             // We can now delete the content node
 
             self.content.remove();
-        }
+        };
     }
 }
 

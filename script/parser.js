@@ -22,15 +22,8 @@ limitations under the License.
 
 //==============================================================================
 
-import * as cssparser from '../thirdparty/cssparser.js';
-import * as SPECIFICITY from '../thirdparty/specificity.js';
-
-//==============================================================================
-
 import * as bondgraph from './bondgraph.js';
 import * as exception from './exception.js';
-
-import {StyleSheet} from './stylesheet.js';
 
 //==============================================================================
 
@@ -216,9 +209,9 @@ export class Parser
 
         if ('xmlns' in xmlRoot.attributes
          && xmlRoot.attributes.xmlns.textContent !== CELLDL_NAMESPACE) {
-            throw new exception.SyntaxError(xmlroot, "Not a CellDL document");
+            throw new exception.SyntaxError(xmlRoot, "Not a CellDL document");
         } else if (xmlRoot.nodeName !== 'cell-diagram') {
-            throw new exception.SyntaxError(xmlroot, "Root tag must be <cell-diagram>");
+            throw new exception.SyntaxError(xmlRoot, "Root tag must be <cell-diagram>");
         }
 
         const stylesheet = this.diagram.stylesheet;

@@ -27,14 +27,13 @@ import * as geo from './geometry.js';
 import * as layout from './layout.js';
 
 import {DiagramElement} from './element.js';
-import {List} from './utils.js';
-import {parseColour, styleAsString, StyleSheet} from './stylesheet.js';
+import {parseColour, styleAsString} from './stylesheet.js';
 import {SVG_NS, Arrow} from './svgElements.js';
 import {setAttributes} from './utils.js';
 
 //==============================================================================
 
-const LINE_OFFSET = 3.5;  // TODO: Initial/default value from CSS
+// UNUSED const LINE_OFFSET = 3.5;  // TODO: Initial/default value from CSS
 
 //==============================================================================
 
@@ -273,12 +272,12 @@ export class FlowEdge extends Edge
     }
 
     static fromAttribute(diagram, element, direction, toParent, parent, validClasses)
-    //======================================================================
+    //===============================================================================
     {
         if (!(direction in element.attributes)) {
             throw new exception.KeyError(element, `Expected ${direction} attribute`);
         }
-        const count = ('count' in element.attributes) ? Number(attributes.count.textContent) : 1;
+        const count = ('count' in element.attributes) ? Number(element.attributes.count.textContent) : 1;
         return new FlowEdge(diagram, element, element.attributes[direction].textContent,
                             toParent, parent, validClasses, direction, count);
     }

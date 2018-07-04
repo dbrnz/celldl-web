@@ -98,7 +98,7 @@ export class DiagramEditor
     constructor(diagram)
     {
         this.diagram = diagram;
-        this.svgNode = null
+        this.svgNode = null;
         this.selectedNode = null;
         this.diagramElement = null;
         this.undoStack = new HistoryStack();

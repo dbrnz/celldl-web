@@ -71,7 +71,7 @@ export class Position
 {
     constructor(diagram)
     {
-        this.diagram = diagram
+        this.diagram = diagram;
         this.lengths = null;             // Position as a pair of Offsets
         this.relationships = [];
         this.coordinates = null;         // Resolved position in pixels
@@ -218,7 +218,7 @@ export class Position
                     this.parseComponent(tokens[1], dirn, defaultOffset, defaultDependency);
                 }
             } else {
-                throw new exception.StyleError(tokens, "Position can't have more than two components")
+                throw new exception.StyleError(tokens, "Position can't have more than two components");
             }
         } else {
             this.parseComponent(tokens, null, defaultOffset, defaultDependency);
@@ -265,7 +265,7 @@ export class Position
                     const offset = relationship.offset;
                     const reln = relationship.relation;
                     const dependencies = relationship.dependencies;
-                    [coordinates, index] = Position.getCoordinates(unitConverter, offset, reln, dependencies);
+                    let [coordinates, index] = Position.getCoordinates(unitConverter, offset, reln, dependencies);
                     if (offset === null) {
                         index -= 1;
                     }
@@ -284,7 +284,7 @@ export class Size
 {
     constructor(tokens)
     {
-        this.size = []
+        this.size = [];
         if (tokens instanceof Array && tokens.length == 2) {
             for (let token of tokens) {
                 this.size.push(stylesheet.parseOffset(token));
@@ -368,10 +368,6 @@ export class LinePath
                 state = 99;
                 break;
 
-              case 99:
-                throw new exception.StyleError(tokens, 'Invalid syntax for a line segment');
-                break;
-
               case 9:
                 if (token.type !== 'ID' || POSITION_RELATIONS.indexOf(token.value) < 0) {
                     throw new exception.StyleError(tokens, "Unknown offset relationship");
@@ -384,6 +380,9 @@ export class LinePath
                 }
                 state = 4;
                 break;
+
+              case 99:
+                throw new exception.StyleError(tokens, 'Invalid syntax for a line segment');
             }
         }
         if (dependencies.length === 0) {
@@ -425,7 +424,7 @@ export class LinePath
     {
         if (this.tokens !== null) {
             if (this.tokens.type !== 'FUNCTION' || ['begin', 'end'].indexOf(this.tokens.name.value) < 0) {
-                throw new exception.StyleError(tokens, 'Invalid path specification');
+                throw new exception.StyleError(this.tokens, 'Invalid path specification');
             }
             this.reversePath = (this.tokens.name.value === 'end');
             this.parsePath(this.tokens.parameters);

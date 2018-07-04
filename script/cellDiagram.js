@@ -33,7 +33,6 @@ import * as stylesheet from './stylesheet.js';
 import * as svgElements from './svgElements.js';
 
 import {DiagramElement} from './element.js';
-import {List} from './utils.js';
 import {SVG_NS, SVG_VERSION} from './svgElements.js';
 
 //==============================================================================
@@ -63,7 +62,7 @@ export class CellDiagram {
     get size()
     //========
     {
-        return [this.width, this.height]
+        return [this.width, this.height];
     }
 
     addElement(element)
@@ -185,7 +184,7 @@ export class CellDiagram {
     generateSvg()
     //===========
     {
-        svgElements.initialise()
+        svgElements.initialise();
 
         const svgNode = document.createElementNS(SVG_NS, 'svg');
         svgNode.setAttribute('xmlns', SVG_NS);

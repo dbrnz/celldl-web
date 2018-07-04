@@ -30,7 +30,7 @@ import {setAttributes, List} from './utils.js';
 
 // Two numbers are considered equal if closer than EPISILON
 
-const EPISILON = 1.0e-6
+const EPISILON = 1.0e-6;
 
 //==============================================================================
 
@@ -89,7 +89,7 @@ export class Point extends GeoObject
 
     notEqual(other)
     {
-        return !this.equal(other)
+        return !this.equal(other);
     }
 
     add(offset)
@@ -143,7 +143,7 @@ export class ProjectiveLine extends GeoObject
     }
 
     toString() {
-        return `Line (${A}, ${B}, ${C})`;
+        return `Line (${this.A}, ${this.B}, ${this.C})`;
     }
 
     outside(point)
@@ -165,7 +165,7 @@ export class ProjectiveLine extends GeoObject
 
     intersection(other)
     {
-        let c = this.A*other.B - other.A*this.B
+        let c = this.A*other.B - other.A*this.B;
         return (c === 0.0) ? null
                            : new Point((this.B*other.C - other.B*this.C)/c,
                                        (other.A*this.C - this.A*other.C)/c);
@@ -284,7 +284,7 @@ export class LineString extends GeoObject
     constructor(points, closed=false) {
         super();
         this.lineSegments = [];
-        this.coordinates = []
+        this.coordinates = [];
         if (points.length > 0) {
             for (let n = 0; n < (points.length - 1); n += 1) {
                 const segment = new LineSegment(points[n], points[n + 1]);

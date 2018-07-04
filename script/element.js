@@ -27,8 +27,8 @@ import * as geo from './geometry.js';
 import * as layout from './layout.js';
 import * as svgElements from './svgElements.js';
 
-import {List, setAttributes} from './utils.js';
-import {parseColour, styleAsString, StyleSheet} from './stylesheet.js';
+import {setAttributes} from './utils.js';
+import {parseColour, styleAsString} from './stylesheet.js';
 import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
@@ -37,9 +37,9 @@ export class DiagramElement {
     constructor(diagram, domElement, className='Element', requireId=true)
     {
         if (requireId && !('id' in domElement.attributes)) {
-            throw new exception.SyntaxError(domElement, "A diagram element must have an 'id'")
+            throw new exception.SyntaxError(domElement, "A diagram element must have an 'id'");
         }
-        this.diagram = diagram
+        this.diagram = diagram;
         this.domElement = domElement;
         this.attributes = domElement.attributes;
         this.id = ('id' in this.attributes) ? `#${this.attributes.id.textContent}` : '';
@@ -96,7 +96,7 @@ export class DiagramElement {
     //==========
     {
         return ('color' in this.style) ? parseColour(this.style.color)
-                                       : '#808080' // TODO: specify defaults in one place
+                                       : '#808080'; // TODO: specify defaults in one place
     }
 
     get display()
@@ -216,8 +216,8 @@ export class DiagramElement {
         }
     }
 
-    generateSvg(radius=layout.ELEMENT_RADIUS)
-    //=======================================
+    generateSvg()
+    //===========
     {
         const svgNode = document.createElementNS(SVG_NS, 'g');
         setAttributes(svgNode, this.idClass(), this.display);

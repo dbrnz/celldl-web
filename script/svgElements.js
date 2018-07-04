@@ -22,9 +22,8 @@ limitations under the License.
 
 //==============================================================================
 
-import * as layout from './layout.js';
 import * as mathjax from './mathjax.js';
-import {List, format, setAttributes} from './utils.js';
+import {List, format} from './utils.js';
 
 //==============================================================================
 
@@ -108,7 +107,7 @@ export class Gradients
         const hashValue = Gradients.hash(gradientType, stopColours);
         let id;
         if (hashValue in Gradients._gradientsToId) {
-            id = Gradients._gradientsToId[hashValue]
+            id = Gradients._gradientsToId[hashValue];
         } else {
             id = Gradients.nextId();
             Gradients._gradientsToId[hashValue] = id;
@@ -501,6 +500,7 @@ export class Text
         const nodeId = Text.nextId();
         const svgNode = document.createElementNS(SVG_NS, 'g');
         svgNode.id = nodeId;
+        // And rotate...
         svgNode.setAttribute('transform', `translate(${x}, ${y})`);
         Text._promises.push(new mathjax.TypeSetter(latex, svgNode, colour));
         return svgNode;
