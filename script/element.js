@@ -50,11 +50,9 @@ export class DiagramElement {
         this.style = StyleSheet.instance().style(domElement);
         this.className = className;
         this.position = new layout.Position(diagram);
-        if (this.id !== '') {
-            diagram.addElement(this);
-        }
         this.geometry = null;
         this.edges = [];
+        diagram.addElement(this);
     }
 
     fromAttribute(attributeName, elementClasses=[DiagramElement])

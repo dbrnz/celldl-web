@@ -75,10 +75,12 @@ export class CellDiagram {
     //=================
     {
         this._elements.push(element);
-        if (element.id in this._elementsById) {
-            throw new exception.KeyError(element.domElement, `Duplicate element 'id': ${element.id}`);
+        if (element.id !== '') {
+            if (element.id in this._elementsById) {
+                throw new exception.KeyError(element.domElement, `Duplicate element 'id': ${element.id}`);
+            }
+            this._elementsById[element.id] = element;
         }
-        this._elementsById[element.id] = element;
     }
 
     elements(elementClass=DiagramElement)
