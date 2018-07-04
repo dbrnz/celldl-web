@@ -83,8 +83,9 @@ export function loadMathJax()
 
 export class TypeSetter
 {
-    constructor(latex, destinationNode)
+    constructor(latex, destinationNode, colour)
     {
+        latex = `\\color{${colour}}${latex}`;
         if (TypeSetter._cache.has(latex)) {
             const textNode = TypeSetter._cache.get(latex);
             destinationNode.appendChild(textNode);

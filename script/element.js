@@ -205,7 +205,7 @@ export class DiagramElement {
             // Pass this.textcolour to MathJax...
             // see https://groups.google.com/forum/#!msg/mathjax-users/fo93aucG5Bo/7dH3s8szbNYJ
             const rotation = Number.parseFloat(this.getStyleAsString("text-rotation", "0"));
-            return svgElements.Text.typeset(this.label.slice(1, -1), x, y, rotation);
+            return svgElements.Text.typeset(this.label.slice(1, -1), x, y, rotation, this.textColour);
         } else {
             const svgNode = document.createElementNS(SVG_NS, 'text');
             setAttributes(svgNode, { x: x, y: y, fill: this.textColour,

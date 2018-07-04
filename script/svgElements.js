@@ -495,14 +495,14 @@ export class Text
         return `_TEXT_${Text._nextId}_`;
     }
 
-    static typeset(latex, x, y, rotation=0)
-    //=====================================
+    static typeset(latex, x, y, rotation=0, colour="#000000")
+    //=======================================================
     {
         const nodeId = Text.nextId();
         const svgNode = document.createElementNS(SVG_NS, 'g');
         svgNode.id = nodeId;
         svgNode.setAttribute('transform', `translate(${x}, ${y})`);
-        Text._promises.push(new mathjax.TypeSetter(latex, svgNode));
+        Text._promises.push(new mathjax.TypeSetter(latex, svgNode, colour));
         return svgNode;
     }
 
