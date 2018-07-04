@@ -32,8 +32,6 @@ import * as exception from './exception.js';
 
 import {StyleSheet} from './stylesheet.js';
 
-//import * as dia from './diagram.js';
-
 //==============================================================================
 
 var CELLDL_NAMESPACE = "http://www.cellml.org/celldl/1.0#";

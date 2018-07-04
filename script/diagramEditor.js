@@ -33,7 +33,6 @@ export class DiagramEditor
         this.svgNode = null
         this.selectedNode = null;
         this.diagramElement = null;
-        this.startposition = [ 0, 0];
     }
 
     svgLoaded(svgNode)
