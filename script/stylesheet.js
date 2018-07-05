@@ -30,8 +30,6 @@ import * as SPECIFICITY from '../thirdparty/specificity.js';
 import * as layout from './layout.js';
 import * as exception from './exception.js';
 
-import {Gradients} from './svgElements.js';
-
 //==============================================================================
 
 // TODO: Implement inheritance and initial values as per
@@ -199,7 +197,7 @@ export function parseOffsetPair(tokens, allowLocal=true)
 
 //==============================================================================
 
-export function parseColour(tokens)
+export function parseColour(diagram, tokens)
 {
     if (tokens.type === "FUNCTION") {
         const name = tokens.name.value;
@@ -228,7 +226,7 @@ export function parseColour(tokens)
                 }
             }
         }
-        return Gradients.url(gradientType, stopColours);
+        return diagram.svgFactory.gradient(gradientType, stopColours);
     }
     return parseColourValue(tokens);
 }

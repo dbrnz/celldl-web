@@ -25,7 +25,6 @@ limitations under the License.
 import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
-import * as svgElements from './svgElements.js';
 
 import {setAttributes} from './utils.js';
 import {parseColour, styleAsString} from './stylesheet.js';
@@ -95,7 +94,7 @@ export class DiagramElement {
     get colour()
     //==========
     {
-        return ('color' in this.style) ? parseColour(this.style.color)
+        return ('color' in this.style) ? parseColour(this.diagram, this.style.color)
                                        : '#808080'; // TODO: specify defaults in one place
     }
 
@@ -109,7 +108,7 @@ export class DiagramElement {
     get textColour()
     //==============
     {
-        return ('text-color' in this.style) ? parseColour(this.style['text-color'])
+        return ('text-color' in this.style) ? parseColour(this.diagram, this.style['text-color'])
                                             : '#202020'; // TODO: specify defaults in one place
     }
 
@@ -205,7 +204,7 @@ export class DiagramElement {
             // Pass this.textcolour to MathJax...
             // see https://groups.google.com/forum/#!msg/mathjax-users/fo93aucG5Bo/7dH3s8szbNYJ
             const rotation = Number.parseFloat(this.getStyleAsString("text-rotation", "0"));
-            return svgElements.Text.typeset(this.label.slice(1, -1), x, y, rotation, this.textColour);
+            return this.diagram.svgFactory.typeset(this.label.slice(1, -1), x, y, rotation, this.textColour);
         } else {
             const svgNode = document.createElementNS(SVG_NS, 'text');
             setAttributes(svgNode, { x: x, y: y, fill: this.textColour,

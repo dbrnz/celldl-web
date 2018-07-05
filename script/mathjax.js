@@ -83,7 +83,7 @@ export function loadMathJax()
 
 export class TypeSetter
 {
-    constructor(latex, destinationNode, colour)
+    constructor(latex, id, destinationNode, colour)
     {
         latex = `\\color{${colour}}${latex}`;
         if (TypeSetter._cache.has(latex)) {
@@ -93,6 +93,7 @@ export class TypeSetter
         }
 
         this.latex = latex;
+        this.id = id;
         this.destinationNode = destinationNode;
         this.content = document.createElement("span");
         this.content.setAttribute('style', 'display: none');
@@ -132,8 +133,8 @@ export class TypeSetter
 
             const script = jax.SourceElement();
             const svgNode = script.previousSibling.getElementsByTagName('svg')[0];
-            TypeSetter.suffixIds(svgNode, 'id', self.destinationNode.id);
-            TypeSetter.suffixIds(svgNode, 'href', self.destinationNode.id, XLINK_NS);
+            TypeSetter.suffixIds(svgNode, 'id', self.id);
+            TypeSetter.suffixIds(svgNode, 'href', self.id, XLINK_NS);
 
             const width = svgNode.getAttribute('width');
             const height = svgNode.getAttribute('height');

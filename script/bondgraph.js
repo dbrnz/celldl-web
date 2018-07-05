@@ -28,7 +28,7 @@ import * as layout from './layout.js';
 
 import {DiagramElement} from './element.js';
 import {parseColour, styleAsString} from './stylesheet.js';
-import {SVG_NS, Arrow} from './svgElements.js';
+import {SVG_NS} from './svgElements.js';
 import {setAttributes} from './utils.js';
 
 //==============================================================================
@@ -134,7 +134,7 @@ export class Edge
     get lineColour()
     //==============
     {
-        return ('line-color' in this.style) ? parseColour(this.style['line-color'])
+        return ('line-color' in this.style) ? parseColour(this.diagram, this.style['line-color'])
                                             : '#A0A0A0'; // TODO: specify defaults in one place
     }
 
@@ -210,7 +210,7 @@ export class Edge
         setAttributes(svgNode, {id: this.id, fill: 'none',
                                 stroke: this.lineColour,
                                 'stroke-width': layout.STROKE_WIDTH,
-                                'marker-end': Arrow.url(this.lineColour)});
+                                'marker-end': this.diagram.svgFactory.arrow(this.lineColour)});
         if (styleAsString(this.style, 'line-style') === 'dashed') {
             setAttributes(svgNode, {'stroke-dasharray': '10,5'});
         }

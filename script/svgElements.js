@@ -34,7 +34,7 @@ export const XLINK_NS = 'http://www.w3.org/1999/xlink';
 
 //==============================================================================
 
-export class SvgElement
+class SvgElement
 {
     constructor(id, idBase) {
         this.id = id;
@@ -44,85 +44,7 @@ export class SvgElement
 
 //==============================================================================
 
-export class DefinesStore
-{
-    static add(id, defines)
-    {
-        if (!DefinesStore._defines.has(id)) {
-            DefinesStore._defines.set(id, defines);
-        }
-    }
-
-    static defines()
-    {
-        const defs = ['<defs>'];
-        for (let defines of DefinesStore._defines.values()) {
-            defs.push(defines);
-        }
-        defs.push('</defs>');
-
-        const parser = new DOMParser();
-        const svgNode = parser.parseFromString(defs.join(' '), "application/xml");
-        return svgNode.documentElement;
-    }
-}
-
-DefinesStore._defines = new Map;
-
-//==============================================================================
-
-export class Gradients
-{
-    static nextId()
-    {
-        Gradients._nextId += 1;
-        return `_GRADIENT_${Gradients._nextId}_`;
-    }
-
-    static hash(gradientType, stopColours)
-    {
-        return `${gradientType}${stopColours.toString()}`;
-    }
-
-    static svg(id, gradientType, stopColours)
-    {
-        let n = 0;
-        const nStops = stopColours.length;
-        let stops = [];
-        for (let stopcolour of stopColours) {
-            let offset;
-            if (n > 0) {
-                offset = ` offset="${(stopcolour[1] !== null) ? stopcolour[1] : (100.0*n/(nStops - 1))}%"`;
-            } else {
-                offset = (stopcolour[1] !== null) ? ` offset="${stopcolour[1]}%"` : '';
-            }
-            stops.push(`<stop${offset} stop-color="${stopcolour[0]}"/>`);
-            n += 1;
-        }
-        return `<${gradientType}Gradient id="${id}">${stops.join('\n')}</${gradientType}Gradient>`;
-    }
-
-    static url(gradientType, stopColours)
-    {
-        const hashValue = Gradients.hash(gradientType, stopColours);
-        let id;
-        if (hashValue in Gradients._gradientsToId) {
-            id = Gradients._gradientsToId[hashValue];
-        } else {
-            id = Gradients.nextId();
-            Gradients._gradientsToId[hashValue] = id;
-            DefinesStore.add(id, Gradients.svg(id, gradientType, stopColours));
-        }
-        return `url(#${id})`;
-    }
-}
-
-Gradients._gradientsToId = {};
-Gradients._nextId = 0;
-
-//==============================================================================
-
-export class CellMembrane extends SvgElement
+class CellMembrane extends SvgElement
 {
     constructor(id, width, height, idBase='cell_membrane',
                 outerMarkers=9, innerMarkers=3, markerRadius=4,
@@ -374,7 +296,7 @@ class Exchanger_TO_FINISH extends TransporterElement
 
 //==============================================================================
 
-export class PMRChannel extends TransporterElement
+class PMRChannel extends TransporterElement
 {
     constructor(id, coords, rotation, height=0.6*PMRChannel.HEIGHT, idBase='pmr_channel')
     {
@@ -416,7 +338,7 @@ PMRChannel.SVG_DEFS = ['',
 
 //==============================================================================
 
-export class PMRChannelIn extends PMRChannel
+class PMRChannelIn extends PMRChannel
 {
     constructor(id, coords, rotation, height=0.6*PMRChannel.HEIGHT, idBase='pmr_channel')
     {
@@ -427,7 +349,7 @@ export class PMRChannelIn extends PMRChannel
 
 //==============================================================================
 
-export class PMRChannelOut extends PMRChannel
+class PMRChannelOut extends PMRChannel
 {
     constructor(id, coords, rotation, height=0.6*PMRChannel.HEIGHT, idBase='pmr_channel')
     {
@@ -438,7 +360,7 @@ export class PMRChannelOut extends PMRChannel
 
 //==============================================================================
 
-export class PMRChannelInOut extends PMRChannel
+class PMRChannelInOut extends PMRChannel
 {
     constructor(id, coords, rotation, height=0.6*PMRChannel.HEIGHT, idBase='pmr_channel')
     {
@@ -449,89 +371,108 @@ export class PMRChannelInOut extends PMRChannel
 
 //==============================================================================
 
-export class Arrow
+export class SvgFactory
 {
-    static nextId()
+    constructor(idPrefix)
     {
-        Arrow._nextId += 1;
-        return `_ARROW_${Arrow._nextId}_`;
+        this._arrows = {};
+        this._defines = new Map;
+        this._gradientsToId = {};
+        this._idPrefix = idPrefix;
+        this._nextId = 0;
+        this._promises = [];
     }
 
-    static svg(id, colour)
-    {
-        return `
-            <marker id="${id}" orient="auto" style="overflow: visible">
-              <path fill="${colour}" transform="rotate(90) translate(0, 4) scale(0.5)"
-                    d="M0,0l5,3.1l0.1-0.2l-3.3-8.2l-1.9-8.6l-1.9,8.6l-3.3,8.2l0.1,0.2l5-3.1z"/>
-            </marker>`;
-    }
-
-    static url(colour)
+    arrow(colour)
+    //===========
     {
         let id;
-        if (colour in Arrow.ColourToId) {
-            id = Arrow.ColourToId[colour];
+        if (colour in this._arrows) {
+            id = this._arrows[colour];
         } else {
-            id = Arrow.nextId();
-            Arrow.ColourToId[colour] = id;
-            DefinesStore.add(id, Arrow.svg(id, colour));
+            id = this.nextId();
+            this._arrows[colour] = id;
+            this.definesStoreAdd(id, `<marker id="${id}" orient="auto" style="overflow: visible">
+    <path fill="${colour}" transform="rotate(90) translate(0, 4) scale(0.5)"
+        d="M0,0l5,3.1l0.1-0.2l-3.3-8.2l-1.9-8.6l-1.9,8.6l-3.3,8.2l0.1,0.2l5-3.1z"/>
+</marker>`);
         }
         return `url(#${id})`;
     }
-}
 
-Arrow.ColourToId = {};
-Arrow._nextId = 0;
-
-//==============================================================================
-
-export class Text
-{
-    static nextId()
-    //=============
+    defines()
+    //=======
     {
-        Text._nextId += 1;
-        return `_TEXT_${Text._nextId}_`;
+        const defs = ['<defs>'];
+        for (let defines of this._defines.values()) {
+            defs.push(defines);
+        }
+        defs.push('</defs>');
+        const parser = new DOMParser();
+        const svgNode = parser.parseFromString(defs.join(' '), "application/xml");
+        return svgNode.documentElement;
     }
 
-    static typeset(latex, x, y, rotation=0, colour="#000000")
-    //=======================================================
+    definesStoreAdd(id, defines)
+    //==========================
     {
-        const nodeId = Text.nextId();
+        if (!this._defines.has(id)) {
+            this._defines.set(id, defines);
+        }
+    }
+
+    gradient(gradientType, stopColours)
+    //=================================
+    {
+        const hashValue = `${gradientType}${stopColours.toString()}`;
+        let id;
+        if (hashValue in this._gradientsToId) {
+            id = this._gradientsToId[hashValue];
+        } else {
+            id = this.nextId();
+            this._gradientsToId[hashValue] = id;
+            let n = 0;
+            const nStops = stopColours.length;
+            let stops = [];
+            for (let stopcolour of stopColours) {
+                let offset;
+                if (n > 0) {
+                    offset = ` offset="${(stopcolour[1] !== null) ? stopcolour[1] : (100.0*n/(nStops - 1))}%"`;
+                } else {
+                    offset = (stopcolour[1] !== null) ? ` offset="${stopcolour[1]}%"` : '';
+                }
+                stops.push(`<stop${offset} stop-color="${stopcolour[0]}"/>`);
+                n += 1;
+            }
+            this.definesStoreAdd(id, `<${gradientType}Gradient id="${id}">${stops.join('\n')}</${gradientType}Gradient>`);
+        }
+        return `url(#${id})`;
+    }
+
+    nextId()
+    //======
+    {
+        this._nextId += 1;
+        return `_SVG_${this._idPrefix}_${this._nextId}_`;
+    }
+
+    promises()
+    //========
+    {
+        return this._promises;
+    }
+
+    typeset(latex, x, y, rotation=0, colour="#000000")
+    //================================================
+    {
+        const nodeId = this.nextId();
         const svgNode = document.createElementNS(SVG_NS, 'g');
         svgNode.id = nodeId;
         // And rotate...
         svgNode.setAttribute('transform', `translate(${x}, ${y})`);
-        Text._promises.push(new mathjax.TypeSetter(latex, svgNode, colour));
+        this._promises.push(new mathjax.TypeSetter(latex, nodeId, svgNode, colour));
         return svgNode;
     }
-
-    static promises()
-    //===============
-    {
-        return Text._promises;
-    }
-}
-
-Text._nextId = 0;
-Text._promises = [];
-
-//==============================================================================
-
-export function initialise()
-{
-    DefinesStore._defines = new Map;
-
-    Gradients._gradientsToId = {};
-    Gradients._nextId = 0;
-
-    Arrow.ColourToId = {};
-    Arrow._nextId = 0;
-
-    Text._nextId = 0;
-    Text._promises = [];
-
-    mathjax.loadMathJax();
 }
 
 //==============================================================================

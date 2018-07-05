@@ -26,7 +26,6 @@ import {CellDiagram} from './cellDiagram.js';
 import {DiagramEditor} from './diagramEditor.js';
 import {Parser} from './parser.js';
 import {StyleSheet} from './stylesheet.js';
-import {Text} from './svgElements.js';
 
 //==============================================================================
 
@@ -38,7 +37,7 @@ export function displayDiagram(cellDlText, svgContainerNode, drawDependencyGraph
 
     try {
         const stylesheet = new StyleSheet();
-        const cellDiagram = new CellDiagram(stylesheet);
+        const cellDiagram = new CellDiagram('diagram', stylesheet);
         const diagramEditor = new DiagramEditor(cellDiagram);
         const parser = new Parser(cellDiagram);
 
@@ -50,7 +49,7 @@ export function displayDiagram(cellDlText, svgContainerNode, drawDependencyGraph
 
                 // Wait until all MathJax text has been rendered
 
-                Promise.all(Text.promises()).then(() => {
+                Promise.all(cellDiagram.svgFactory.promises()).then(() => {
                     // Remove any existing content from our SVG container
 
                     for (let child of svgContainerNode.children) {

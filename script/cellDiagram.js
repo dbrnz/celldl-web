@@ -30,22 +30,23 @@ import * as bondgraph from './bondgraph.js';
 import * as exception from './exception.js';
 import * as layout from './layout.js';
 import * as stylesheet from './stylesheet.js';
-import * as svgElements from './svgElements.js';
 
 import {DiagramElement} from './element.js';
-import {SVG_NS, SVG_VERSION} from './svgElements.js';
+import {SvgFactory, SVG_NS, SVG_VERSION} from './svgElements.js';
 
 //==============================================================================
 
 export class CellDiagram {
-    constructor(stylesheet)
+    constructor(id, stylesheet)
     {
+        this.id = id;
         this.stylesheet = stylesheet;
         this._elements = [];
         this._elementsById = {};
         this._edges = [];
         this.width = 0;
         this.height = 0;
+        this.svgFactory = new SvgFactory(id);
     }
 
     initialise(style)
@@ -184,8 +185,6 @@ export class CellDiagram {
     generateSvg()
     //===========
     {
-        svgElements.initialise();
-
         const svgNode = document.createElementNS(SVG_NS, 'svg');
         svgNode.setAttribute('xmlns', SVG_NS);
         svgNode.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
@@ -202,7 +201,7 @@ export class CellDiagram {
 //            svg.extend(transporter.svg());
 //        }
 
-        svgNode.appendChild(svgElements.DefinesStore.defines());
+        svgNode.appendChild(this.svgFactory.defines());
 
         svgNode.appendChild(bondgraphElement);
 
