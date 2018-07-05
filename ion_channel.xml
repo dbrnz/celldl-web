@@ -5,11 +5,11 @@
         <quantity id="q2" class="potassium" label="$\text{q}_2^{[\text{K}^+]_\text{i}}$"/>
         <quantity id="q4" label="$\text{q}_4$"/>
 
-        <potential id="u1" quantity="q1" label="$\text{u}_1$"/>
-        <potential id="u2" quantity="q2" label="$\text{u}_2$"/>
-        <potential id="u4" quantity="q4" label="$\text{u}_4$"/>
-        <potential id="u_E" label="$\text{u}_\text{E}$"/>
-        <potential id="u3" label="$\text{u}_3$"/>
+		<potential id="u1" quantity="q1" label="$\mu_{1}$"/>
+        <potential id="u2" quantity="q2" label="$\mu_2$"/>
+        <potential id="u4" quantity="q4" label="$\mu_4$"/>
+        <potential id="u_E" label="$\mu_\text{E}$"/>
+        <potential id="u3" label="$\mu_3$"/>
 
         <transformer id="zF">
             <input potential="u_E"/>
@@ -20,13 +20,13 @@
             <modulator potential="u3"/>
         </reaction>
 
-        <flow id="v1" label="$\text{v}_1$">
+        <flow id="v1" label="$\nu_1$">
             <component input="u1" output="I_Kp" class="potassium"/>
             <component id="v1u3" input="u3"/>
             <component input="u4"/>
         </flow>
 
-        <flow id="v2" label="$\text{v}_2$">
+        <flow id="v2" label="$\nu_2$">
             <component input="I_Kp" output="u2" class="potassium"/>
             <component output="u4"/>
         </flow>
