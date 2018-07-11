@@ -71,9 +71,9 @@ export function generateSvg(diagram)
 
 export class Node extends DiagramElement
 {
-    constructor(diagram, element, className='Node')
+    constructor(diagram, element)
     {
-        super(diagram, element, className);
+        super(diagram, element);
     }
 }
 
@@ -299,7 +299,7 @@ export class Flow extends Node
 {
     constructor(diagram, element)
     {
-        super(diagram, element, "Flow");
+        super(diagram, element);
 //        this.componentOffsets = [];
 //        const transporterId = ('transporter' in element.attributes) ? element.attributes.transporter : null;
 //        this.transporter = this.fromAttribute('transporter', [diagramTransporter])
@@ -383,7 +383,7 @@ export class Gyrator extends DiagramElement
 {
     constructor(diagram, element)
     {
-        super(diagram, element, 'Gyrator');
+        super(diagram, element);
         if (!this.label.startsWith('$')) this.label = `GY:${this.label}`;
     }
 }
@@ -394,7 +394,7 @@ export class Potential extends Node
 {
     constructor(diagram, element)
     {
-        super(diagram, element, 'Potential');
+        super(diagram, element);
         if ('quantity' in element.attributes) {
             const quantityId = element.attributes.quantity.textContent;
             new Edge(diagram, element, quantityId, false, this, [Quantity], `#${quantityId}`);
@@ -407,7 +407,7 @@ export class Potential extends Node
 export class Quantity extends DiagramElement
 {
     constructor(diagram, element) {
-        super(diagram, element, 'Quantity');
+        super(diagram, element);
         this.potential = null;
     }
 
@@ -445,7 +445,7 @@ export class Reaction extends DiagramElement
 {
     constructor(diagram, element)
     {
-        super(diagram, element, 'Reaction');
+        super(diagram, element);
         if (!this.label.startsWith('$')) this.label = `RE:${this.label}`;
     }
 
@@ -462,7 +462,7 @@ export class Transformer extends DiagramElement
 {
     constructor(diagram, element)
     {
-        super(diagram, element, 'Transformer');
+        super(diagram, element);
         if (!this.label.startsWith('$')) this.label = `TF:${this.label}`;
     }
 }

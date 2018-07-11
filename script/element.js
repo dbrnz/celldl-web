@@ -33,7 +33,7 @@ import {SVG_NS} from './svgElements.js';
 //==============================================================================
 
 export class DiagramElement {
-    constructor(diagram, domElement, className='Element', requireId=true)
+    constructor(diagram, domElement, requireId=true)
     {
         if (requireId && !('id' in domElement.attributes)) {
             throw new exception.KeyError("A diagram element must have an 'id'");
@@ -41,14 +41,14 @@ export class DiagramElement {
         this.diagram = diagram;
         this.domElement = domElement;
         this.attributes = domElement.attributes;
+        this.tagName = domElement.tagName;
         this.id = ('id' in this.attributes) ? `#${this.attributes.id.textContent}` : '';
         this.name = ('name' in this.attributes) ? this.attributes.name.textContent : this.id.substr(1);
         this.classes = ('class' in this.attributes) ? this.attributes.class.textContent.split(/\s+/) : [];
         this.classes.push('draggable');
-        this.classes.push(className.toLowerCase());
+        this.classes.push(this.tagName);
         this.label = ('label' in this.attributes) ? this.attributes.label.textContent : this.name;
         this.style = diagram.stylesheet.style(domElement);
-        this.className = className;
         this.position = new layout.Position(diagram);
         this.geometry = null;
         this.edges = [];
@@ -84,7 +84,7 @@ export class DiagramElement {
     toString()
     //========
     {
-        let s = [this.className];
+        let s = [this.tagName];
         if (this.id !== null) {
             s.push(`(${this.id})`);
         }
