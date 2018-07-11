@@ -104,7 +104,7 @@ export class Edge
     //=============================================================
     {
         if (!(attributeName in domElement.attributes)) {
-            throw new exception.KeyError(domElement, `Expected ${attributeName} attribute`);
+            throw new exception.KeyError(`Expected ${attributeName} attribute`);
         }
         return new Edge(diagram, domElement, domElement.attributes[attributeName].textContent,
                         toParent, parent, validClasses);
@@ -128,7 +128,7 @@ export class Edge
         const classNames = (names.length === 1) ? names[0]
                                                 : [names.slice(0, -1).join(', '), names.slice(-1)[0]].join(' or ');
 
-        throw new exception.KeyError(this.domElement, `Can't find ${classNames} with id '${this.otherId}'`);
+        throw new exception.KeyError(`Can't find ${classNames} with id '${this.otherId}'`);
     }
 
 
@@ -277,7 +277,7 @@ export class FlowEdge extends Edge
     //=============================================================
     {
         if (!(direction in element.attributes)) {
-            throw new exception.KeyError(element, `Expected ${direction} attribute`);
+            throw new exception.KeyError(`Expected ${direction} attribute`);
         }
         const count = ('count' in element.attributes) ? Number(element.attributes.count.textContent) : 1;
         return new FlowEdge(diagram, element, element.attributes[direction].textContent,

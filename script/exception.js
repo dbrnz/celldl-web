@@ -24,9 +24,9 @@ limitations under the License.
 
 export class KeyError extends Error
 {
-    constructor(domElement, message)
+    constructor(message)
     {
-        super(`${message}\n${domElement.outerHTML}`);
+        super(message);
     }
 }
 
