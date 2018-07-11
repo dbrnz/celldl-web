@@ -257,9 +257,6 @@ export class LineSegment extends ProjectiveLine
     truncateEnd(length)
     //=================
     {
-        if (length >= this.length) {
-            throw new exception.ValueError("Cannot truncate line to nothing...");
-        }
         return new LineSegment(this.start,
                                this.end.subtract([(this.end.x - this.start.x)*length/this.length,
                                                   (this.end.y - this.start.y)*length/this.length]));
@@ -268,9 +265,6 @@ export class LineSegment extends ProjectiveLine
     truncateStart(length)
     //===================
     {
-        if (length >= this.length) {
-            throw new exception.ValueError("Cannot truncate line to nothing...");
-        }
         return new LineSegment(this.start.add([(this.end.x - this.start.x)*length/this.length,
                                                (this.end.y - this.start.y)*length/this.length]),
                                this.end);
@@ -343,7 +337,9 @@ export class LineString extends GeoObject
             pointCoords.push(`L${point.x},${point.y}`);
         }
         const svgNode = document.createElementNS(SVG_NS, 'path');
-        setAttributes(svgNode, { d: `M${points[0].x},${points[0].y}${pointCoords.join('')}`});
+        if (points.length > 0) {
+            setAttributes(svgNode, { d: `M${points[0].x},${points[0].y}${pointCoords.join('')}`});
+        }
         return svgNode;
     }
 }
