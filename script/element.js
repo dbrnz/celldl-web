@@ -136,11 +136,17 @@ export class DiagramElement {
         return this.classes.indexOf(name) >= 0;
     }
 
-    idClass()
-    //=======
+    get diagramId()
+    //=============
+    {
+        return `${this.diagram.id}_${this.id.substr(1)}`;
+    }
+
+    diagramIdClass()
+    //==============
     {
         let result = {};
-        if (this.id !== null) result.id = this.id.substr(1);
+        if (this.id !== null) result.id = this.diagramId;
         if (this.classes.length > 0) result.class = this.classes.join(" ");
         return result;
     }
@@ -219,8 +225,7 @@ export class DiagramElement {
     //===========
     {
         const svgNode = document.createElementNS(SVG_NS, 'g');
-        setAttributes(svgNode, this.idClass(), this.display);
-
+        setAttributes(svgNode, this.diagramIdClass(), this.display);
         if (this.geometry !== null) {
             const node = this.geometry.svgNode();
             setAttributes(node, { stroke: this.stroke, fill: this.colour,
@@ -235,7 +240,7 @@ export class DiagramElement {
     //=========
     {
         const svgNode = this.generateSvg();
-        const currentNode = document.getElementById(this.id.slice(1));
+        const currentNode = document.getElementById(this.diagramId);
         currentNode.outerHTML = svgNode.outerHTML;
     }
 }

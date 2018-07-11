@@ -110,6 +110,12 @@ export class Edge
                         toParent, parent, validClasses);
     }
 
+    get diagramId()
+    //=============
+    {
+        return `${this.diagram.id}_${this.id}`;
+    }
+
     resolveReferences()
     //=================
     {
@@ -208,7 +214,7 @@ export class Edge
     //===========
     {
         const svgNode = this.path.svgNode();
-        setAttributes(svgNode, {id: this.id, fill: 'none',
+        setAttributes(svgNode, {id: this.diagramId, fill: 'none',
                                 stroke: this.lineColour,
                                 'stroke-width': layout.STROKE_WIDTH,
                                 'marker-end': this.diagram.svgFactory.arrow(this.lineColour)});
@@ -222,7 +228,7 @@ export class Edge
     //=========
     {
         const svgNode = this.generateSvg();
-        const currentNode = document.getElementById(this.id);
+        const currentNode = document.getElementById(this.diagramId);
         currentNode.outerHTML = svgNode.outerHTML;
     }
 

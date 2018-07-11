@@ -91,6 +91,15 @@ export class CellDiagram {
         return (e instanceof elementClass) ? e : null;
     }
 
+    findElementById(diagramId)
+    //========================
+    {
+        const prefix = `${this.id}_`;
+        return (diagramId.startsWith(prefix))
+            ? this.findElement(`#${diagramId.slice(prefix.length)}`)
+            : null;
+    }
+
     addEdge(edge)
     //===========
     {
