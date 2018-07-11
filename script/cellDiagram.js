@@ -218,7 +218,14 @@ export class CellDiagram {
         return svgNode;
     }
 
-    reposition(element, offset)
+    highlight(element, highlight)
+    //===========================
+    {
+        element.updateSvg(highlight);
+    }
+
+    reposition(element, offset, highlight=false)
+    //==========================================
     {
         element.position.addOffset(offset);
         element.assignGeometry();
@@ -228,12 +235,11 @@ export class CellDiagram {
             edge.updateSvg();
         }
 
-        // get all edges that start or end on element and recalculate linestrings `updatePath()`
-
-        // get all edges that start or end on element and `updateSvg()`
-
-        element.updateSvg();
+        element.updateSvg(highlight);
     }
+
+
+
 }
 
 //==============================================================================

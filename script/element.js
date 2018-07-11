@@ -32,6 +32,10 @@ import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
 
+const HIGHLIGHT_BORDER = 7;   // in layout.js ??
+
+//==============================================================================
+
 export class DiagramElement {
     constructor(diagram, domElement, requireId=true)
     {
@@ -222,8 +226,8 @@ export class DiagramElement {
         }
     }
 
-    generateSvg()
-    //===========
+    generateSvg(highlight=false)
+    //==========================
     {
         const svgNode = document.createElementNS(SVG_NS, 'g');
         setAttributes(svgNode, this.diagramIdClass(), this.display);
@@ -233,14 +237,22 @@ export class DiagramElement {
                                   'stroke-width': this.strokeWidth});
             svgNode.appendChild(node);
             svgNode.appendChild(this.labelAsSvg());
+            if (highlight) {
+                const border = this.geometry.svgNode(HIGHLIGHT_BORDER);
+                setAttributes(border, { "fill": "none",
+                                        "stroke": "#004A9C",
+                                        "stroke-width": HIGHLIGHT_BORDER,
+                                        "stroke-opacity": 0.7 });
+                svgNode.appendChild(border);
+            }
         }
         return svgNode;
     }
 
-    updateSvg()
-    //=========
+    updateSvg(highlight)
+    //==================
     {
-        const svgNode = this.generateSvg();
+        const svgNode = this.generateSvg(highlight);
         const currentNode = document.getElementById(this.diagramId);
         currentNode.outerHTML = svgNode.outerHTML;
     }

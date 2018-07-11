@@ -406,11 +406,14 @@ export class Rectangle extends Polygon
             || Math.abs(offset[1]) > this.height/2.0;
     }
 
-    svgNode()
+    svgNode(expand)
+    //=============
     {
         const svgNode = document.createElementNS(SVG_NS, 'rect');
-        setAttributes(svgNode, { x: this.topLeft.x, y: this.topLeft.y,
-                                 width: this.width, height: this.height});
+        setAttributes(svgNode, { x: this.topLeft.x - expand/2,
+                                 y: this.topLeft.y - expand/2,
+                                 width: this.width + expand,
+                                 height: this.height + expand});
         return svgNode;
     }
 }
@@ -498,12 +501,16 @@ export class RoundedRectangle extends Rectangle
         return points;
     }
 
-    svgNode()
+    svgNode(expand=0)
+    //===============
     {
         const svgNode = document.createElementNS(SVG_NS, 'rect');
-        setAttributes(svgNode, { x: this.topLeft.x, y: this.topLeft.y,
-                                 width: this.width, height: this.height,
-                                 rx: this.xCornerRadius, ry: this.yCornerRadius});
+        setAttributes(svgNode, { x: this.topLeft.x - expand/2,
+                                 y: this.topLeft.y - expand/2,
+                                 width: this.width + expand,
+                                 height: this.height + expand,
+                                 rx: this.xCornerRadius + expand/2,
+                                 ry: this.yCornerRadius + expand/2});
         return svgNode;
     }
 }
@@ -571,11 +578,13 @@ export class Ellipse extends GeoObject
         return new Ellipse(this.centre.add(offset), this.xRadius, this.yRadius);
     }
 
-    svgNode()
+    svgNode(expand=0)
+    //===============
     {
         const svgNode = document.createElementNS(SVG_NS, 'ellipse');
         setAttributes(svgNode, { cx: this.centre.x, cy: this.centre.y,
-                                 rx: this.xRadius, ry: this.yRadius});
+                                 rx: this.xRadius + expand/2,
+                                 ry: this.yRadius + expand/2});
         return svgNode;
     }
 }
@@ -593,11 +602,12 @@ export class Circle extends Ellipse
         this.radius = radius;
     }
 
-    svgNode()
+    svgNode(expand=0)
+    //===============
     {
         const svgNode = document.createElementNS(SVG_NS, 'circle');
         setAttributes(svgNode, { cx: this.centre.x, cy: this.centre.y,
-                                 r: this.radius});
+                                 r: this.radius + expand/2});
         return svgNode;
     }
 }

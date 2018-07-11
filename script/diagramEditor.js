@@ -140,10 +140,14 @@ export class DiagramEditor
     {
         for (let node of event.composedPath()) {
             if (node.classList.contains('draggable')) {
-                const diagramElement = this.diagram.findElement(`#${node.id}`);
+                const diagramElement = this.diagram.findElementById(node.id);
                 if (diagramElement !== null) {
+                    if (this.diagramElement !== null
+                     && this.diagramElement !== diagramElement) {
+                        this.diagram.highlight(this.diagramElement, false);
+                    }
+                    this.diagram.highlight(diagramElement, true);
                     this.diagramElement = diagramElement;
-                    this.selectedNode = node;
                     this.startPosition = this.getMousePosition(event);
                     this.elementStartCoordinates = diagramElement.coordinates;
                     this.elementCurrentCoordinates = diagramElement.coordinates;
@@ -156,7 +160,6 @@ export class DiagramEditor
         event.stopPropagation();
     }
 
-        if (this.selectedNode) {
     mouseMove(event)
     //==============
     {
@@ -164,7 +167,7 @@ export class DiagramEditor
             const position = this.getMousePosition(event);
             this.diagram.reposition(this.diagramElement,
                                     [position.x - this.startPosition.x,
-                                     position.y - this.startPosition.y]);
+                                     position.y - this.startPosition.y], true);
             this.startPosition = position;
             this.elementCurrentCoordinates = this.diagramElement.coordinates;
         }
