@@ -417,6 +417,12 @@ export class Quantity extends DiagramElement
         this.potential = null;
     }
 
+    stroke()
+    //======
+    {
+        return 'none';
+    }
+
     assignGeometry(width=layout.QUANTITY_WIDTH, height=layout.QUANTITY_HEIGHT)
     //========================================================================
     {
@@ -427,21 +433,6 @@ export class Quantity extends DiagramElement
                                                      [x + width/2, y + height/2],
                                                      0.375*width, 0.375*height);
         }
-    }
-
-    generateSvg()
-    //===========
-    {
-        const svgNode = document.createElementNS(SVG_NS, 'g');
-        setAttributes(svgNode, this.idClass(), this.display);
-
-        if (this.geometry !== null) {
-            const node = this.geometry.svgNode();
-            setAttributes(node, { stroke: 'none', fill: this.colour });
-            svgNode.appendChild(node);
-            svgNode.appendChild(this.labelAsSvg());
-        }
-        return svgNode;
     }
 }
 
