@@ -68,8 +68,9 @@ export class DiagramElement {
             }
             const names = elementClasses.filter(c => c.name);
             const classNames = (names.length === 1) ? names[0]
-                                                    : [names.slice(0, -1).join(', '), names.slice(-1)[0]].join(' or ');
-
+                                                    : [names.slice(0, -1).join(', '),
+                                                       names.slice(-1)[0]
+                                                      ].join(' or ');
             throw new exception.KeyError(`Can't find ${classNames} with id '${elementId}'`);
         }
         return null;

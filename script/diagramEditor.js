@@ -136,6 +136,7 @@ export class DiagramEditor
     }
 
     startMouseMove(event)
+    //===================
     {
         for (let node of event.composedPath()) {
             if (node.classList.contains('draggable')) {
@@ -155,8 +156,10 @@ export class DiagramEditor
         event.stopPropagation();
     }
 
-    mouseMove(event) {
         if (this.selectedNode) {
+    mouseMove(event)
+    //==============
+    {
             event.preventDefault();
             const position = this.getMousePosition(event);
             this.diagram.reposition(this.diagramElement,
@@ -168,7 +171,9 @@ export class DiagramEditor
         event.stopPropagation();
     }
 
-    endMouseMove(event) {
+    endMouseMove(event)
+    //=================
+    {
         // push operation, element, starting attributes,
         // ending attributes on history stack
         this.selectedNode = null;

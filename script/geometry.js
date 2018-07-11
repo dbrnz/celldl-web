@@ -37,6 +37,7 @@ const EPISILON = 1.0e-6;
 class GeoObject
 {
     svgNode()
+    //=======
     {
     }
 }
@@ -53,11 +54,13 @@ export class Point extends GeoObject
     }
 
     toString()
+    //========
     {
         return `Point(${this.x}, ${this.y})`;
     }
 
     valueAt(index)
+    //============
     {
         return (index === 0) ? this.x
              : (index === 1) ? this.y
@@ -65,60 +68,71 @@ export class Point extends GeoObject
     }
 
     setValueAt(index, value)
+    //======================
     {
         if      (index === 0) this.x = value;
         else if (index === 1) this.y = value;
     }
 
     asOffset()
+    //========
     {
         return [this.x, this.y];
     }
 
     assign(other)
+    //===========
     {
         this.x = other.x;
         this.y = other.y;
     }
 
     equal(other)
+    //==========
     {
         return (Math.abs(this.x - other.x) < EPISILON)
             && (Math.abs(this.y - other.y) < EPISILON);
     }
 
     notEqual(other)
+    //=============
     {
         return !this.equal(other);
     }
 
     add(offset)
+    //=========
     {
         return new Point((this.x + offset[0]), (this.y + offset[1]));
     }
 
     subtract(offset)
+    //==============
     {
         return new Point((this.x - offset[0]), (this.y - offset[1]));
     }
 
     offset(other)
+    //===========
     {
         return [(this.x - other.x), (this.y - other.y)];
     }
 
     distance(other)
+    //=============
     {
         return Math.sqrt(Math.pow((this.x - other.x), 2)
                        + Math.pow((this.y - other.y), 2));
     }
 
     outside(other)
+    //============
     {
         return this.notEqual(other);
     }
 
     svgNode()
+    //=======
     {
         const svgNode = document.createElementNS(SVG_NS, 'circle');
         setAttributes(svgNode, { cx: this.x, cy: this.y });
@@ -142,28 +156,38 @@ export class ProjectiveLine extends GeoObject
         this.normSquared = Math.pow(this.A, 2) + Math.pow(this.B, 2);
     }
 
-    toString() {
+    toString()
+    //========
+    {
         return `Line (${this.A}, ${this.B}, ${this.C})`;
     }
 
     outside(point)
+    //============
     {
         return Math.abs(this.A*point.x + this.B*point.y + this.C) >= EPISILON;
     }
 
-    parallelLine(offset) {
+    parallelLine(offset)
+    //==================
+     {
         return new ProjectiveLine(this.A, this.B, this.C + offset*Math.sqrt(this.normSquared));
     }
 
-    distanceFrom(point) {
+    distanceFrom(point)
+    //=================
+    {
         return Math.abs(point.x*this.A + point.y*this.B + this.C)/Math.sqrt(this.normSquared);
     }
 
-    translate(offset) {
+    translate(offset)
+    //===============
+    {
         return new ProjectiveLine(this.A, this.B, this.C - (offset[0]*this.A + offset[1]*this.B));
     }
 
     intersection(other)
+    //=================
     {
         let c = this.A*other.B - other.A*this.B;
         return (c === 0.0) ? null
@@ -172,6 +196,7 @@ export class ProjectiveLine extends GeoObject
     }
 
     svgNode()
+    //=======
     {
         const svgNode = document.createElementNS(SVG_NS, 'path');
         // check that A and B are both non-zero
@@ -201,6 +226,7 @@ export class LineSegment extends ProjectiveLine
     }
 
     outside(point)
+    //============
     {
         return super.outside(point)
             || (this.start.distance(point) > this.length)
@@ -208,6 +234,7 @@ export class LineSegment extends ProjectiveLine
     }
 
     intersection(other)
+    //=================
     {
         let point = super.intersection(other);
         let validPoint = point !== null
@@ -221,11 +248,14 @@ export class LineSegment extends ProjectiveLine
         return validPoint ? point : null;
     }
 
-    translate(offset) {
+    translate(offset)
+    //===============
+    {
         return new LineSegment(this.start.add(offset), this.end.add(offset));
     }
 
     truncateEnd(length)
+    //=================
     {
         if (length >= this.length) {
             throw new exception.ValueError("Cannot truncate line to nothing...");
@@ -236,6 +266,7 @@ export class LineSegment extends ProjectiveLine
     }
 
     truncateStart(length)
+    //===================
     {
         if (length >= this.length) {
             throw new exception.ValueError("Cannot truncate line to nothing...");
@@ -246,6 +277,7 @@ export class LineSegment extends ProjectiveLine
     }
 
     svgNode()
+    //=======
     {
         const svgNode = document.createElementNS(SVG_NS, 'path');
         setAttributes(svgNode, { d: `M${this.start.x},${this.start.y}L${this.end.x},${this.end.y}`});
@@ -263,11 +295,13 @@ export class LineSegmentSet extends GeoObject
     }
 
     add(lineSegment)
+    //==============
     {
         this.lineSegments.append(lineSegment);
     }
 
     lineIntersections(line)
+    //=====================
     {
         const points = [];
         for (let lineSegment of this.lineSegments) {
@@ -301,6 +335,7 @@ export class LineString extends GeoObject
     }
 
     svgNode()
+    //=======
     {
         const points = this.coordinates;
         let pointCoords = [];
@@ -325,11 +360,13 @@ export class Polygon extends GeoObject
     }
 
     lineIntersections(line)
+    //=====================
     {
         return this.edges.lineIntersections(line);
     }
 
     svgNode()
+    //=======
     {
         const points = this.boundary.coordinates;
         let pointCoords = [];
@@ -366,6 +403,7 @@ export class Rectangle extends Polygon
     }
 
     outside(point)
+    //============
     {
         const offset = point.offset(this.centre);
         return Math.abs(offset[0]) > this.width/2.0
@@ -419,6 +457,7 @@ export class RoundedRectangle extends Rectangle
     }
 
     outside(point)
+    //============
     {
         let outside = super.outside(point);
 
@@ -440,6 +479,7 @@ export class RoundedRectangle extends Rectangle
     }
 
     lineIntersections(line)
+    //=====================
     {
         const points = new List(this.edges.lineIntersections(line));
 
@@ -491,6 +531,7 @@ export class Ellipse extends GeoObject
     }
 
     lineIntersections(line)
+    //=====================
     {
         const l = (this.centre.x !== 0) || (this.centre.y !== 0)
                 ? line.translate([-this.centre.x, -this.centre.y])
@@ -522,12 +563,14 @@ export class Ellipse extends GeoObject
     }
 
     outside(point)
+    //============
     {
         return (Math.pow((point.x - this.centre.x)/this.xRadius, 2)
               + Math.pow((point.y - this.centre.y)/this.yRadius, 2) > 1.0);
     }
 
     translate(offset)
+    //===============
     {
         return new Ellipse(this.centre.add(offset), this.xRadius, this.yRadius);
     }
