@@ -37,34 +37,44 @@ import {setAttributes} from './utils.js';
 
 //==============================================================================
 
-function drawEdges(diagram, svgNode)
-//==================================
+export class BondGraph
 {
-    for (let edge of diagram.edges()) {
-        svgNode.appendChild(edge.generateSvg());
+    constructor(diagram)
+    {
+        this.diagram = diagram;
+        this.id = `${this.diagram.id}_bondgraph`;
     }
-}
 
-function drawElements(diagram, svgNode, elementClass)
-//===================================================
-{
-    for (let element of diagram.elements(elementClass)) {
-        svgNode.appendChild(element.generateSvg());
+    drawEdges(svgNode)
+    //================
+    {
+        for (let edge of this.diagram.edges()) {
+            svgNode.appendChild(edge.generateSvg());
+        }
     }
-}
 
-export function generateSvg(diagram)
-//==================================
-{
-    const svgNode = document.createElementNS(SVG_NS, 'g');
-    drawEdges(diagram, svgNode);
-    drawElements(diagram, svgNode, Flow);
-    drawElements(diagram, svgNode, Gyrator);
-    drawElements(diagram, svgNode, Potential);
-    drawElements(diagram, svgNode, Quantity);
-    drawElements(diagram, svgNode, Reaction);
-    drawElements(diagram, svgNode, Transformer);
-    return svgNode;
+    drawElements(svgNode, elementClass)
+    //=================================
+    {
+        for (let element of this.diagram.elements(elementClass)) {
+            svgNode.appendChild(element.generateSvg());
+        }
+    }
+
+    generateSvg()
+    //===========
+    {
+        const svgNode = document.createElementNS(SVG_NS, 'g');
+        svgNode.id = this.id;
+        this.drawEdges(svgNode);
+        this.drawElements(svgNode, Flow);
+        this.drawElements(svgNode, Gyrator);
+        this.drawElements(svgNode, Potential);
+        this.drawElements(svgNode, Quantity);
+        this.drawElements(svgNode, Reaction);
+        this.drawElements(svgNode, Transformer);
+        return svgNode;
+    }
 }
 
 //==============================================================================

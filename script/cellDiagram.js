@@ -46,6 +46,7 @@ export class CellDiagram {
         this._edges = [];
         this.width = 0;
         this.height = 0;
+        this.bondGraph = new bondgraph.BondGraph(this);
         this.svgFactory = new SvgFactory(id);
     }
 
@@ -204,7 +205,7 @@ export class CellDiagram {
 //            svg.extend(c.svg());
 //        }
 
-        const bondgraphElement = bondgraph.generateSvg(this);
+        const bondgraphSvg = this.bondGraph.generateSvg();
 
 //        for (let transporter of this.transporters) {
 //            svg.extend(transporter.svg());
@@ -212,7 +213,7 @@ export class CellDiagram {
 
         svgNode.appendChild(this.svgFactory.defines());
 
-        svgNode.appendChild(bondgraphElement);
+        svgNode.appendChild(bondgraphSvg);
 
         return svgNode;
     }
