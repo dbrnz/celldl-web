@@ -109,10 +109,12 @@ export class Parser
                 }
                 const flowConnectsTo = [bondgraph.Gyrator, bondgraph.Potential, bondgraph.Reaction];
                 if ('input' in e.attributes) {
-                    bondgraph.FlowEdge.fromAttribute(this.diagram, e, 'input', true, flow, flowConnectsTo);
+                    bondgraph.FlowEdge.createFromAttributeValue(this.diagram, e, 'input',
+                                                                true, flow, flowConnectsTo);
                 }
                 if ('output' in e.attributes) {
-                    bondgraph.FlowEdge.fromAttribute(this.diagram, e, 'output', false, flow, flowConnectsTo);
+                    bondgraph.FlowEdge.createFromAttributeValue(this.diagram, e, 'output',
+                                                                false, flow, flowConnectsTo);
                 }
             } else {
                 throw new exception.SyntaxError(e, `Unexpected <flow> element`);
@@ -145,9 +147,11 @@ export class Parser
         const gyrator = new bondgraph.Gyrator(this.diagram, element);
         for (let e of element.children) {
             if        (e.nodeName === 'input') {
-                bondgraph.Edge.fromAttribute(this.diagram, e, 'flow', true, gyrator, [bondgraph.Flow]);
+                bondgraph.Edge.createFromAttributeValue(this.diagram, e, 'flow',
+                                                        true, gyrator, [bondgraph.Flow]);
             } else if (e.nodeName === 'output') {
-                bondgraph.Edge.fromAttribute(this.diagram, e, 'flow', false, gyrator, [bondgraph.Flow]);
+                bondgraph.Edge.createFromAttributeValue(this.diagram, e, 'flow',
+                                                        false, gyrator, [bondgraph.Flow]);
             } else {
                 throw new exception.SyntaxError(e, `Unexpected <gyrator> element`);
             }
@@ -172,11 +176,14 @@ export class Parser
         const reaction = new bondgraph.Reaction(this.diagram, element);
         for (let e of element.children) {
             if (e.nodeName === 'input') {
-                bondgraph.Edge.fromAttribute(this.diagram, e, 'flow', true, reaction, [bondgraph.Flow]);
+                bondgraph.Edge.createFromAttributeValue(this.diagram, e, 'flow',
+                                                        true, reaction, [bondgraph.Flow]);
             } else if (e.nodeName === 'output') {
-                bondgraph.Edge.fromAttribute(this.diagram, e, 'flow', false, reaction, [bondgraph.Flow]);
+                bondgraph.Edge.createFromAttributeValue(this.diagram, e, 'flow',
+                                                        false, reaction, [bondgraph.Flow]);
             } else if (e.nodeName === 'modulator') {
-                bondgraph.Edge.fromAttribute(this.diagram, e, 'potential', true, reaction, [bondgraph.Potential]);
+                bondgraph.Edge.createFromAttributeValue(this.diagram, e, 'potential',
+                                                        true, reaction, [bondgraph.Potential]);
             } else {
                 throw new exception.SyntaxError(e, `Unexpected <reaction> element`);
             }
@@ -189,9 +196,11 @@ export class Parser
         const transformer = new bondgraph.Transformer(this.diagram, element);
         for (let e of element.children) {
             if (e.nodeName === 'input') {
-                bondgraph.Edge.fromAttribute(this.diagram, e, 'potential', true, transformer, [bondgraph.Potential]);
+                bondgraph.Edge.createFromAttributeValue(this.diagram, e, 'potential',
+                                                        true, transformer, [bondgraph.Potential]);
             } else if (e.nodeName === 'output') {
-                bondgraph.Edge.fromAttribute(this.diagram, e, 'potential', false, transformer, [bondgraph.Potential]);
+                bondgraph.Edge.createFromAttributeValue(this.diagram, e, 'potential',
+                                                        false, transformer, [bondgraph.Potential]);
             } else {
                 throw new exception.SyntaxError(e, `Unexpected <transformer> element`);
             }

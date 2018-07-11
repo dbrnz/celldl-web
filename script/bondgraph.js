@@ -99,8 +99,9 @@ export class Edge
         diagram.addEdge(this);
     }
 
-    static fromAttribute(diagram, domElement, attributeName, toParent, parent, validClasses)
-    //======================================================================================
+    static createFromAttributeValue(diagram, domElement, attributeName,
+                                    toParent, parent, validClasses)
+    //=============================================================
     {
         if (!(attributeName in domElement.attributes)) {
             throw new exception.KeyError(domElement, `Expected ${attributeName} attribute`);
@@ -271,8 +272,9 @@ export class FlowEdge extends Edge
         this.count = count;
     }
 
-    static fromAttribute(diagram, element, direction, toParent, parent, validClasses)
-    //===============================================================================
+    static createFromAttributeValue(diagram, element, direction,
+                                    toParent, parent, validClasses)
+    //=============================================================
     {
         if (!(direction in element.attributes)) {
             throw new exception.KeyError(element, `Expected ${direction} attribute`);
