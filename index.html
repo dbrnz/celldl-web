@@ -120,21 +120,43 @@
           </div>
         </div>
 
-            <!-- have some way of specifying local sheets?
-                 file:// means we use FileReader API instead of fetch() ??
-  https://developer.mozilla.org/en-US/docs/Web/API/File/Using_files_from_web_applications
-  and trigger a download to save data.
-            -->
 
-<!--        <script src="./thirdparty/d3.v3.js"></script> -->
+        <!-- Allow our editor windows to be resized -->
+        <script>
+            const editorResize = document.getElementById('editor-resize');
+            editorResize.addEventListener('mousedown', initialiseResize, false);
 
-<!-- Create a simple CodeMirror instance
+            const celldlEditor = document.getElementById('celldl-editor');
+            const editorFooter = document.getElementById('footer');
 
-Or use Ace editor  - - https://ace.c9.io/ ??
+            function initialiseResize(event)
+            {
+                window.addEventListener('mousemove', startResizing, false);
+                window.addEventListener('mouseup', stopResizing, false);
+            }
 
-Have separate XML and CSS editors?? Or define or own mixed mode??
+            function startResizing(event)
+            {
+               celldlEditor.style.width = (event.clientX - celldlEditor.offsetLeft) + 'px';
+               editorFooter.style.width = (event.clientX - editorFooter.offsetLeft) + 'px';
+            }
+
+            function stopResizing(event)
+            {
+                window.removeEventListener('mousemove', startResizing, false);
+                window.removeEventListener('mouseup', stopResizing, false);
+            }
+        </script>
+<!-- Have some way of specifying local stylesheets?
+     * file:// means we use FileReader API instead of fetch() ??
+     * https://developer.mozilla.org/en-US/docs/Web/API/File/Using_files_from_web_applications
+       and trigger a download to save data.
 -->
 
+<!-- <script src="./thirdparty/d3.v3.js"></script> -->
+
+<!-- Create a simple CodeMirror instance
+     (or use Ace editor  - - https://ace.c9.io/ ??) -->
         <link rel="stylesheet" href="./thirdparty/codemirror/lib/codemirror.css">
         <script src="./thirdparty/codemirror/lib/codemirror.js"></script>
         <script src="./thirdparty/codemirror/mode/css/css.js"></script>
