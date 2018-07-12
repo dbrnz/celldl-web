@@ -2,20 +2,7 @@
     <head>
         <meta charset="utf-8"/>
         <style type="text/css">
-            .float {
-                float: left;
-            }
-            .leftcolumn {
-                width: 50%;
-            }
-            .rightcolumn {
-                width: 50%;
-            }
             .CodeMirror, .border {
-                border: 2px solid #888;
-            }
-            #cell_diagram {
-                height: 100%;
                 border: 2px solid #888;
             }
             input {
@@ -25,6 +12,46 @@
             svg .draggable {
                 cursor: move;
                 pointer-events: visible;
+            }
+            #celldl-editor {
+                width: 45%;
+                height: 100%;
+            }
+            #editor-resize {
+                width: 8px;
+                height: 100%;
+                cursor: ew-resize;
+            }
+            #cell-diagram {
+                flex: 11 11 55%;
+                height: 100%;
+            }
+            #toolbar {
+                width: 5%;
+                height: 100%;
+                align-self: flex-start;
+            }
+            #footer {
+                width: 45%;
+            }
+            #footer1 {
+                flex: 11 11 55%;
+            }
+            #flex {
+                display: flex;
+                width: 100%;
+                height: 100%;
+            }
+            #flex-footer {
+                display: flex;
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            #flex-rows {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                height: 100%;
             }
         </style>
         <script type="text/x-mathjax-config">
@@ -70,32 +97,28 @@
             </section>
         </div>
 -->
-        <section class="float leftcolumn" style="height: 100%;">
-            <section style="height: 90%;">
+        <div id="flex-rows">
+          <div id="flex">
+            <section id="celldl-editor">
                 <textarea id="editor-text"></textarea>
             </section>
-            <section style="height: 10%;">
-                <input type="file" id="loadCellDlFile" accept=".xml, .celldl" style="display:none" onchange="loadCellDl(this.files)">
+            <div id="editor-resize"></div>
+            <section id="cell-diagram" class="border"></section>
+            <section id="toolbar" class="border"></section>
+          </div>
+          <div id="flex-footer">
+            <section id="footer">
+                <input type="file" id="loadCellDlFile" accept=".xml, .celldl"
+                       style="display:none" onchange="loadCellDl(this.files)">
                 <input type="button" value="Load CellDL" onclick="loadCellDlFile.click()"/>
                 <input type="button" value="Save CellDL" onclick="saveCellDl()"/>
                 <input type="button" value="Preview SVG" onclick="previewSvg()"/>
             </section>
-        </section>
-<!-- WIP...
-        <section class="divider">
-            <section style="height: 90%;">
-                <div id="resize-bar"></div>
-            </section>
-        </section>
--->
-        <section class="float rightcolumn" style="height: 100%;">
-            <section style="height: 90%;" class="border">
-                <div id="cell-diagram"></div>
-            </section>
-            <section style="height: 10%;">
+            <section id="footer1">
                 <input type="button" value="Export SVG"  onclick="exportSvg()"/>
             </section>
-        </section>
+          </div>
+        </div>
 
             <!-- have some way of specifying local sheets?
                  file:// means we use FileReader API instead of fetch() ??
@@ -129,9 +152,11 @@ Have separate XML and CSS editors?? Or define or own mixed mode??
 
             import {displayDiagram} from './script/main.js';
             import {saveAs} from './thirdparty/FileSaver.js';
+            import {ToolBar} from './script/toolbar.js';
 
             let nameOfLoadedFile = '';
             const svgContainerNode = document.getElementById('cell-diagram');
+            const toolbar = new ToolBar(document.getElementById('toolbar'));
 
             function upLoadedFileAsText(file)
             {
@@ -166,7 +191,7 @@ Have separate XML and CSS editors?? Or define or own mixed mode??
             }
 
             function previewSvg() {
-                displayDiagram(editor.getValue(), svgContainerNode);
+                displayDiagram(editor.getValue(), svgContainerNode, toolbar);
             }
 
             function exportSvg() {

@@ -22,6 +22,10 @@ limitations under the License.
 
 //==============================================================================
 
+import * as geo from './geometry.js';
+
+//==============================================================================
+
 class HistoryEvent {
     constructor(operation, element, attributes={})
     {
@@ -95,18 +99,21 @@ class HistoryStack {
 
 export class DiagramEditor
 {
-    constructor(diagram)
+    constructor(diagram, toolbar)
     {
         this.diagram = diagram;
+        this.toolbar = toolbar;
         this.svgNode = null;
-        this.selectedNode = null;
+        this.bondgraphNode = null;
         this.diagramElement = null;
+        this.moving = false;
         this.undoStack = new HistoryStack();
     }
 
     svgLoaded(svgNode)
     {
         this.svgNode = svgNode;
+        this.bondgraphNode = document.getElementById(`${this.diagram.id}_bondgraph`);
         svgNode.addEventListener('mousedown', this.startMouseMove.bind(this));
         svgNode.addEventListener('mousemove', this.mouseMove.bind(this));
         svgNode.addEventListener('mouseup', this.endMouseMove.bind(this));
@@ -125,7 +132,6 @@ export class DiagramEditor
     getMousePosition(event)
     {
         const CTM = this.svgNode.getScreenCTM();
-
         if (event.touches) {
             event = event.touches[0];
         }
@@ -138,6 +144,7 @@ export class DiagramEditor
     startMouseMove(event)
     //===================
     {
+        let nodePosition = 0;
         for (let node of event.composedPath()) {
             if (node.classList.contains('draggable')) {
                 const diagramElement = this.diagram.findElementById(node.id);
@@ -151,11 +158,42 @@ export class DiagramEditor
                     this.startPosition = this.getMousePosition(event);
                     this.elementStartCoordinates = diagramElement.coordinates;
                     this.elementCurrentCoordinates = diagramElement.coordinates;
+                    this.moving = true;
                     break;
                 }
             } else if (node.tagName === 'svg') {
+                if (nodePosition === 0) {
+                    // if `svg` is first node in path then are we in clear space
+                    if (this.diagramElement !== null) {
+                        this.diagram.highlight(this.diagramElement, false);
+                        this.diagramElement = null;
+                    }
+                    const newElement = this.toolbar.copySelectedElementTo(this.diagram);
+                    if (newElement) {
+                        const coords = this.getMousePosition(event);
+                        // We are able to create a new element in the diagram
+                        newElement.position.coordinates = new geo.Point(coords.x, coords.y);
+                        newElement.assignGeometry();
+
+                        // Note: If we use `appendChild` then `url()` links in the SVG
+                        //       are not resolved
+                        const elementSvg = newElement.generateSvg(true);
+                        // We could have new <defs> if say a new element type is
+                        // not in the current diagram...
+
+                        const definesSvg = this.diagram.svgFactory.defines(false);
+                        this.bondgraphNode.insertAdjacentHTML('beforeend', definesSvg.outerHTML);
+
+                        this.bondgraphNode.insertAdjacentHTML('beforeend', elementSvg.outerHTML);
+                        //this.bondgraphNode.appendChild(elementSvg);
+
+                        this.diagramElement = newElement;
+                        // Need to insert node into diagram's bondgraph...
+                    }
+                }
                 break;
             }
+            nodePosition += 1;
         }
         event.stopPropagation();
     }
@@ -163,6 +201,7 @@ export class DiagramEditor
     mouseMove(event)
     //==============
     {
+        if (this.moving && this.diagramElement !== null) {
             event.preventDefault();
             const position = this.getMousePosition(event);
             this.diagram.reposition(this.diagramElement,
@@ -172,6 +211,7 @@ export class DiagramEditor
             this.elementCurrentCoordinates = this.diagramElement.coordinates;
         }
         event.stopPropagation();
+        return false;
     }
 
     endMouseMove(event)
@@ -179,8 +219,7 @@ export class DiagramEditor
     {
         // push operation, element, starting attributes,
         // ending attributes on history stack
-        this.selectedNode = null;
-        this.diagramElement = null;
+        this.moving = false;
     }
 }
 

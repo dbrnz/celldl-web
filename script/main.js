@@ -29,7 +29,8 @@ import {StyleSheet} from './stylesheet.js';
 
 //==============================================================================
 
-export function displayDiagram(cellDlText, svgContainerNode, drawDependencyGraph=false)
+export function displayDiagram(cellDlText, svgContainerNode, toolbar,
+                               drawDependencyGraph=false)
 {
     const domParser = new DOMParser();
     const xmlDocument = domParser.parseFromString(cellDlText, "application/xml");
@@ -38,7 +39,7 @@ export function displayDiagram(cellDlText, svgContainerNode, drawDependencyGraph
     try {
         const stylesheet = new StyleSheet();
         const cellDiagram = new CellDiagram('diagram', stylesheet);
-        const diagramEditor = new DiagramEditor(cellDiagram);
+        const diagramEditor = new DiagramEditor(cellDiagram, toolbar);
         const parser = new Parser(cellDiagram);
 
         parser.parseDocument(xmlDocument)
@@ -59,7 +60,6 @@ export function displayDiagram(cellDlText, svgContainerNode, drawDependencyGraph
                     // Show the SVG diagram
                     // Note: If we use `appendChild` then `url()` links in the SVG
                     //       document are not resolved
-
                     svgContainerNode.insertAdjacentHTML('afterbegin', svgDiagram.outerHTML);
 
                     // Reset busy wheel

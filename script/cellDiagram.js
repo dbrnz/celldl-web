@@ -70,13 +70,13 @@ export class CellDiagram {
     addElement(element)
     //=================
     {
-        this._elements.push(element);
         if (element.id !== '') {
             if (element.id in this._elementsById) {
                 throw new exception.KeyError(`Duplicate element 'id': ${element.id}`);
             }
             this._elementsById[element.id] = element;
         }
+        this._elements.push(element);
     }
 
     elements(elementClass=DiagramElement)
@@ -133,8 +133,8 @@ export class CellDiagram {
     }
 */
 
-    layout(drawDependencyGraph=false)
-    //===============================
+    layout(width=0, height=0, drawDependencyGraph=false)
+    //==================================================
     {
         /*
         Set positions (and sizes) of all components in the diagram.
@@ -142,6 +142,9 @@ export class CellDiagram {
         We position and size all compartments before positioning
         other elements.
         */
+        if (this.width === 0) this.width = width;
+        if (this.height === 0) this.height = height;
+
         let dependencyGraph = new jsnx.DiGraph();
 
         for (let element of this._elements) {
@@ -192,14 +195,20 @@ export class CellDiagram {
  //       bondGraph.setOffsets();
     }
 
-    generateSvg()
-    //===========
+    generateSvg(addViewBox=true, dimensions=false)
+    //============================================
     {
         const svgNode = document.createElementNS(SVG_NS, 'svg');
         svgNode.setAttribute('xmlns', SVG_NS);
         svgNode.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
         svgNode.setAttribute('version', SVG_VERSION);
-        svgNode.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
+        if (dimensions) {
+            svgNode.setAttribute('width', `${this.width}`);
+            svgNode.setAttribute('height', `${this.height}`);
+        }
+        if (addViewBox) {
+            svgNode.setAttribute('viewBox', `0 0 ${this.width} ${this.height}`);
+        }
 
 //        for (let c of this.compartments) {
 //            svg.extend(c.svg());

@@ -377,6 +377,7 @@ export class SvgFactory
     {
         this._arrows = {};
         this._defines = new Map;
+        this._lastDefine = 0;
         this._gradientsToId = {};
         this._idPrefix = idPrefix;
         this._nextId = 0;
@@ -400,14 +401,20 @@ export class SvgFactory
         return `url(#${id})`;
     }
 
-    defines()
-    //=======
+    defines(allDefines=true)
+    //======================
     {
         const defs = ['<defs>'];
+        const firstIndex = allDefines ? 0 : this._lastDefine;
+        let index = 0;
         for (let defines of this._defines.values()) {
-            defs.push(defines);
+            if (index >= firstIndex) {
+                defs.push(defines);
+            }
+            index += 1;
         }
         defs.push('</defs>');
+        this._lastDefine = this._defines.size;
         const parser = new DOMParser();
         const svgNode = parser.parseFromString(defs.join(' '), "application/xml");
         return svgNode.documentElement;
