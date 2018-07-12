@@ -29,8 +29,7 @@ import {StyleSheet} from './stylesheet.js';
 
 //==============================================================================
 
-export function displayDiagram(cellDlText, svgContainerNode, toolbar,
-                               drawDependencyGraph=false)
+export function displayDiagram(cellDlText, svgContainerNode, toolbar)
 {
     const domParser = new DOMParser();
     const xmlDocument = domParser.parseFromString(cellDlText, "application/xml");
@@ -44,7 +43,7 @@ export function displayDiagram(cellDlText, svgContainerNode, toolbar,
 
         parser.parseDocument(xmlDocument)
             .then(() => {
-                cellDiagram.layout(drawDependencyGraph);  // Pass width/height to use as defaults...
+                cellDiagram.layout();  // Pass width/height to use as defaults...
 
                 const svgDiagram = cellDiagram.generateSvg();
 

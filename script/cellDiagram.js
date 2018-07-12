@@ -133,8 +133,8 @@ export class CellDiagram {
     }
 */
 
-    layout(width=0, height=0, drawDependencyGraph=false)
-    //==================================================
+    layout(width=0, height=0)
+    //=======================
     {
         /*
         Set positions (and sizes) of all components in the diagram.
@@ -162,18 +162,6 @@ export class CellDiagram {
 
         for (let edge of this._edges) {
             edge.resolveReferences();
-        }
-
-        if (drawDependencyGraph) {
-            jsnx.draw(dependencyGraph, {
-                element: '#canvas',
-                withLabels: true,
-                stickyDrag: true,
-                edgeStyle: {
-                    'stroke-width': 10,
-                    fill: '#999'
-                }
-            });
         }
 
         const unitConverter = new layout.UnitConverter([this.width, this.height], [this.width, this.height]);
