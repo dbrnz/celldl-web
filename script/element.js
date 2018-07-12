@@ -59,6 +59,19 @@ export class DiagramElement {
         diagram.addElement(this);
     }
 
+    copyToNewDiagram(diagram)
+    //=======================
+    {
+        const domElement = this.domElement.cloneNode(true);
+        domElement.id = `${this.id.slice(1)}_XX`;
+        try {
+            return new this.constructor(diagram, domElement);
+        } catch (error) {
+            alert(error);
+            return null;
+        }
+    }
+
     fromAttribute(attributeName, elementClasses=[DiagramElement])
     //===========================================================
     {

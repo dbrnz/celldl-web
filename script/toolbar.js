@@ -168,7 +168,7 @@ export class ToolBar
         this.diagramElement = null;
         if (selected !== null) {
             this.diagram.highlight(selected, false);
-            return selected.copyToDiagram(diagram);
+            return selected.copyToNewDiagram(diagram);
         }
         return null;
     }
