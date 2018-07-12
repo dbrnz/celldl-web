@@ -1,5 +1,22 @@
 /* Colours of elements */
 
+flow {
+    color: radial-gradient(#ABFF9E, #D5FFD5);
+    text-color: #059996;
+}
+
+potential {
+    color: radial-gradient(#FF9299, #FFFDEE);
+    text-color: #D93300;
+}
+
+/*
+quantity.toolbar { color: radial-gradient(white 20%, #FF80A0); }
+reaction.toolbar { color: radial-gradient(white 40%, #404040); }
+gyrator.toolbar { color: radial-gradient(#808080 40%, white); }
+transformer.toolbar { color: radial-gradient(white 40%, #808080); }
+*/
+
 .sodium {
     color: #FE44F9;
     stroke: #FE44F9;
@@ -65,13 +82,3 @@ transporter.bicarbonate {
     stroke: #FF808B;
 }
 quantity.metabolic { color: radial-gradient(white 20%, #FF808B); }
-
-flow {
-    color: radial-gradient(#ABFF9E, #D5FFD5);
-    text-color: #059996;
-}
-
-potential {
-    color: radial-gradient(#FF9299, #FFFDEE);
-    text-color: #D93300;
-}
