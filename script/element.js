@@ -257,11 +257,11 @@ export class DiagramElement {
             svgNode.appendChild(node);
             svgNode.appendChild(this.labelAsSvg());
             if (highlight) {
-                const border = this.geometry.svgNode(HIGHLIGHT_BORDER);
+                const border = this.geometry.svgNode(HIGHLIGHT_BORDER + 2);
                 setAttributes(border, { "fill": "none",
                                         "stroke": "#004A9C",
                                         "stroke-width": HIGHLIGHT_BORDER,
-                                        "stroke-opacity": 0.7 });
+                                        "stroke-opacity": 0.5 });
                 svgNode.appendChild(border);
             }
         }
