@@ -33,13 +33,14 @@ const HEIGHT = 400;
 
 const TOOLBAR_XML = `<cell-diagram xmlns="http://www.cellml.org/celldl/1.0#">
     <bond-graph>
-        <quantity id="q" class="toolbar"/>
+        <quantity id="q"/>
         <potential id="u" label="$\\mu$"/>
         <flow id="v" label="$\\nu$"/>
-        <reaction id="k" class="toolbar"/>
-        <gyrator id="r" class="toolbar"/>
-        <transformer id="z" class="toolbar"/>
+        <reaction id="k"/>
+        <gyrator id="r"/>
+        <transformer id="z"/>
     </bond-graph>
+    <style src="./styles/colours.css"/>
     <style>
         #q { position: 50%, 10%; }
         #u { position: 50%, 25%; }
@@ -47,28 +48,6 @@ const TOOLBAR_XML = `<cell-diagram xmlns="http://www.cellml.org/celldl/1.0#">
         #k { position: 50%, 55%; }
         #r { position: 50%, 70%; }
         #z { position: 50%, 85%; }
-
-        quantity {
-            color: radial-gradient(white 20%, #C0C0C0);
-            text-color: #4040E0;
-        }
-        potential {
-            color: radial-gradient(#FF9299, #FFFDEE);
-            text-color: #D93300;
-        }
-        flow {
-            color: radial-gradient(#ABFF9E, #D5FFD5);
-            text-color: #059996;
-        }
-        reaction {
-            color: radial-gradient(white 40%, #404040);
-        }
-        gyrator {
-            color: radial-gradient(#808080 40%, white);
-        }
-        transformer {
-            color: radial-gradient(white 40%, #808080);
-        }
     </style>
 </cell-diagram>`;
 

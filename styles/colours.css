@@ -1,4 +1,4 @@
-/* Colours of elements */
+/* Default colours of diagram elements */
 
 flow {
     color: radial-gradient(#ABFF9E, #D5FFD5);
@@ -10,12 +10,25 @@ potential {
     text-color: #D93300;
 }
 
-/*
-quantity.toolbar { color: radial-gradient(white 20%, #FF80A0); }
-reaction.toolbar { color: radial-gradient(white 40%, #404040); }
-gyrator.toolbar { color: radial-gradient(#808080 40%, white); }
-transformer.toolbar { color: radial-gradient(white 40%, #808080); }
-*/
+quantity {
+    color: radial-gradient(white 20%, #C0C0C0);
+    text-color: #4040E0;
+}
+
+reaction {
+    color: radial-gradient(white 40%, #404040);
+}
+
+gyrator {
+    color: radial-gradient(#808080 40%, white);
+}
+
+transformer {
+    color: radial-gradient(white 40%, #808080);
+}
+
+
+/* Colours for specific ion classes */
 
 .sodium {
     color: #FE44F9;
