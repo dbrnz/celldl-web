@@ -1,4 +1,4 @@
-<cell-diagram xmlns="http://www.cellml.org/celldl/1.0#">
+﻿<cell-diagram xmlns="http://www.cellml.org/celldl/1.0#">
 
     <bond-graph>
         <quantity id="q1" class="potassium" label="$\text{q}_1^{[\text{K}^+]_\text{o}}$"/>
@@ -41,7 +41,7 @@
             height: 500;           /* SVG `pixel` units */
         }
 
-        #q4, #zF, #u_E { color: white; }
+        #q4, #zF, #u_E { color: none; }
 
         #q4,
         #v1 > component[input="u4"],
@@ -77,27 +77,12 @@
 
         #I_Kp > modulator {
             line-color: red;
-            line-path: begin(0 until-x #I_Kp);
+            line-path: begin(20 until-x #I_Kp);
         }
-
-
     </style>
 
+<style id='manual_positions'>
+    xxx
+</style>
+
 </cell-diagram>
-
-<!--
-
-Represent as a collection of nodes and connections/lines between them.
-
-Node types:
-
-* potential
-* quantity
-* flow
-* reaction
-* gyrator
-* transformer
-
-Each node has a unique `id`.
-
--->
