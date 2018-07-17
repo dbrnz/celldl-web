@@ -88,9 +88,7 @@
     <body>
         <div id="flex-rows">
           <div id="flex">
-            <section id="celldl-editor">
-                <textarea id="editor-text"></textarea>
-            </section>
+            <div id="celldl-editor"></div>
             <div id="editor-resize"></div>
             <section id="cell-diagram" class="border"></section>
             <section id="toolbar" class="border"></section>
@@ -141,82 +139,18 @@
      * https://developer.mozilla.org/en-US/docs/Web/API/File/Using_files_from_web_applications
        and trigger a download to save data.
 -->
-
-<!-- Create a simple CodeMirror instance
-     (or use Ace editor  - - https://ace.c9.io/ ??) -->
-        <link rel="stylesheet" href="./thirdparty/codemirror/lib/codemirror.css">
-        <script src="./thirdparty/codemirror/lib/codemirror.js"></script>
-        <script src="./thirdparty/codemirror/mode/css/css.js"></script>
-        <script src="./thirdparty/codemirror/mode/xml/xml.js"></script>
-        <script src="./thirdparty/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+        <script src="./thirdparty/ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8">
+        </script>
         <script type="module">
-            const celldlElement = document.getElementById("editor-text");
-            const editor = CodeMirror.fromTextArea(celldlElement,
-                                                { lineNumbers: true }
-            );
-            editor.setSize("100%", "100%");
+            import {TextEditor} from './script/texteditor.js';
+            const editor = new TextEditor();
 
-            // Check editor.isClean() before loading a new file or closing window
-            // and then editor.markClean()
+            // Expose editor's functions to HTML elements
 
-            import {displayDiagram} from './script/main.js';
-            import {saveAs} from './thirdparty/FileSaver.js';
-            import {ToolBar} from './script/toolbar.js';
-
-            let nameOfLoadedFile = '';
-            const svgContainerNode = document.getElementById('cell-diagram');
-            const toolbar = new ToolBar(document.getElementById('toolbar'));
-
-            function upLoadedFileAsText(file)
-            {
-                const reader = new FileReader();
-
-                return new Promise((resolve, reject) => {
-                    reader.onerror = () => {
-                        reader.abort();
-                        reject(reader.error);
-                    }
-                    reader.onload = () => {
-                        resolve(reader.result);
-                    }
-
-                    nameOfLoadedFile = file.name;
-                    reader.readAsText(file);
-                });
-            }
-
-            function loadCellDl(files) {
-                for (let file of files) {
-                    upLoadedFileAsText(file).then(text => {
-                        editor.setValue(text);
-                    });
-                }
-            }
-
-            function saveCellDl() {
-                const text = editor.getValue();
-                const blob = new Blob([text], { type: "application/xml;charset=utf-8" });
-                saveAs(blob, nameOfLoadedFile);
-            }
-
-            function previewSvg() {
-                displayDiagram(editor.getValue(), svgContainerNode, toolbar);
-            }
-
-            function exportSvg() {
-                const svg = svgContainerNode.innerHTML;
-                const blob = new Blob([svg], { type: "image/svg+xml" });
-                const svgFileName = `${nameOfLoadedFile.split('.')[0]}.svg`
-
-                saveAs(blob, svgFileName);
-            }
-
-            // Expose module's functions to HTML elements
-
-            window.loadCellDl = loadCellDl;
-            window.saveCellDl = saveCellDl;
-            window.previewSvg = previewSvg;
-            window.exportSvg = exportSvg;
+            window.loadCellDl = (files) => editor.loadCellDl(files);
+            window.saveCellDl = () => editor.saveCellDl();
+            window.previewSvg = () => editor.previewSvg();
+            window.exportSvg = () => editor.exportSvg();
         </script>
     </body>
 </html>
