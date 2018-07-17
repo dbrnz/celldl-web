@@ -89,6 +89,19 @@
         <script type="text/javascript"
                 src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js">
         </script>
+        <script src="./thirdparty/ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8">
+        </script>
+        <script type="module">
+            import {TextEditor} from './script/textEditor.js';
+            const editor = new TextEditor();
+
+            // Expose editor's functions to HTML elements
+
+            window.loadCellDl = (files) => editor.loadCellDl(files);
+            window.saveCellDl = () => editor.saveCellDl();
+            window.previewSvg = () => editor.previewSvg();
+            window.exportSvg = () => editor.exportSvg();
+        </script>
     </head>
     <body>
         <div id="flex-rows">
@@ -144,18 +157,5 @@
      * https://developer.mozilla.org/en-US/docs/Web/API/File/Using_files_from_web_applications
        and trigger a download to save data.
 -->
-        <script src="./thirdparty/ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8">
-        </script>
-        <script type="module">
-            import {TextEditor} from './script/textEditor.js';
-            const editor = new TextEditor();
-
-            // Expose editor's functions to HTML elements
-
-            window.loadCellDl = (files) => editor.loadCellDl(files);
-            window.saveCellDl = () => editor.saveCellDl();
-            window.previewSvg = () => editor.previewSvg();
-            window.exportSvg = () => editor.exportSvg();
-        </script>
     </body>
 </html>
