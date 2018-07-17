@@ -107,15 +107,7 @@ export class Parser
                 if (!("input" in e.attributes || "output" in e.attributes)) {
                     throw new exception.SyntaxError(e, "A flow component requires an 'input' or 'output'");
                 }
-                const flowConnectsTo = [bondgraph.Gyrator, bondgraph.Potential, bondgraph.Reaction];
-                if ('input' in e.attributes) {
-                    bondgraph.FlowEdge.createFromAttributeValue(this.diagram, e, 'input',
-                                                                true, flow, flowConnectsTo);
-                }
-                if ('output' in e.attributes) {
-                    bondgraph.FlowEdge.createFromAttributeValue(this.diagram, e, 'output',
-                                                                false, flow, flowConnectsTo);
-                }
+                flow.addComponent(e);
             } else {
                 throw new exception.SyntaxError(e, `Unexpected <flow> element`);
             }
@@ -147,11 +139,9 @@ export class Parser
         const gyrator = new bondgraph.Gyrator(this.diagram, element);
         for (let e of element.children) {
             if        (e.nodeName === 'input') {
-                bondgraph.Edge.createFromAttributeValue(this.diagram, e, 'flow',
-                                                        true, gyrator, [bondgraph.Flow]);
+                gyrator.addInput(e);
             } else if (e.nodeName === 'output') {
-                bondgraph.Edge.createFromAttributeValue(this.diagram, e, 'flow',
-                                                        false, gyrator, [bondgraph.Flow]);
+                gyrator.addOutput(e);
             } else {
                 throw new exception.SyntaxError(e, `Unexpected <gyrator> element`);
             }
@@ -176,14 +166,11 @@ export class Parser
         const reaction = new bondgraph.Reaction(this.diagram, element);
         for (let e of element.children) {
             if (e.nodeName === 'input') {
-                bondgraph.Edge.createFromAttributeValue(this.diagram, e, 'flow',
-                                                        true, reaction, [bondgraph.Flow]);
+                reaction.addInput(e);
             } else if (e.nodeName === 'output') {
-                bondgraph.Edge.createFromAttributeValue(this.diagram, e, 'flow',
-                                                        false, reaction, [bondgraph.Flow]);
+                reaction.addOutput(e);
             } else if (e.nodeName === 'modulator') {
-                bondgraph.Edge.createFromAttributeValue(this.diagram, e, 'potential',
-                                                        true, reaction, [bondgraph.Potential]);
+                reaction.addModulator(e);
             } else {
                 throw new exception.SyntaxError(e, `Unexpected <reaction> element`);
             }
@@ -196,11 +183,9 @@ export class Parser
         const transformer = new bondgraph.Transformer(this.diagram, element);
         for (let e of element.children) {
             if (e.nodeName === 'input') {
-                bondgraph.Edge.createFromAttributeValue(this.diagram, e, 'potential',
-                                                        true, transformer, [bondgraph.Potential]);
+                transformer.addInput(e);
             } else if (e.nodeName === 'output') {
-                bondgraph.Edge.createFromAttributeValue(this.diagram, e, 'potential',
-                                                        false, transformer, [bondgraph.Potential]);
+                transformer.addOutput(e);
             } else {
                 throw new exception.SyntaxError(e, `Unexpected <transformer> element`);
             }

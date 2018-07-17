@@ -72,12 +72,6 @@ export class DiagramElement {
         }
     }
 
-    toXml()
-    //=====
-    {
-        return `<${this.tagName} id="${this.id.slice(1)}"></${this.tagName}>`;
-    }
-
     fromAttribute(attributeName, elementClasses=[DiagramElement])
     //===========================================================
     {
@@ -113,6 +107,12 @@ export class DiagramElement {
             s.push(`(${this.id})`);
         }
         return s.join(' ');
+    }
+
+    toXml()
+    //=====
+    {
+        return `<${this.tagName} id="${this.id.slice(1)}"/>`;
     }
 
     get colour()

@@ -114,8 +114,8 @@ export class Edge
         this.styleElementId = styleElementId;
         this.line = null;
         this.path = null;
-        this.id = toParent ? `${this.otherId.slice(1)}-${parent.id.slice(1)}`
-                           : `${parent.id.slice(1)}-${this.otherId.slice(1)}`;
+        this.id = toParent ? `${fromId}-${parent.id.slice(1)}`
+                           : `${parent.id.slice(1)}-${fromId}`;
         diagram.addEdge(this);
     }
 
@@ -153,7 +153,6 @@ export class Edge
         const names = this.validClasses.filter(c => c.name);
         const classNames = (names.length === 1) ? names[0]
                                                 : [names.slice(0, -1).join(', '), names.slice(-1)[0]].join(' or ');
-
         throw new exception.KeyError(`Can't find ${classNames} with id '${this.otherId}'`);
     }
 
@@ -331,6 +330,21 @@ export class Flow extends Node
 //        this.transporter = this.fromAttribute('transporter', [diagramTransporter])
     }
 
+
+    addComponent(domElement)
+    //======================
+    {
+        const flowConnectsTo = [Gyrator, Potential, Reaction];
+        if ('input' in domElement.attributes) {
+            FlowEdge.createFromAttributeValue(this.diagram, domElement, 'input',
+                                              true, this, flowConnectsTo);
+            }
+        if ('output' in domElement.attributes) {
+            FlowEdge.createFromAttributeValue(this.diagram, domElement, 'output',
+                                              true, this, flowConnectsTo);
+        }
+    }
+
 /*
     componentOffset(component)
     //========================
@@ -407,10 +421,22 @@ export class Flow extends Node
 
 export class Gyrator extends DiagramElement
 {
-    constructor(diagram, element)
+    constructor(diagram, domElement)
     {
-        super(diagram, element);
+        super(diagram, domElement);
         if (!this.label.startsWith('$')) this.label = `GY:${this.label}`;
+    }
+
+    addInput(domElement)
+    //==================
+    {
+        Edge.createFromAttributeValue(this.diagram, domElement, 'flow', true, this, [Flow]);
+    }
+
+    addOutput(domElement)
+    //===================
+    {
+        Edge.createFromAttributeValue(this.diagram, domElement, 'flow', false, this, [Flow]);
     }
 }
 
@@ -418,22 +444,42 @@ export class Gyrator extends DiagramElement
 
 export class Potential extends Node
 {
-    constructor(diagram, element)
+    constructor(diagram, domElement)
     {
-        super(diagram, element);
-        if ('quantity' in element.attributes) {
-            const quantityId = element.attributes.quantity.textContent;
-            new Edge(diagram, element, quantityId, false, this, [Quantity], `#${quantityId}`);
+        super(diagram, domElement);
+
+        if ('quantity' in domElement.attributes) {
+            this.quantityId = domElement.attributes.quantity.textContent;
+            new Edge(diagram, domElement, this.quantityId, false, this, [Quantity], `#${this.quantityId}`);
+        } else {
+            this.quantityId = null;
         }
     }
+
+    setQuantity(quantityId)
+    //=====================
+    {
+        this.quantityId = quantityId.slice(1);
+    }
+
+    toXml()
+    //=====
+    {
+        const attrs = [`id="${this.id.slice(1)}"`];
+        if (this.quantityId !== null) {
+            attrs.push(`quantity="${this.quantityId}"`);
+        }
+        return `<${this.tagName} ${attrs.join(" ")}/>`;
+    }
+
 }
 
 //==============================================================================
 
 export class Quantity extends DiagramElement
 {
-    constructor(diagram, element) {
-        super(diagram, element);
+    constructor(diagram, domElement) {
+        super(diagram, domElement);
         this.potential = null;
     }
 
@@ -460,10 +506,28 @@ export class Quantity extends DiagramElement
 
 export class Reaction extends DiagramElement
 {
-    constructor(diagram, element)
+    constructor(diagram, domElement)
     {
-        super(diagram, element);
+        super(diagram, domElement);
         if (!this.label.startsWith('$')) this.label = `RE:${this.label}`;
+    }
+
+    addInput(domElement)
+    //==================
+    {
+        Edge.createFromAttributeValue(this.diagram, domElement, 'flow', true, this, [Flow]);
+    }
+
+    addOutput(domElement)
+    //===================
+    {
+        Edge.createFromAttributeValue(this.diagram, domElement, 'flow', false, this, [Flow]);
+    }
+
+    addModulator(domElement)
+    //======================
+    {
+        Edge.createFromAttributeValue(this.diagram, domElement, 'potential', true, this, [Potential]);
     }
 
     assignGeometry(radius=layout.TRANSPORTER_RADIUS)
@@ -477,10 +541,22 @@ export class Reaction extends DiagramElement
 
 export class Transformer extends DiagramElement
 {
-    constructor(diagram, element)
+    constructor(diagram, domElement)
     {
-        super(diagram, element);
+        super(diagram, domElement);
         if (!this.label.startsWith('$')) this.label = `TF:${this.label}`;
+    }
+
+    addInput(domElement)
+    //==================
+    {
+        Edge.createFromAttributeValue(this.diagram, domElement, 'potential', true, this, [Potential]);
+    }
+
+    addOutput(domElement)
+    //===================
+    {
+        Edge.createFromAttributeValue(this.diagram, domElement, 'potential', false, this, [Potential]);
     }
 }
 
