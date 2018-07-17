@@ -63,7 +63,7 @@ export class DiagramElement {
     //=======================
     {
         const domElement = this.domElement.cloneNode(true);
-        domElement.id = `${this.id.slice(1)}_XX`;
+        domElement.id = this.id.slice(1);
         try {
             return new this.constructor(diagram, domElement);
         } catch (error) {
