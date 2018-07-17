@@ -37,10 +37,11 @@ import {SvgFactory, SVG_NS, SVG_VERSION} from './svgElements.js';
 //==============================================================================
 
 export class CellDiagram {
-    constructor(id, stylesheet)
+    constructor(id, stylesheet, editor=null)
     {
         this.id = id;
         this.stylesheet = stylesheet;
+        this.editor = editor;
         this._elements = [];
         this._elementsById = {};
         this._edges = [];
@@ -48,6 +49,7 @@ export class CellDiagram {
         this.height = 0;
         this.bondGraph = new bondgraph.BondGraph(this);
         this.svgFactory = new SvgFactory(id);
+        this._manualPositions = [];
     }
 
     initialise(style)
@@ -235,7 +237,53 @@ export class CellDiagram {
         element.updateSvg(highlight);
     }
 
+    addManualPosition(element)
+    //========================
+    {
+        if (!this._manualPositions.includes(element.id)) {
+            this._manualPositions.push(element.id);
+        }
 
+        if (this.editor !== null) {
+            const positions = ['<style id="manual_positions">'];
+            for (let id of this._manualPositions) {
+                const e = this.findElement(id);
+                if (e !== null) {
+                    let w = 100*e.coordinates.x/this.width;
+                    if (w < 0) w = 0; else if (w > 100) w = 100;
+                    let h = 100*e.coordinates.y/this.height;
+                    if (h < 0) h = 0; else if (h > 100) h = 100;
+                    positions.push(`    ${e.id} { position: ${w.toFixed(2)}%, ${h.toFixed(2)}%; }`);
+                }
+            }
+            positions.push('</style>');
+
+            const stylePositionRegExp = new RegExp(`<style id=(["'])manual_positions\\1>[\\s\\S]*</style>`);
+
+            // NB. Ace editor search and replace appears to be broken so
+            //     we simply use Javascript string methods
+            const text = this.editor.getValue();
+            if (text.search(stylePositionRegExp) >= 0) {
+                this.editor.setValue(text.replace(stylePositionRegExp, positions.join("\n    ")));
+            } else {
+                const cellDiagramEndRegExp = new RegExp(`(\\n?)([ \\t]*)(</cell-diagram>)`);
+                this.editor.setValue(text.replace(cellDiagramEndRegExp,
+                    `$1    ${positions.join("\n    ")}\n$2$3`));
+            }
+            this.editor.clearSelection();
+        }
+    }
+
+    setManualPositionedElements(styleRules)
+    //=====================================
+    {
+        const ids = stylesheet.positionedElements(styleRules);
+        for (let id of ids) {
+            if (!this._manualPositions.includes(id)) {
+                this._manualPositions.push(id);
+            }
+        }
+    }
 
 }
 

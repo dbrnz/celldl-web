@@ -243,6 +243,9 @@ export class Parser
                     stylePromises.push(stylesheet.fetchStyles(element.attributes.src.textContent));
                 } else {
                     stylesheet.addStyles(element.textContent);
+                    if (element.id === 'manual_positions') {
+                        this.diagram.setManualPositionedElements(element.textContent);
+                    }
                 }
             } else {
                 throw new exception.SyntaxError(element, "Unknown XML element");

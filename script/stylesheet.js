@@ -257,3 +257,20 @@ export function styleAsString(styling, name, defaultValue='')
 }
 
 //==============================================================================
+
+export function positionedElements(cssText)
+{
+    const ids = [];
+    const parser = new cssparser.Parser();
+    const ast = parser.parse(cssText);
+    const rules = ast._props_.value;
+    for (let rule of rules) {
+        let styling = cssparser.toSimple(rule._props_.value);
+        if (styling.position) {
+            ids.push(cssparser.toSimple(rule._props_.selectors)[0]);
+        }
+    }
+    return ids;
+}
+
+//==============================================================================

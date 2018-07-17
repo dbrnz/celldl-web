@@ -188,7 +188,9 @@ export class DiagramEditor
                         //this.bondgraphNode.appendChild(elementSvg);
 
                         this.diagramElement = newElement;
+
                         // Need to insert node into diagram's bondgraph...
+                        this.diagram.bondGraph.addElement(newElement);
                     }
                 }
                 break;
@@ -219,6 +221,13 @@ export class DiagramEditor
     {
         // push operation, element, starting attributes,
         // ending attributes on history stack
+
+        // Add/update CSS rule giving element's final position
+
+        if (this.diagramElement != null) {
+            this.diagram.addManualPosition(this.diagramElement);
+        }
+
         this.moving = false;
     }
 }

@@ -45,6 +45,16 @@ export class BondGraph
         this.id = `${this.diagram.id}_bondgraph`;
     }
 
+    addElement(element)
+    //=================
+    {
+        const text = this.diagram.editor.getValue();
+        const bondGraphEndRegExp = new RegExp(`(\\n?)([ \\t]*)(</bond-graph>)`);
+        this.diagram.editor.setValue(text.replace(bondGraphEndRegExp,
+            `$1$2    ${element.toXml()}\n$2$3`));
+        this.diagram.editor.clearSelection();
+    }
+
     drawEdges(svgNode)
     //================
     {

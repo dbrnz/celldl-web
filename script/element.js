@@ -72,6 +72,12 @@ export class DiagramElement {
         }
     }
 
+    toXml()
+    //=====
+    {
+        return `<${this.tagName} id="${this.id.slice(1)}"></${this.tagName}>`;
+    }
+
     fromAttribute(attributeName, elementClasses=[DiagramElement])
     //===========================================================
     {

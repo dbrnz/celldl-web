@@ -29,15 +29,16 @@ import {StyleSheet} from './stylesheet.js';
 
 //==============================================================================
 
-export function displayDiagram(cellDlText, svgContainerNode, toolbar)
+export function displayDiagram(cellDlEditor, svgContainerNode, toolbar)
 {
+    const cellDlText = cellDlEditor.getValue();
     const domParser = new DOMParser();
     const xmlDocument = domParser.parseFromString(cellDlText, "application/xml");
     document.body.style.cursor = 'wait';
 
     try {
         const stylesheet = new StyleSheet();
-        const cellDiagram = new CellDiagram('diagram', stylesheet);
+        const cellDiagram = new CellDiagram('diagram', stylesheet, cellDlEditor);
         const diagramEditor = new DiagramEditor(cellDiagram, toolbar);
         const parser = new Parser(cellDiagram);
 
