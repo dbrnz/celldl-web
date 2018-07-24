@@ -22,13 +22,16 @@ limitations under the License.
 
 //==============================================================================
 
-import * as cssparser from '../thirdparty/cssparser.js';
-import * as SPECIFICITY from '../thirdparty/specificity.js';
+import * as layout from './layout.js';
+import * as exception from './exception.js';
 
 //==============================================================================
 
-import * as layout from './layout.js';
-import * as exception from './exception.js';
+// CSS parser from https://github.com/cwdoh/cssparser.js
+import * as cssparser from '../thirdparty/cssparser.js';
+
+// Specifity from https://github.com/keeganstreet/specificity
+import * as SPECIFICITY from '../thirdparty/specificity.js';
 
 //==============================================================================
 
