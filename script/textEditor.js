@@ -46,6 +46,7 @@ export class TextEditor
         // Check editor.isClean() before loading a new file or closing window
         // and then editor.markClean()
 
+        this.diagram = null;
         this.loadedFile = '';
         this.svgContainerNode = document.getElementById('cell-diagram');
         this.toolbar = new ToolBar(document.getElementById('toolbar'));
@@ -94,18 +95,20 @@ export class TextEditor
     previewSvg()
     //==========
     {
-        displayDiagram(this.editor, this.svgContainerNode, this.toolbar);
+        this.diagram = displayDiagram(this.editor, this.svgContainerNode, this.toolbar);
     }
 
     exportSvg()
     //=========
     {
-        const svg = this.svgContainerNode.innerHTML;
-        // after ensuring there are no selected elements...
-        const blob = new Blob([svg], { type: "image/svg+xml" });
-        const svgFileName = `${this.loadedFile.split('.')[0]}.svg`
+        if (this.diagram !== null) {
+            const svg = this.svgContainerNode.innerHTML;
+            // after ensuring there are no selected elements...
+            const blob = new Blob([svg], { type: "image/svg+xml" });
+            const svgFileName = `${this.loadedFile.split('.')[0]}.svg`
 
-        saveAs(blob, svgFileName);
+            saveAs(blob, svgFileName);
+        }
     }
 }
 

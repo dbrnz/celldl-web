@@ -32,6 +32,10 @@ import {StyleSheet} from './stylesheet.js';
 export function displayDiagram(cellDlEditor, svgContainerNode, toolbar)
 {
     const cellDlText = cellDlEditor.getValue();
+    if (cellDlText === '') {
+        return null;
+    }
+
     const domParser = new DOMParser();
     const xmlDocument = domParser.parseFromString(cellDlText, "application/xml");
     document.body.style.cursor = 'wait';
@@ -67,6 +71,7 @@ export function displayDiagram(cellDlEditor, svgContainerNode, toolbar)
 
                     const svgNode = svgContainerNode.children[0];
                     diagramEditor.svgLoaded(svgNode);
+                    return cellDiagram;
                 });
             });
     } catch (error) {
@@ -74,6 +79,8 @@ export function displayDiagram(cellDlEditor, svgContainerNode, toolbar)
         console.trace(error);
         alert(error);
     }
+
+    return null;
 }
 
 //==============================================================================
