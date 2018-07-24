@@ -23,7 +23,7 @@ limitations under the License.
 //==============================================================================
 
 import {displayDiagram} from './main.js';
-import {ToolBar} from './toolbar.js';
+import {Palette} from './palette.js';
 
 //==============================================================================
 
@@ -49,7 +49,7 @@ export class TextEditor
         this.diagram = null;
         this.loadedFile = '';
         this.svgContainerNode = document.getElementById('cell-diagram');
-        this.toolbar = new ToolBar(document.getElementById('toolbar'));
+        this.palette = new Palette(document.getElementById('palette'));
     }
 
     upLoadedFileAsText(file)
@@ -95,7 +95,7 @@ export class TextEditor
     previewSvg()
     //==========
     {
-        this.diagram = displayDiagram(this.editor, this.svgContainerNode, this.toolbar);
+        this.diagram = displayDiagram(this.editor, this.svgContainerNode, this.palette);
     }
 
     exportSvg()

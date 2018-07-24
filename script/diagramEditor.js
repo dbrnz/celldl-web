@@ -99,10 +99,10 @@ class HistoryStack {
 
 export class DiagramEditor
 {
-    constructor(diagram, toolbar)
+    constructor(diagram, palette)
     {
         this.diagram = diagram;
-        this.toolbar = toolbar;
+        this.palette = palette;
         this.svgNode = null;
         this.bondgraphNode = null;
         this.diagramElement = null;
@@ -168,7 +168,7 @@ export class DiagramEditor
                         this.diagram.highlight(this.diagramElement, false);
                         this.diagramElement = null;
                     }
-                    const newElement = this.toolbar.copySelectedElementTo(this.diagram);
+                    const newElement = this.palette.copySelectedElementTo(this.diagram);
                     if (newElement) {
                         const coords = this.getMousePosition(event);
                         // We are able to create a new element in the diagram

@@ -29,7 +29,7 @@ import {StyleSheet} from './stylesheet.js';
 
 //==============================================================================
 
-export function displayDiagram(cellDlEditor, svgContainerNode, toolbar)
+export function displayDiagram(cellDlEditor, svgContainerNode, palette)
 {
     const cellDlText = cellDlEditor.getValue();
     if (cellDlText === '') {
@@ -43,7 +43,7 @@ export function displayDiagram(cellDlEditor, svgContainerNode, toolbar)
     try {
         const stylesheet = new StyleSheet();
         const cellDiagram = new CellDiagram('diagram', stylesheet, cellDlEditor);
-        const diagramEditor = new DiagramEditor(cellDiagram, toolbar);
+        const diagramEditor = new DiagramEditor(cellDiagram, palette);
         const parser = new Parser(cellDiagram);
 
         parser.parseDocument(xmlDocument)
