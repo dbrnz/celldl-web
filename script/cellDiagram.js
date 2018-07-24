@@ -28,6 +28,7 @@ import '../thirdparty/jsnetworkx.js';
 
 import * as bondgraph from './bondgraph.js';
 import * as exception from './exception.js';
+import * as geo from './geometry.js';
 import * as layout from './layout.js';
 import * as stylesheet from './stylesheet.js';
 
@@ -152,9 +153,12 @@ export class CellDiagram {
         for (let element of this._elements) {
             element.resolveReferences();
             element.parsePosition();
-            if (element.hasValidPosition) {
-                dependencyGraph.addNode(element);
+
+            if (!element.hasValidPosition) {
+                element.position.coordinates = new geo.Point(25, 20);
             }
+            dependencyGraph.addNode(element);
+
         }
         for (let node of dependencyGraph) {
             for (let dependency of node.position.dependencies) {
