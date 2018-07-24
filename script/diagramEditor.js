@@ -177,7 +177,8 @@ export class DiagramEditor
 
                         // Note: If we use `appendChild` then `url()` links in the SVG
                         //       are not resolved
-                        const elementSvg = newElement.generateSvg(true);
+                        const elementSvg = newElement.generateSvg();
+
                         // We could have new <defs> if say a new element type is
                         // not in the current diagram...
 
