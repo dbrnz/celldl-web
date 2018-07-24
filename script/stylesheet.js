@@ -43,6 +43,7 @@ export class StyleSheet
         this._parser = new cssparser.Parser();
         this.stylesheet = [];
         this._order = 0;
+        this.classes = [];
     }
 
     addStyles(cssText)
@@ -51,7 +52,7 @@ export class StyleSheet
         const ast = this._parser.parse(cssText);
         const rules = ast._props_.value;
         for (let rule of rules) {
-            let selectors = cssparser.toSimple(rule._props_.selectors);
+            const selectors = cssparser.toSimple(rule._props_.selectors);
             let styling = cssparser.toAtomic(rule._props_.value);
             for (let selector of selectors) {
                 this.stylesheet.push({selector: selector,
@@ -59,6 +60,18 @@ export class StyleSheet
                                 specificity: SPECIFICITY.calculate(selector)[0]['specificityArray'],
                                 order: this._order});
                 this._order += 1;
+            }
+            // Save names of class selectors
+            const selectorClasses = cssparser.toAtomic(rule._props_.selectors);
+            if (selectorClasses.type === "SELECTOR_LIST") {
+                for (let selector of selectorClasses.value) {
+                    if (selector.type === "CLASS_SELECTOR") {
+                        const cls = selector.value.substr(1);
+                        if (!this.classes.includes(cls)) {
+                            this.classes.push(cls);
+                        }
+                    }
+                }
             }
         }
 
@@ -72,6 +85,8 @@ export class StyleSheet
                      :  0;
             }
         });
+
+        this.classes.sort();
     }
 
     async fetchStyles(cssUrl)
