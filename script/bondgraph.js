@@ -341,7 +341,7 @@ export class Flow extends Node
             }
         if ('output' in domElement.attributes) {
             FlowEdge.createFromAttributeValue(this.diagram, domElement, 'output',
-                                              true, this, flowConnectsTo);
+                                              false, this, flowConnectsTo);
         }
     }
 
