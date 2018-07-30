@@ -77,12 +77,9 @@
 
         #I_Kp > modulator {
             line-color: red;
-            line-path: begin(20 until-x #I_Kp);
+            line-path: begin(0 until-x #I_Kp);
         }
     </style>
 
-<style id='manual_positions'>
-    xxx
-</style>
 
 </cell-diagram>
