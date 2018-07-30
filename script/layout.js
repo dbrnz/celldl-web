@@ -40,8 +40,8 @@ export const STROKE_WIDTH = 2.5;
 export const FLOW_OFFSET = {value: 60, unit: 'x'};
 
 export const QUANTITY_OFFSET = {value: 60, unit: 'x'};
-export const QUANTITY_WIDTH = 45;
-export const QUANTITY_HEIGHT = 30;
+export const QUANTITY_WIDTH = 50;
+export const QUANTITY_HEIGHT = 33;
 
 export const TRANSPORTER_RADIUS = 20;
 export const TRANSPORTER_EXTRA = {value: 25, unit: 'x'};
