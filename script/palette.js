@@ -31,7 +31,7 @@ import {StyleSheet} from './stylesheet.js';
 const WIDTH = 60;
 const HEIGHT = 400;
 
-const TOOLBAR_XML = `<cell-diagram xmlns="http://www.cellml.org/celldl/1.0#">
+const PALETTE_XML = `<cell-diagram xmlns="http://www.cellml.org/celldl/1.0#">
     <bond-graph>
         <quantity id="q"/>
         <potential id="u" label="$\\mu$"/>
@@ -52,15 +52,15 @@ const TOOLBAR_XML = `<cell-diagram xmlns="http://www.cellml.org/celldl/1.0#">
 </cell-diagram>`;
 
 
-export class ToolBar
+export class Palette
 {
     constructor(containerNode)
     {
         const domParser = new DOMParser();
-        const xmlDocument = domParser.parseFromString(TOOLBAR_XML, "application/xml");
+        const xmlDocument = domParser.parseFromString(PALETTE_XML, "application/xml");
         try {
             const stylesheet = new StyleSheet();
-            this.diagram = new CellDiagram('toolbar', stylesheet);
+            this.diagram = new CellDiagram('palette', stylesheet);
             const parser = new Parser(this.diagram);
 
             parser.parseDocument(xmlDocument)
