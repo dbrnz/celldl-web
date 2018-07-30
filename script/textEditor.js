@@ -101,14 +101,12 @@ export class TextEditor
     exportSvg()
     //=========
     {
-        if (this.diagram !== null) {
-            const svg = this.svgContainerNode.innerHTML;
-            // after ensuring there are no selected elements...
-            const blob = new Blob([svg], { type: "image/svg+xml" });
-            const svgFileName = `${this.loadedFile.split('.')[0]}.svg`
+        const svg = this.svgContainerNode.innerHTML;
+        // after ensuring there are no selected elements...
+        const blob = new Blob([svg], { type: "image/svg+xml" });
+        const svgFileName = `${this.loadedFile.split('.')[0]}.svg`
 
-            saveAs(blob, svgFileName);
-        }
+        saveAs(blob, svgFileName);
     }
 }
 
