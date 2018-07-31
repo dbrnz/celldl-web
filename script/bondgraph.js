@@ -108,44 +108,37 @@ export class Node extends DiagramElement
 
 //==============================================================================
 
+/*
+const componentPoints = new List(this.lines["start"].points(this.fromPotential.coordinates, {"flow": this.flow}));
+
+componentPoints.extend(this.flow.getFlowLine(this));
+
+for (let to of this.toPotentials) {
+    const points = new List(componentPoints);
+    points.extend(this.lines["end"].points(to.coordinates, {"flow": this.flow, "reverse": true}));
+    const line = new geo.LineString(points);
+
+    const lineStyle = this.getStyleAsString("line-style", "");
+    if ((this.count % 2) === 0) {
+        for (let n = 0; n < this.count/2; n += 1) {
+            const offset = (n + 0.5)*LINE_OFFSET;
+            svg.append(svgLine(line.parallelOffset(offset, "left"),
+                               this.colour, {style: line_style}));
+            svg.append(svgLine(line.parallelOffset(offset, "right"),
+                               this.colour, {reverse: true, style: lineStyle}));
         }
+    } else {
+        for (let n = 0; n < math.floor(this.count/2); n += 1) {
+            const offset = (n + 1)*LINE_OFFSET;
+            svg.append(svgLine(line.parallelOffset(offset, "left"),
+                               this.colour, {style: line_style}));
+            svg.append(svgLine(line.parallelOffset(offset, "right"),
+                               this.colour, {reverse: true, style: lineStyle}));
         }
+        svg.append(svgLine(line, this.colour, {"style": lineStyle}));
     }
-
 }
-        /*
-        const componentPoints = new List(this.lines["start"].points(this.fromPotential.coordinates, {"flow": this.flow}));
-
-        componentPoints.extend(this.flow.getFlowLine(this));
-
-        for (let to of this.toPotentials) {
-            const points = new List(componentPoints);
-            points.extend(this.lines["end"].points(to.coordinates, {"flow": this.flow, "reverse": true}));
-            const line = new geo.LineString(points);
-
-
-
-            const lineStyle = this.getStyleAsString("line-style", "");
-            if ((this.count % 2) === 0) {
-                for (let n = 0; n < this.count/2; n += 1) {
-                    const offset = (n + 0.5)*LINE_OFFSET;
-                    svg.append(svgLine(line.parallelOffset(offset, "left"),
-                                       this.colour, {style: line_style}));
-                    svg.append(svgLine(line.parallelOffset(offset, "right"),
-                                       this.colour, {reverse: true, style: lineStyle}));
-                }
-            } else {
-                for (let n = 0; n < math.floor(this.count/2); n += 1) {
-                    const offset = (n + 1)*LINE_OFFSET;
-                    svg.append(svgLine(line.parallelOffset(offset, "left"),
-                                       this.colour, {style: line_style}));
-                    svg.append(svgLine(line.parallelOffset(offset, "right"),
-                                       this.colour, {reverse: true, style: lineStyle}));
-                }
-                svg.append(svgLine(line, this.colour, {"style": lineStyle}));
-            }
-        }
-    */
+*/
 
 //==============================================================================
 
