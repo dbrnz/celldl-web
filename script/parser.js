@@ -24,6 +24,7 @@ limitations under the License.
 
 import * as bondgraph from './bondgraph.js';
 import * as exception from './exception.js';
+import * as components from './components.js';
 
 //==============================================================================
 
@@ -36,8 +37,11 @@ export class Parser
     constructor(diagram) {
         this.diagram = diagram;
         this.bondGraphElement = null;
+        this.componentsElement = null;
         this.diagramElement = null;
     }
+
+    //==========================================================================
 
 //    parseContainer(element, container)
 //    //================================
@@ -73,6 +77,55 @@ export class Parser
 //        const transporter = this.newDiagramElement(element, dia.Transporter, compartment);
 //        this.diagram.addTransporter(transporter);
 //    }
+
+    //==========================================================================
+
+    parseComponents(element)
+    //======================
+    {
+        for (let e of element.children) {
+            if        (e.nodeName === "component") {
+                this.diagram.componentGroups.addComponent(this.parseComponent(e));
+            } else if (e.nodeName === "connection") {
+                this.diagram.componentGroups.addConnection(this.parseConnection(e));
+            } else if (e.nodeName === "group") {
+                this.diagram.componentGroups.addGroup(this.parseGroup(e));
+            } else {
+                throw new exception.SyntaxError(e, "Invalid element for <components>");
+            }
+        }
+
+    }
+
+    parseComponent(element)
+    //=====================
+    {
+        return new components.Component(this.diagram, element);
+    }
+
+    parseConnection(element)
+    //======================
+    {
+        return new components.Connection(this.diagram, element);
+    }
+
+    parseGroup(element)
+    //=================
+    {
+        const group = new components.Group(this.diagram, element);
+        for (let e of element.children) {
+            if        (e.nodeName === "component") {
+                group.addComponent(this.parseComponent(e));
+            } else if (e.nodeName === "group") {
+                group.addGroup(this.parseGroup(e));
+            } else {
+                throw new exception.SyntaxError(e, "Invalid element for <group>");
+            }
+        }
+        return group;
+    }
+
+    //==========================================================================
 
     parseBondGraph(element)
     //=====================
@@ -192,6 +245,8 @@ export class Parser
         }
     }
 
+    //==========================================================================
+
     parseDocument(xmlDocument)
     //========================
     {
@@ -212,10 +267,16 @@ export class Parser
         let stylePromises = [];
         for (let element of xmlRoot.children) {
             if (element.nodeName === 'bond-graph') {
-                if ((this.bondGraphElement === null)) {
+                if (this.bondGraphElement === null) {
                     this.bondGraphElement = element;
                 } else {
                     throw new exception.SyntaxError(element, "Can only declare a single <bond-graph>");
+                }
+            } else if (element.nodeName === 'components') {
+                if (this.componentsElement === null) {
+                    this.componentsElement = element;
+                } else {
+                    throw new exception.SyntaxError(element, "Can only declare a single <components> block");
                 }
             } else if (element.nodeName === 'diagram') {
                 if ((this.diagramElement === null)) {
@@ -249,6 +310,9 @@ export class Parser
 //                            }
                             if (this.bondGraphElement !== null) {
                                 this.parseBondGraph(this.bondGraphElement);
+                            }
+                            if (this.componentsElement !== null) {
+                                this.parseComponents(this.componentsElement);
                             }
                         });
     }

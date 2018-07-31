@@ -29,6 +29,7 @@ import '../thirdparty/jsnetworkx.js';
 import * as bondgraph from './bondgraph.js';
 import * as exception from './exception.js';
 import * as geo from './geometry.js';
+import * as components from './components.js';
 import * as layout from './layout.js';
 import * as stylesheet from './stylesheet.js';
 
@@ -48,6 +49,7 @@ export class CellDiagram {
         this._edges = [];
         this.width = 0;
         this.height = 0;
+        this.componentGroups = new components.ComponentGroups(this);
         this.bondGraph = new bondgraph.BondGraph(this);
         this.svgFactory = new SvgFactory(id);
         this._manualPositions = [];
@@ -208,6 +210,7 @@ export class CellDiagram {
 //            svg.extend(c.svg());
 //        }
 
+        const componentGroupsSvg = this.componentGroups.generateSvg();
         const bondgraphSvg = this.bondGraph.generateSvg();
 
 //        for (let transporter of this.transporters) {
@@ -216,6 +219,7 @@ export class CellDiagram {
 
         svgNode.appendChild(this.svgFactory.defines());
 
+        svgNode.appendChild(componentGroupsSvg);
         svgNode.appendChild(bondgraphSvg);
 
         return svgNode;
