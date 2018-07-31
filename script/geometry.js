@@ -313,18 +313,29 @@ export class LineString extends GeoObject
         super();
         this.lineSegments = [];
         this.coordinates = [];
-        if (points.length > 0) {
-            for (let n = 0; n < (points.length - 1); n += 1) {
-                const segment = new LineSegment(points[n], points[n + 1]);
-                this.lineSegments.push(segment);
-                this.coordinates.push(segment.start);
+        try {
+            if (points.length > 0) {
+                for (let n = 0; n < (points.length - 1); n += 1) {
+                    const segment = new LineSegment(points[n], points[n + 1]);
+                    this.lineSegments.push(segment);
+                    this.coordinates.push(segment.start);
+                }
+                if (closed) {
+                    const segment = new LineSegment(points.slice(-1)[0], points[0]);
+                    this.lineSegments.push(segment);
+                    this.coordinates.push(segment.start);
+                }
+                this.coordinates.push(this.lineSegments.slice(-1)[0].end);
             }
-            if (closed) {
-                const segment = new LineSegment(points.slice(-1)[0], points[0]);
-                this.lineSegments.push(segment);
-                this.coordinates.push(segment.start);
+        }
+        catch (error) {
+            // We may have two identical consecutive points
+            if (error instanceof exception.ValueError) {
+                this.lineSegments = [];
+                this.coordinates = [];
+            } else {
+                throw error;
             }
-            this.coordinates.push(this.lineSegments.slice(-1)[0].end);
         }
     }
 
