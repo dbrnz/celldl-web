@@ -1,0 +1,73 @@
+<cell-diagram>
+
+    <components>
+        <group id="central-level" label="Central Level">
+            <component id="higher-centers" label="Higher centers" class="efferent"/>
+            <component id="medulla" label="Medulla" class="efferent"/>
+            <component id="c1-c2" label="C1-C2" class="efferent"/>
+            <component id="t1-t4" label="T1-T4" class="efferent"/>
+            <component id="carotid-body-chem" label="Carotid body chemoreceptors" class="afferent"/>
+            <component id="carotid-sinus-baro" label="Carotid sinis baroreceptors" class="afferent"/>
+            <component id="petrosal-ganglia" label="Petrosal ganglia" class="afferent"/>
+            <component id="aortic-chem" label="Aortic chemoreceptors" class="afferent"/>
+            <component id="aortic-arterial-baro" label="Aortic arterial baroreceptors" class="afferent"/>
+            <component id="nodose-afferent-soma" label="Nodose Aff. soma" class="afferent"/>
+            <component id="drg-afferent-soma" label="DRG Aff. soma" class="afferent"/>
+        </group>
+
+        <group id="intrathoracic-level" label="Intrathoracic Level">
+            <group id="intrathoracic-extracardiac-ganglia" label="Intrathoracic extracardiac ganglia">
+                <component id="intrathoracic-extracardiac-ganglia-lcn" label="Local circuit neurons" class="efferent"/>
+                <component id="intrathoracic-extracardiac-ganglia-sympath-efferent-soma"
+                           label="Sympathetic Efferent soma" class="efferent"/>
+                <component id="intrathoracic-extracardiac-ganglia-afferrent-soma"
+                           label="Afferent soma" class="afferent"/>
+            </group>
+        </group>
+
+        <group id="cardiac-level" label="Cardiac Level">
+            <group id="icns" label="Intrinsic cardiac ganglionated plexus">
+                <component id="icns-lcn" label="Local circuit neurons" class="efferent"/>
+                <component id="icns-sympath-efferent-soma"
+                           label="Sympath Efferent soma" class="efferent"/>
+                <component id="icns-parasym-efferent-soma"
+                           label="Parasym Efferent soma" class="efferent"/>
+                <component id="icns-afferrent-soma"
+                           label="Afferent soma" class="afferent"/>
+            </group>
+
+            <group id="heart" label="Heart">
+                <component id="heart-neurite-drg" label="Neurite" class="afferent" type="boundary"/>
+                <component id="heart-neurite-iteg" label="Neurite" class="afferent" type="boundary"/>
+                <component id="heart-neurite-icns" label="Neurite" class="afferent" type="boundary"/>
+
+                <component id="heart-beta-1" label="$\Beta_1$" class="efferent" type="boundary"/>
+                <component id="heart-M1" label="$\text{M}_1$" class="efferent" type="boundary"/>
+                <component id="heart-adenylate-cyclase" label="AC" class="efferent" type="boundary"/>
+                <component id="heart-Gs" label="$\text{G}_\text{s}$" class="efferent"/>
+                <component id="heart-Gi" label="$\text{G}_\text{i}$" class="efferent"/>
+            </group>
+        </group>
+
+        <!-- Connections are between components -->
+
+        <connection from="carotid-body-chem" to="petrosal-ganglia" class="afferent no-arrow"/>
+        <connection from="carotid-sinus-baro" to="petrosal-ganglia" class="afferent no-arrow"/>
+        <connection from="petrosal-ganglia" to="medulla" class="afferent"/>
+
+        <connection from="aortic-chem" to="nodose-afferent-soma" class="afferent no-arrow"/>
+        <connection from="aortic-arterial-baro" to="nodose-afferent-soma" class="afferent no-arrow"/>
+        <connection from="nodose-afferent-soma" to="medulla" class="afferent"/>
+
+        <connection from="higher-centers" to="medulla" class="afferent"/>
+        <connection from="medulla" to="higher-centers" class="efferent"/>
+
+        <connection from="c1-c2" to="medulla" class="afferent"/>
+        <connection from="medulla" to="c1-c2" class="efferent"/>
+
+        <connection from="t1-t4" to="c1-c2" class="afferent"/>
+        <connection from="c1-c2" to="t1-t4" class="efferent"/>
+
+    </components>
+
+</cell-diagram>
