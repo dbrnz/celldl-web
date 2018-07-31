@@ -27,9 +27,8 @@ import * as geo from './geometry.js';
 import * as layout from './layout.js';
 
 import {DiagramElement} from './element.js';
-import {parseColour, styleAsString} from './stylesheet.js';
+import {Edge} from './edge.js';
 import {SVG_NS} from './svgElements.js';
-import {setAttributes} from './utils.js';
 
 //==============================================================================
 
@@ -43,11 +42,14 @@ export class BondGraph
     {
         this.diagram = diagram;
         this.id = `${this.diagram.id}_bondgraph`;
+        this.edges = [];
     }
 
     addElement(element)
     //=================
     {
+        // NB. Ace editor search and replace appears to be broken so
+        //     we simply use Javascript string methods
         const text = this.diagram.editor.getValue();
         const bondGraphEndRegExp = new RegExp(`(\\n?)([ \\t]*)(</bond-graph>)`);
         this.diagram.editor.setValue(text.replace(bondGraphEndRegExp,
@@ -55,10 +57,17 @@ export class BondGraph
         this.diagram.editor.clearSelection();
     }
 
+    addEdge(edge)
+    //===========
+    {
+        this.edges.push(edge);
+        this.diagram.addEdge(edge);
+    }
+
     drawEdges(svgNode)
     //================
     {
-        for (let edge of this.diagram.edges()) {
+        for (let edge of this.edges) {
             svgNode.appendChild(edge.generateSvg());
         }
     }
@@ -99,156 +108,8 @@ export class Node extends DiagramElement
 
 //==============================================================================
 
-export class Edge
-{
-    constructor(diagram, domElement, fromId, toParent, parent, validClasses, styleElementId=null) {
-        this.diagram = diagram;
-        this.domElement = domElement;
-        this.otherId = `#${fromId}`;
-        this.other = null;
-        this.toParent = toParent;
-        this.parent = parent;
-        this.parent.addEdge(this);
-        this.validClasses = validClasses;
-        this.style = null;
-        this.styleElementId = styleElementId;
-        this.line = null;
-        this.path = null;
-        this.id = toParent ? `${fromId}-${parent.id.slice(1)}`
-                           : `${parent.id.slice(1)}-${fromId}`;
-        diagram.addEdge(this);
-    }
-
-    static createFromAttributeValue(diagram, domElement, attributeName,
-                                    toParent, parent, validClasses)
-    //=============================================================
-    {
-        if (!(attributeName in domElement.attributes)) {
-            throw new exception.KeyError(`Expected ${attributeName} attribute`);
         }
-        return new Edge(diagram, domElement, domElement.attributes[attributeName].textContent,
-                        toParent, parent, validClasses);
-    }
-
-    get diagramId()
-    //=============
-    {
-        return `${this.diagram.id}_${this.id}`;
-    }
-
-    resolveReferences()
-    //=================
-    {
-        for (let elementClass of this.validClasses) {
-            this.other = this.diagram.findElement(this.otherId, elementClass);
-            if (this.other !== null) {
-                const styleDomElement = (this.styleElementId !== null)
-                                            ? this.diagram.findElement(this.styleElementId).domElement
-                                            : this.domElement;
-                this.style = this.diagram.stylesheet.style(styleDomElement);
-                this.other.addEdge(this);
-                return;
-            }
         }
-        const names = this.validClasses.filter(c => c.name);
-        const classNames = (names.length === 1) ? names[0]
-                                                : [names.slice(0, -1).join(', '), names.slice(-1)[0]].join(' or ');
-        throw new exception.KeyError(`Can't find ${classNames} with id '${this.otherId}'`);
-    }
-
-
-    get lineColour()
-    //==============
-    {
-        return ('line-color' in this.style) ? parseColour(this.diagram, this.style['line-color'])
-                                            : '#A0A0A0'; // TODO: specify defaults in one place
-    }
-
-    parseLine()
-    //=========
-    {
-        this.line = new layout.LinePath(this.diagram, this.style, 'line-path');
-        this.line.parse();
-    }
-
-    getLineStringAsPath(fromElement, toElement)
-    //=========================================
-    {
-        const path = this.line.toLineString(this.unitConverter,
-                                            fromElement.coordinates,
-                                            toElement.coordinates);
-        const lines = path.lineSegments;
-        const coords = path.coordinates;
-        for (let n = 0; n < lines.length; ++n) {
-            if (fromElement.geometry.outside(lines[n].end)) {
-                const start = fromElement.geometry.lineIntersections(lines[n])[0];
-                lines[n] = new geo.LineSegment(start, lines[n].end);
-                coords[n] = lines[n].start;
-                break;
-            } else {
-                lines[n] = null;
-                coords[n] = null;
-            }
-        }
-        for (let n = lines.length - 1; n >= 0; --n) {
-            if (lines[n] !== null && toElement.geometry.outside(lines[n].start)) {
-                const end = toElement.geometry.lineIntersections(lines[n])[0];
-                lines[n] = (new geo.LineSegment(lines[n].start, end)).truncateEnd(5);
-                coords[n+1] = lines[n].end;
-                break;
-            } else {
-                lines[n] = null;
-                coords[n+1] = null;
-            }
-        }
-    path.lineSegments = lines.filter(line => (line !== null));
-    path.coordinates = coords.filter(coord => (coord !== null));
-    return path;
-    }
-
-    assignPath(unitConverter)
-    //=======================
-    {
-        this.unitConverter = unitConverter;
-        if (this.toParent) {
-            this.path = this.getLineStringAsPath(this.other, this.parent);
-        } else {
-            this.path = this.getLineStringAsPath(this.parent, this.other);
-        }
-    }
-
-    reassignPath()
-    //===============
-    {
-        // either parent's or other's position has changed
-        if (this.toParent) {
-            this.path = this.getLineStringAsPath(this.other, this.parent);
-        } else {
-            this.path = this.getLineStringAsPath(this.parent, this.other);
-        }
-        // we could save unitconvertor above and simply assignPath
-    }
-
-    generateSvg()
-    //===========
-    {
-        const svgNode = this.path.svgNode();
-        setAttributes(svgNode, {id: this.diagramId, fill: 'none',
-                                stroke: this.lineColour,
-                                'stroke-width': layout.STROKE_WIDTH,
-                                'marker-end': this.diagram.svgFactory.arrow(this.lineColour)});
-        if (styleAsString(this.style, 'line-style') === 'dashed') {
-            setAttributes(svgNode, {'stroke-dasharray': '10,5'});
-        }
-        return svgNode;
-    }
-
-    updateSvg()
-    //=========
-    {
-        const svgNode = this.generateSvg();
-        const currentNode = document.getElementById(this.diagramId);
-        currentNode.outerHTML = svgNode.outerHTML;
     }
 
 }
@@ -290,23 +151,23 @@ export class Edge
 
 export class FlowEdge extends Edge
 {
-    constructor(diagram, element, fromId, toParent, parent, validClasses, direction, count)
+    constructor(diagram, element, fromId, toParent, parentElement, validClasses, direction, count)
     {
-        super(diagram, element, fromId, toParent, parent, validClasses);
+        super(diagram, element, fromId, toParent, parentElement, validClasses);
         this.direction = direction;
         this.count = count;
     }
 
     static createFromAttributeValue(diagram, element, direction,
-                                    toParent, parent, validClasses)
-    //=============================================================
+                                    toParent, parentElement, validClasses)
+    //====================================================================
     {
         if (!(direction in element.attributes)) {
             throw new exception.KeyError(`Expected ${direction} attribute`);
         }
         const count = ('count' in element.attributes) ? Number(element.attributes.count.textContent) : 1;
         return new FlowEdge(diagram, element, element.attributes[direction].textContent,
-                            toParent, parent, validClasses, direction, count);
+                            toParent, parentElement, validClasses, direction, count);
     }
 
     parseLine()
@@ -325,6 +186,7 @@ export class Flow extends Node
     constructor(diagram, element)
     {
         super(diagram, element);
+        this.bondGraph = diagram.bondGraph;
 //        this.componentOffsets = [];
 //        const transporterId = ('transporter' in element.attributes) ? element.attributes.transporter : null;
 //        this.transporter = this.fromAttribute('transporter', [diagramTransporter])
@@ -336,12 +198,12 @@ export class Flow extends Node
     {
         const flowConnectsTo = [Gyrator, Potential, Reaction];
         if ('input' in domElement.attributes) {
-            FlowEdge.createFromAttributeValue(this.diagram, domElement, 'input',
-                                              true, this, flowConnectsTo);
+            this.bondGraph.addEdge(FlowEdge.createFromAttributeValue(this.diagram, domElement, 'input',
+                                                                     true, this, flowConnectsTo));
             }
         if ('output' in domElement.attributes) {
-            FlowEdge.createFromAttributeValue(this.diagram, domElement, 'output',
-                                              false, this, flowConnectsTo);
+            this.bondGraph.addEdge(FlowEdge.createFromAttributeValue(this.diagram, domElement, 'output',
+                                                                     false, this, flowConnectsTo));
         }
     }
 
@@ -424,19 +286,22 @@ export class Gyrator extends DiagramElement
     constructor(diagram, domElement)
     {
         super(diagram, domElement);
+        this.bondGraph = diagram.bondGraph;
         if (!this.label.startsWith('$')) this.label = `GY:${this.label}`;
     }
 
     addInput(domElement)
     //==================
     {
-        Edge.createFromAttributeValue(this.diagram, domElement, 'flow', true, this, [Flow]);
+        this.bondGraph.addEdge(Edge.createFromAttributeValue(this.diagram, domElement,
+                                                             'flow', true, this, [Flow]));
     }
 
     addOutput(domElement)
     //===================
     {
-        Edge.createFromAttributeValue(this.diagram, domElement, 'flow', false, this, [Flow]);
+        this.bondGraph.addEdge(Edge.createFromAttributeValue(this.diagram, domElement,
+                                                             'flow', false, this, [Flow]));
     }
 }
 
@@ -447,10 +312,14 @@ export class Potential extends Node
     constructor(diagram, domElement)
     {
         super(diagram, domElement);
+        this.bondGraph = diagram.bondGraph;
 
         if ('quantity' in domElement.attributes) {
             this.quantityId = domElement.attributes.quantity.textContent;
-            new Edge(diagram, domElement, this.quantityId, false, this, [Quantity], `#${this.quantityId}`);
+            const edge = new Edge(diagram, domElement, this.quantityId, false,
+                                  this, [Quantity], `#${this.quantityId}`);
+            this.bondGraph.addEdge(edge);
+            this.addEdge(edge);
         } else {
             this.quantityId = null;
         }
@@ -480,6 +349,7 @@ export class Quantity extends DiagramElement
 {
     constructor(diagram, domElement) {
         super(diagram, domElement);
+        this.bondGraph = diagram.bondGraph;
         this.potential = null;
     }
 
@@ -509,25 +379,29 @@ export class Reaction extends DiagramElement
     constructor(diagram, domElement)
     {
         super(diagram, domElement);
+        this.bondGraph = diagram.bondGraph;
         if (!this.label.startsWith('$')) this.label = `RE:${this.label}`;
     }
 
     addInput(domElement)
     //==================
     {
-        Edge.createFromAttributeValue(this.diagram, domElement, 'flow', true, this, [Flow]);
+        this.bondGraph.addEdge(Edge.createFromAttributeValue(this.diagram, domElement, 'flow',
+                                                             true, this, [Flow]));
     }
 
     addOutput(domElement)
     //===================
     {
-        Edge.createFromAttributeValue(this.diagram, domElement, 'flow', false, this, [Flow]);
+        this.bondGraph.addEdge(Edge.createFromAttributeValue(this.diagram, domElement, 'flow',
+                                                             false, this, [Flow]));
     }
 
     addModulator(domElement)
     //======================
     {
-        Edge.createFromAttributeValue(this.diagram, domElement, 'potential', true, this, [Potential]);
+        this.bondGraph.addEdge(Edge.createFromAttributeValue(this.diagram, domElement, 'potential',
+                                                             true, this, [Potential]));
     }
 
     assignGeometry(radius=layout.TRANSPORTER_RADIUS)
@@ -544,19 +418,22 @@ export class Transformer extends DiagramElement
     constructor(diagram, domElement)
     {
         super(diagram, domElement);
+        this.bondGraph = diagram.bondGraph;
         if (!this.label.startsWith('$')) this.label = `TF:${this.label}`;
     }
 
     addInput(domElement)
     //==================
     {
-        Edge.createFromAttributeValue(this.diagram, domElement, 'potential', true, this, [Potential]);
+        this.bondGraph.addEdge(Edge.createFromAttributeValue(this.diagram, domElement, 'potential',
+                                                             true, this, [Potential]));
     }
 
     addOutput(domElement)
     //===================
     {
-        Edge.createFromAttributeValue(this.diagram, domElement, 'potential', false, this, [Potential]);
+        this.bondGraph.addEdge(Edge.createFromAttributeValue(this.diagram, domElement, 'potential',
+                                                             false, this, [Potential]));
     }
 }
 
