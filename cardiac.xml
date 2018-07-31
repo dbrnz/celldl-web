@@ -1,39 +1,40 @@
-<cell-diagram>
+﻿<cell-diagram>
 
     <components>
         <group id="central-level" label="Central Level">
-            <component id="higher-centers" label="Higher centers" class="efferent"/>
+            <component id="higher-centers" label="Higher\nCenters" class="efferent"/>
             <component id="medulla" label="Medulla" class="efferent"/>
             <component id="c1-c2" label="C1-C2" class="efferent"/>
             <component id="t1-t4" label="T1-T4" class="efferent"/>
-            <component id="carotid-body-chem" label="Carotid body chemoreceptors" class="afferent"/>
-            <component id="carotid-sinus-baro" label="Carotid sinis baroreceptors" class="afferent"/>
-            <component id="petrosal-ganglia" label="Petrosal ganglia" class="afferent"/>
-            <component id="aortic-chem" label="Aortic chemoreceptors" class="afferent"/>
-            <component id="aortic-arterial-baro" label="Aortic arterial baroreceptors" class="afferent"/>
-            <component id="nodose-afferent-soma" label="Nodose Aff. soma" class="afferent"/>
-            <component id="drg-afferent-soma" label="DRG Aff. soma" class="afferent"/>
+            <component id="carotid-body-chem" label="Carotid body\nchemoreceptors" class="afferent"/>
+            <component id="carotid-sinus-baro" label="Carotid sinus\nbaroreceptors" class="afferent"/>
+            <component id="petrosal-ganglia" label="Petrosal\nganglia" class="afferent"/>
+            <component id="aortic-chem" label="Aortic\nchemoreceptors" class="afferent"/>
+            <component id="aortic-arterial-baro" label="Aortic arterial\nbaroreceptors" class="afferent"/>
+            <component id="nodose-afferent-soma" label="Nodose\nAff. soma" class="afferent"/>
+            <component id="drg-afferent-soma" label="DRG\nAff. soma" class="afferent"/>
         </group>
 
         <group id="intrathoracic-level" label="Intrathoracic Level">
             <group id="intrathoracic-extracardiac-ganglia" label="Intrathoracic extracardiac ganglia">
-                <component id="intrathoracic-extracardiac-ganglia-lcn" label="Local circuit neurons" class="efferent"/>
-                <component id="intrathoracic-extracardiac-ganglia-sympath-efferent-soma"
-                           label="Sympathetic Efferent soma" class="efferent"/>
+                <component id="intrathoracic-extracardiac-ganglia-lcn"
+                           label="Local Circuit\nNeurons" class="efferent"/>
                 <component id="intrathoracic-extracardiac-ganglia-afferrent-soma"
-                           label="Afferent soma" class="afferent"/>
+                           label="Afferent\nsoma" class="afferent"/>
+                <component id="intrathoracic-extracardiac-ganglia-sympath-efferent-soma"
+                           label="Sympathetic\nEfferent\nsoma" class="efferent"/>
             </group>
         </group>
 
         <group id="cardiac-level" label="Cardiac Level">
             <group id="icns" label="Intrinsic cardiac ganglionated plexus">
-                <component id="icns-lcn" label="Local circuit neurons" class="efferent"/>
+                <component id="icns-lcn" label="Local Circuit\nNeurons" class="efferent"/>
                 <component id="icns-sympath-efferent-soma"
-                           label="Sympath Efferent soma" class="efferent"/>
+                           label="Sympath\nEff. soma" class="efferent"/>
                 <component id="icns-parasym-efferent-soma"
-                           label="Parasym Efferent soma" class="efferent"/>
+                           label="Parasym\nEff. soma" class="efferent"/>
                 <component id="icns-afferrent-soma"
-                           label="Afferent soma" class="afferent"/>
+                           label="Afferent\nsoma" class="afferent"/>
             </group>
 
             <group id="heart" label="Heart">
@@ -41,8 +42,8 @@
                 <component id="heart-neurite-iteg" label="Neurite" class="afferent" type="boundary"/>
                 <component id="heart-neurite-icns" label="Neurite" class="afferent" type="boundary"/>
 
-                <component id="heart-beta-1" label="$\Beta_1$" class="efferent" type="boundary"/>
-                <component id="heart-M1" label="$\text{M}_1$" class="efferent" type="boundary"/>
+                <component id="heart-beta1" label="$\beta_1$" class="efferent" type="boundary"/>
+                <component id="heart-M2" label="$\text{M}_2$" class="efferent" type="boundary"/>
                 <component id="heart-adenylate-cyclase" label="AC" class="efferent" type="boundary"/>
                 <component id="heart-Gs" label="$\text{G}_\text{s}$" class="efferent"/>
                 <component id="heart-Gi" label="$\text{G}_\text{i}$" class="efferent"/>
@@ -68,21 +69,247 @@
         <connection from="t1-t4" to="c1-c2" class="afferent"/>
         <connection from="c1-c2" to="t1-t4" class="efferent"/>
 
+        <connection from="drg-afferent-soma" to="t1-t4" class="afferent"/>
+        <connection from="heart-neurite-drg" to="drg-afferent-soma" class="afferent"/>
+
+        <connection from="medulla"
+                    to="icns-lcn" class="efferent"/>
+        <connection from="medulla"
+                    to="icns-parasym-efferent-soma" class="efferent"/>
+
+        <connection from="t1-t4"
+                    to="intrathoracic-extracardiac-ganglia-lcn" class="efferent"/>
+        <connection from="intrathoracic-extracardiac-ganglia-lcn"
+                    to="t1-t4" class="afferent"/>
+        <connection from="t1-t4"
+                    to="intrathoracic-extracardiac-ganglia-sympath-efferent-soma" class="efferent"/>
+        <connection from="intrathoracic-extracardiac-ganglia-lcn"
+                    to="intrathoracic-extracardiac-ganglia-sympath-efferent-soma" class="efferent"/>
+        <connection from="intrathoracic-extracardiac-ganglia-sympath-efferent-soma"
+                    to="icns-lcn" class="efferent"/>
+        <connection from="intrathoracic-extracardiac-ganglia-sympath-efferent-soma"
+                    to="heart-beta1" class="efferent"/>
+
+        <connection from="icns-lcn"
+                    to="icns-sympath-efferent-soma" class="efferent"/>
+        <connection from="icns-lcn"
+                    to="icns-parasym-efferent-soma" class="efferent"/>
+
+        <connection from="icns-sympath-efferent-soma"
+                    to="heart-beta1" class="efferent"/>
+        <connection from="icns-sympath-efferent-soma"
+                    to="heart-M2" class="efferent"/>
+        <connection from="icns-parasym-efferent-soma"
+                    to="heart-beta1" class="efferent"/>
+        <connection from="icns-parasym-efferent-soma"
+                    to="heart-M2" class="efferent"/>
+
+        <connection from="icns-afferrent-soma" to="icns-lcn" class="afferent"/>
+        <connection from="heart-neurite-icns" to="icns-afferrent-soma" class="afferent"/>
+        <connection from="heart-neurite-icns" to="nodose-afferent-soma" class="afferent"/>
+
+        <connection from="heart-neurite-iteg"
+                    to="intrathoracic-extracardiac-ganglia-afferrent-soma" class="afferent"/>
+        <connection from="intrathoracic-extracardiac-ganglia-afferrent-soma"
+                    to="intrathoracic-extracardiac-ganglia-lcn" class="afferent"/>
+
+        <connection from="heart-beta1" to="heart-Gs" class="no-arrow"/>
+        <connection from="heart-M2" to="heart-Gi" class="no-arrow"/>
+        <connection from="heart-Gs" to="heart-adenylate-cyclase" class="no-arrow"/>
+        <connection from="heart-Gi" to="heart-adenylate-cyclase" class="no-arrow"/>
+
     </components>
 
     <style>
         cell-diagram {
-            width: 600;            /* SVG `pixel` units */
-            height: 500;           /* SVG `pixel` units */
+            width: 1000;            /* SVG `pixel` units */
+            height: 800;           /* SVG `pixel` units */
+        }
+
+/* Colours */
+
+        component {
+            color: #black;
+            text-color: white;
+            stroke-width: 2px;
+        }
+
+        #intrathoracic-extracardiac-ganglia,
+        #icns {
+            color: #800080;
+            text-color: white;
+            stroke: #C000C0;
+            stroke-width: 2px;
+        }
+
+        group {
+            color: white;
+            stroke: none;
+        }
+
+        #heart {
+            color: #FFC0FF;
+            stroke: red;
+        }
+
+        .afferent {
+            stroke: blue;
+            line-color: blue;
+        }
+
+        .efferent {
+            stroke: red;
+            line-color: red;
+        }
+
+/* Positions and sizes */
+
+/* Central */
+
+        #central-level {
+            color: white;
+            stroke: none;
+            position: 50%, 15%;  /* Position of centre */
+            size: 100%, 30%;
         }
 
         #higher-centers {
-            position: 15% above #medulla;
+            position: 5vh above #medulla;
+            size: 8vw, 6vh;
         }
 
         #medulla {
-            position: 20%, 45%;
+            position: 50%, 40%;
+            size: 30vw, 4vh;
+        }
+
+        #petrosal-ganglia {
+            position: 10vw left #medulla;
+            size: 8vw, 6vh;
+        }
+        #carotid-body-chem {
+            position: 10vw left #petrosal-ganglia, 2vw above #petrosal-ganglia;
+            size: 12vw, 6vh;
+        }
+        #carotid-sinus-baro {
+            position: 10vw left #petrosal-ganglia, 2vw below #petrosal-ganglia;
+            size: 10vw, 6vh;
+        }
+
+        #nodose-afferent-soma {
+            position: 10vw right #medulla;
+            size: 10vw, 6vh;
+        }
+        #aortic-chem {
+            position: 10vw right #nodose-afferent-soma, 2vw above #nodose-afferent-soma;
+            size: 12vw, 6vh;
+        }
+        #aortic-arterial-baro {
+            position: 10vw right #nodose-afferent-soma, 2vw below #nodose-afferent-soma;
+            size: 10vw, 6vh;
+        }
+
+        #c1-c2 {
+            position: 5vh below #medulla;
+            size: 10%, 12%;
+        }
+
+        #t1-t4 {
+            position: 5vh below #c1-c2;
+            size: 10%, 12%;
+        }
+
+        #drg-afferent-soma {
+            position: 20vw left #t1-t4;
+            size: 8vw, 6vh;
+        }
+
+/* Intrathoracic */
+
+        #intrathoracic-level {
+            position: 50%, 47%;
+            size: 100%, 28%;
+        }
+        #intrathoracic-extracardiac-ganglia {
+            position: 40%, 40%;
+            size: 50%, 90%;
+        }
+        #intrathoracic-extracardiac-ganglia-lcn {
+            position: 40%, 20%;
+            size: 30vw, 8vh;
+        }
+        #intrathoracic-extracardiac-ganglia-afferrent-soma {
+            position: 20%, 80%;
+            size: 10vw, 8vh;
+        }
+        #intrathoracic-extracardiac-ganglia-sympath-efferent-soma {
+            position: 50%, 80%;
+            size: 10vw, 8vh;
+        }
+
+/* Cardiac */
+
+        #cardiac-level {
+            position: 50%, 80%;
+            size: 100%, 40%;
+        }
+
+        #icns {
+            position: 60%, 30%;
+            size: 50%, 50%;
+        }
+        #icns-lcn {
+            position: 40%, 23%;
+            size: 30vw, 8vh;
+        }
+        #icns-sympath-efferent-soma {
+            position: 20%, 80%;
+            size: 10vw, 6vh;
+        }
+        #icns-parasym-efferent-soma {
+            position: 50%, 80%;
+            size: 10vw, 6vh;
+        }
+        #icns-afferrent-soma {
+            position: 80%, 80%;
+            size: 10vw, 6vh;
+        }
+
+        #heart {
+            position: 50%, 80%;
+            size: 80%, 30%;
+        }
+        #heart-neurite-drg {
+            position: 10%, 0%;
+            size: 10vw, 4vh;
+        }
+        #heart-neurite-iteg {
+            position: 25%, 0%;
+            size: 10vw, 4vh;
+        }
+        #heart-beta1 {
+            position: 50%, 0%;
+            size: 5vw, 4vh;
+        }
+        #heart-M2 {
+            position: 70%, 0%;
+            size: 5vw, 4vh;
+        }
+        #heart-neurite-icns {
+            position: 85%, 0%;
+            size: 10vw, 4vh;
+        }
+        #heart-Gi {
+            position: 65%, 48%;
+            size: 4vw, 4vh;
+        }
+        #heart-Gs {
+            position: 55%, 48%;
+            size: 4vw, 4vh;
+        }
+        #heart-adenylate-cyclase {
+            position: 60%, 100%;
+            size: 5vw, 4vh;
         }
     </style>
-
 </cell-diagram>
