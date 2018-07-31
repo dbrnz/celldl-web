@@ -152,8 +152,8 @@ export function parsePercentageOffset(tokens, defaultValue=null)
     const percentage = tokens.value;
     const unit = tokens.unit;
     const modifier = unit.substring(1);
-    if (["", "x", "y"].indexOf(modifier) < 0) {
-        throw new exception.StyleError(tokens, "Modifier (${modifier}) must be 'x' or 'y'");
+    if (["", "w", "h"].indexOf(modifier) < 0) {
+        throw new exception.StyleError(tokens, "Modifier (${modifier}) must be 'w' or 'h'");
     }
     return new layout.Offset(percentage, unit);
 }
@@ -178,8 +178,8 @@ export function parseOffset(tokens, defaultValue=null)
         }
     }
     const unit = (tokens.type === "DIMENSION") ? tokens.unit : "";
-    if (["", "x", "y"].indexOf(unit) < 0) {
-        throw new exception.StyleError(tokens, "Modifier must be 'x' or 'y'");
+    if (["vw", "vh"].indexOf(unit) < 0) {
+        throw new exception.StyleError(tokens, "Units must be 'vw' or 'vh'");
     }
     return new layout.Offset(tokens.value, unit);
 }
@@ -211,6 +211,13 @@ export function parseOffsetPair(tokens, allowLocal=true)
         throw new exception.StyleError(tokens, "Expected pair of offsets");
     }
     return offsets;
+}
+
+//==============================================================================
+
+export function parseSize(tokens)
+{
+    return parseOffsetPair(tokens, true);
 }
 
 //==============================================================================

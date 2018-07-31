@@ -172,19 +172,33 @@ export class CellDiagram {
             edge.resolveReferences();
         }
 
-        const unitConverter = new layout.UnitConverter([this.width, this.height], [this.width, this.height]);
+
+        const diagramUnitConverter = new layout.UnitConverter([this.width, this.height]);
+
+// Each group has its own unit converter
+        this.componentGroups.setUnitConverter(diagramUnitConverter);
+
         for (let node of jsnx.topologicalSort(dependencyGraph)) {
-            node.assignCoordinates(unitConverter);
+            if (!(node instanceof components.Group)) {
+                node.assignCoordinates(diagramUnitConverter);
+            }
             node.assignGeometry();
-//                if (node instanceof Compartment) {
-//                    node.setPixelSize(node.container.unitConverter.toPixelPair(node.size.size, false));
-//                    node.setUnitConverter(new layout.UnitConverter(this.pixelSize, node.pixelSize, node.position.pixels));
-//                }
         }
+/*
+            if (node instanceof components.Group) {
+                // push current UC ??
+                // node.group ??
+
+                // diagram.uc
+
+                node.setSizeAsPixels(node.container.unitConverter.toPixelPair(node.size.size, false));
+                node.setUnitConverter(new layout.UnitConverter(this.pixelSize, node.pixelSize, node.position.asPixels));
+            }
+*/
 
         for (let edge of this._edges) {
             edge.parseLine();
-            edge.assignPath(unitConverter);
+            edge.assignPath(diagramUnitConverter);
         }
 
  // Space flow lines going through a transporter

@@ -27,7 +27,7 @@ import * as geo from './geometry.js';
 import * as layout from './layout.js';
 
 import {setAttributes} from './utils.js';
-import {parseColour, styleAsString} from './stylesheet.js';
+import {parseColour, parseSize, styleAsString} from './stylesheet.js';
 import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
@@ -49,11 +49,15 @@ export class DiagramElement {
         this.id = ('id' in this.attributes) ? `#${this.attributes.id.textContent}` : '';
         this.name = ('name' in this.attributes) ? this.attributes.name.textContent : this.id.substr(1);
         this.classes = ('class' in this.attributes) ? this.attributes.class.textContent.split(/\s+/) : [];
+        // _name, _label, _classes and getters??
         this.classes.push('draggable');
         this.classes.push(this.tagName);
         this.label = ('label' in this.attributes) ? this.attributes.label.textContent : this.name;
         this.style = diagram.stylesheet.style(domElement);
         this.position = new layout.Position(diagram);
+        this.size = ('size' in this.style) ? parseSize(this.style['size']) : null;
+        this.pixelWidth = null;
+        this.pixelHeight = null;
         this.geometry = null;
         this.edges = [];
         diagram.addElement(this);
@@ -184,6 +188,9 @@ export class DiagramElement {
     assignCoordinates(unitConverter)
     //==============================
     {
+        if (this.size !== null) {
+            this.setSizeAsPixels(unitConverter.toPixelPair(this.size, false));
+        }
         this.position.assignCoordinates(unitConverter);
     }
 
@@ -211,6 +218,18 @@ export class DiagramElement {
         }
     }
 
+    get sizeAsPixels()
+    //================
+    {
+        return (this.pixelWidth !== null) ? [this.pixelWidth, this.pixelHeight] : null;
+    }
+
+    setSizeAsPixels(pixelSize)
+    //========================
+    {
+        [this.pixelWidth, this.pixelHeight] = pixelSize;
+    }
+
     assignGeometry(radius=layout.ELEMENT_RADIUS)
     //==========================================
     {
@@ -225,22 +244,36 @@ export class DiagramElement {
         this.edges.push(edge);
     }
 
+    labelSize()
+    //=========
+    {
+        return [0, 0]
+    }
+
     labelAsSvg()
     //==========
     {
         const x = this.coordinates.x;
-        const y = this.coordinates.y;
+        let y = this.coordinates.y;
         if (this.label.startsWith('$')) {
             // Pass this.textcolour to MathJax...
             // see https://groups.google.com/forum/#!msg/mathjax-users/fo93aucG5Bo/7dH3s8szbNYJ
             const rotation = Number.parseFloat(this.getStyleAsString("text-rotation", "0"));
             return this.diagram.svgFactory.typeset(this.label.slice(1, -1), x, y, rotation, this.textColour);
         } else {
-            const svgNode = document.createElementNS(SVG_NS, 'text');
-            setAttributes(svgNode, { x: x, y: y, fill: this.textColour,
-                                     'dominant-baseline': "central",
-                                     'text-anchor': "middle"});
-            svgNode.textContent = this.label;
+            const svgNode = document.createElementNS(SVG_NS, 'g');
+            const lines = this.label.split('\\n');
+            const LINE_HEIGHT = 18;
+            y -= LINE_HEIGHT*(lines.length - 1)/2;
+            for (let line of lines) {
+               const textNode = document.createElementNS(SVG_NS, 'text');
+                setAttributes(textNode, { x: x, y: y, fill: this.textColour,
+                                          'dominant-baseline': "central",
+                                          'text-anchor': "middle"});
+                textNode.textContent = line;
+                svgNode.appendChild(textNode);
+                y += LINE_HEIGHT;
+            }
             return svgNode;
         }
     }

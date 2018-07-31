@@ -407,6 +407,11 @@ export class Rectangle extends Polygon
         this.centre = new Point((topLeft.x + bottomRight.x)/2.0, (topLeft.y + bottomRight.y)/2.0);
         this.topLeft = this.centre.subtract([this.width/2.0, this.height/2.0]);
         this.bottomRight = this.centre.add([this.width/2.0, this.height/2.0]);
+        this.edges = new LineSegmentSet([new LineSegment(topLeft, topLeft.add([this.width, 0])),
+                                         new LineSegment(bottomRight.subtract([0, this.height]), bottomRight),
+                                         new LineSegment(bottomRight, bottomRight.subtract([this.width, 0])),
+                                         new LineSegment(topLeft.add([0, this.height]), topLeft)
+                                        ]);
     }
 
     outside(point)
@@ -417,8 +422,14 @@ export class Rectangle extends Polygon
             || Math.abs(offset[1]) > this.height/2.0;
     }
 
-    svgNode(expand)
-    //=============
+    lineIntersections(line)
+    //=====================
+    {
+        return new List(this.edges.lineIntersections(line));
+    }
+
+    svgNode(expand=0)
+    //===============
     {
         const svgNode = document.createElementNS(SVG_NS, 'rect');
         setAttributes(svgNode, { x: this.topLeft.x - expand/2,

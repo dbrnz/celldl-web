@@ -37,15 +37,15 @@ export const ELEMENT_RADIUS = 15;
 
 export const STROKE_WIDTH = 2.5;
 
-export const FLOW_OFFSET = {value: 60, unit: 'x'};
+export const FLOW_OFFSET = {value: 60, unit: 'vw'};
 
-export const QUANTITY_OFFSET = {value: 60, unit: 'x'};
+export const QUANTITY_OFFSET = {value: 60, unit: 'vw'};
 export const QUANTITY_WIDTH = 50;
 export const QUANTITY_HEIGHT = 33;
 
 export const TRANSPORTER_RADIUS = 20;
-export const TRANSPORTER_EXTRA = {value: 25, unit: 'x'};
-export const TRANSPORTER_WIDTH = {value: 10, unit: 'x'};
+export const TRANSPORTER_EXTRA = {value: 25, unit: 'vw'};
+export const TRANSPORTER_WIDTH = {value: 10, unit: 'vw'};
 
 export const HORIZONTAL_RELATIONS = new List(['left', 'right']);
 export const VERTICAL_RELATIONS = new List(['above', 'below']);
@@ -69,7 +69,7 @@ export class Offset {
 
 export class Position
 {
-    constructor(diagram)
+    constructor(diagram, element)
     {
         this.diagram = diagram;
         this.lengths = null;             // Position as a pair of Offsets
@@ -242,6 +242,15 @@ export class Position
             } else {
                 value += adjust;
             }
+
+            if (dependencies.length === 1 && dependencies[0].sizeAsPixels !== null) {
+                if      (reln === "left")  value -= dependencies[0].pixelWidth/2;
+                else if (reln === "right") value += dependencies[0].pixelWidth/2;
+                else if (reln === "above") value -= dependencies[0].pixelHeight/2;
+                else if (reln === "below") value += dependencies[0].pixelHeight/2;
+            }
+
+
             coordinates.setValueAt(index, value);
         }
         return [coordinates, index];
@@ -280,28 +289,12 @@ Position.orientation = {centre: -1, center: -1, left: 0, right: 0, above: 1, bel
 
 //==============================================================================
 
-export class Size
-{
-    constructor(tokens)
-    {
-        this.size = [];
-        if (tokens instanceof Array && tokens.length == 2) {
-            for (let token of tokens) {
-                this.size.push(stylesheet.parseOffset(token));
-            }
-        } else {
-            throw new exception.StyleError(tokens, "Pair of lengths expected");
-        }
-    }
-}
-
-//==============================================================================
-
 export class LinePath
 {
     constructor(diagram, style, pathAttribute)
     {
         this.diagram = diagram;
+        // TODO: all token parssing needs to be in `stylesheet.js`
         this.tokens = (pathAttribute in style) ? style[pathAttribute] : null;
         this.reversePath = false;
         this.constraints = [];
@@ -320,6 +313,7 @@ export class LinePath
         let lineOffset = null;
 
         let state = 0;
+        // TODO: all token parssing needs to be in `stylesheet.js`
         for (let token of tokens.value) {
             switch (state) {
               case 0:
@@ -421,7 +415,7 @@ export class LinePath
 
     parse()
     //=====
-    {
+    {   // TODO: all token parssing needs to be in `stylesheet.js`
         if (this.tokens !== null) {
             if (this.tokens.type !== 'FUNCTION' || ['begin', 'end'].indexOf(this.tokens.name.value) < 0) {
                 throw new exception.StyleError(this.tokens, 'Invalid path specification');
@@ -481,7 +475,7 @@ export class LinePath
 
 export class UnitConverter
 {
-    constructor(globalSize, localSize, localOffset=[0, 0])
+    constructor(globalSize, localSize=null, localOffset=null)
     {
         /*
         :param globalSize: tuple(width, height) of diagram, in pixels
@@ -489,14 +483,20 @@ export class UnitConverter
         :param localOffset: tuple(x_pos, y_pos) of current container, in pixels
         */
         this.globalSize = globalSize;
+        if (localSize === null) {
+            localSize = globalSize;
+        }
         this.localSize = localSize;
+        if (localOffset === null) {
+            localOffset = [0, 0];
+        }
         this.localOffset = localOffset;
     }
 
     toString()
     //========
     {
-        return "UC: global=${this.globalSize}, local=${this.localSize}, offset=${this.localOffset}";
+        return `UC: global=[${this.globalSize[0]}, ${this.globalSize[1]}], local=[${this.localSize[0]}, ${this.localSize[1]}], offset=[${this.localOffset[0]}, ${this.localOffset[1]}]`;
     }
 
     toPixels(length, index, addOffset=true)
@@ -505,16 +505,16 @@ export class UnitConverter
         let pixels = 0;
         if (length !== null) {
             const unit = length.unit;
-            if (unit.indexOf('x') >= 0) {
+            if (unit.indexOf('w') >= 0) {
                 index = 0;
-            } else if (unit.indexOf('y') >= 0) {
+            } else if (unit.indexOf('h') >= 0) {
                 index = 1;
             }
             if (unit.startsWith("%")) {
-                const offset = length.offset*this.localSize[index]/ 100.0;
+                const offset = length.offset*this.localSize[index]/100.0;
                 pixels = (addOffset ? this.localOffset[index] : 0) + offset;
             } else {
-                pixels = length.offset*this.globalSize[index]/1000.0;
+                pixels = length.offset*this.globalSize[index]/100.0;
             }
         }
         return pixels;

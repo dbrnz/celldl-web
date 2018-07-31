@@ -23,6 +23,8 @@ limitations under the License.
 //==============================================================================
 
 import * as exception from './exception.js';
+import * as geo from './geometry.js';
+import * as layout from './layout.js';
 
 import {DiagramElement} from './element.js';
 import {Edge} from './edge.js';
@@ -46,6 +48,7 @@ export class ComponentGroups
     //=====================
     {
         this.components.push(component);
+        component.group = this;
     }
 
     addConnection(connection)
@@ -59,6 +62,20 @@ export class ComponentGroups
     //=============
     {
         this.groups.push(group);
+        group.group = this;
+    }
+
+    setUnitConverter(diagramUnitConverter)
+    //====================================
+    {
+        this.unitConverter = diagramUnitConverter;
+        for (let group of this.groups) {
+            group.assignCoordinates(diagramUnitConverter);
+            if (group.size !== null) {
+                group.setSizeAsPixels(this.unitConverter.toPixelPair(group.size, false));
+            }
+            group.setUnitConverter(diagramUnitConverter.globalSize);
+        }
     }
 
     generateSvg()
@@ -66,11 +83,11 @@ export class ComponentGroups
     {
         const svgNode = document.createElementNS(SVG_NS, 'g');
         svgNode.id = this.id;
-        for (let connection of this.connections) {
-            svgNode.appendChild(connection.generateSvg());
-        }
         for (let group of this.groups) {
             svgNode.appendChild(group.generateSvg());
+        }
+        for (let connection of this.connections) {
+            svgNode.appendChild(connection.generateSvg());
         }
         for (let component of this.components) {
             svgNode.appendChild(component.generateSvg());
@@ -86,6 +103,36 @@ export class Component extends DiagramElement
     constructor(diagram, domElement)
     {
         super(diagram, domElement);
+        this.group = null;
+    }
+
+    setGroup(group)
+    //=============
+    {
+        this.group = group;
+        this.position.addDependency(group);
+    }
+
+    assignCoordinates(unitConverter)
+    //==============================
+    {
+        super.assignCoordinates(this.group === null ? unitConverter
+                                                    : this.group.unitConverter);
+        if (this.sizeAsPixels === null) {
+            this.setSizeAsPixels([100, 50]);
+        }
+    }
+
+    assignGeometry()
+    //==============
+    {
+        if (this.hasCoordinates) {
+            const [width, height] = this.sizeAsPixels;
+            const x = this.coordinates.x;
+            const y = this.coordinates.y;
+            this.geometry = new geo.Rectangle([x - width/2, y - height/2],
+                                              [x + width/2, y + height/2]);
+        }
     }
 }
 
@@ -116,25 +163,63 @@ export class Group extends DiagramElement
         super(diagram, domElement);
         this.components = [];
         this.groups = [];
+        this.group = null;
+        this.unitConverter = null;
     }
 
     addComponent(component)
     //=====================
     {
         this.components.push(component);
+        component.setGroup(this);
     }
 
     addGroup(group)
     //=============
     {
         this.groups.push(group);
+        group.position.addDependency(this);
+        group.group = this;
+    }
+
+    setUnitConverter(diagramSize)
+    //===========================
+    {
+        const [width, height] = this.sizeAsPixels;
+        this.unitConverter = new layout.UnitConverter(diagramSize, this.sizeAsPixels,
+                                                      this.coordinates.subtract([width/2, height/2]).asOffset());
+        for (let group of this.groups) {
+            group.assignCoordinates(this.unitConverter);
+            group.setUnitConverter(diagramSize);
+        }
+    }
+
+    assignCoordinates(unitConverter)
+    //==============================
+    {
+        super.assignCoordinates(this.group === null ? unitConverter
+                                                    : this.group.unitConverter);
+        if (this.sizeAsPixels === null) {
+            this.setSizeAsPixels([300, 200]);
+        }
+    }
+
+    assignGeometry()
+    //==============
+    {
+        if (this.hasCoordinates) {
+            const [width, height] = this.sizeAsPixels;
+            const x = this.coordinates.x;
+            const y = this.coordinates.y;
+            this.geometry = new geo.Rectangle([x - width/2, y - height/2],
+                                              [x + width/2, y + height/2]);
+        }
     }
 
     generateSvg()
     //===========
     {
-        const svgNode = document.createElementNS(SVG_NS, 'g');
-        setAttributes(svgNode, this.diagramIdClass(), this.display);
+        const svgNode = super.generateSvg();
         for (let group of this.groups) {
             svgNode.appendChild(group.generateSvg());
         }
