@@ -26,6 +26,7 @@ import * as exception from './exception.js';
 
 import {DiagramElement} from './element.js';
 import {Edge} from './edge.js';
+import {setAttributes} from './utils.js';
 import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
@@ -65,7 +66,15 @@ export class ComponentGroups
     {
         const svgNode = document.createElementNS(SVG_NS, 'g');
         svgNode.id = this.id;
-
+        for (let connection of this.connections) {
+            svgNode.appendChild(connection.generateSvg());
+        }
+        for (let group of this.groups) {
+            svgNode.appendChild(group.generateSvg());
+        }
+        for (let component of this.components) {
+            svgNode.appendChild(component.generateSvg());
+        }
         return svgNode;
     }
 }
@@ -119,6 +128,20 @@ export class Group extends DiagramElement
     //=============
     {
         this.groups.push(group);
+    }
+
+    generateSvg()
+    //===========
+    {
+        const svgNode = document.createElementNS(SVG_NS, 'g');
+        setAttributes(svgNode, this.diagramIdClass(), this.display);
+        for (let group of this.groups) {
+            svgNode.appendChild(group.generateSvg());
+        }
+        for (let component of this.components) {
+            svgNode.appendChild(component.generateSvg());
+        }
+        return svgNode;
     }
 }
 

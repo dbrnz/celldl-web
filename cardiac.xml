@@ -70,4 +70,19 @@
 
     </components>
 
+    <style>
+        cell-diagram {
+            width: 600;            /* SVG `pixel` units */
+            height: 500;           /* SVG `pixel` units */
+        }
+
+        #higher-centers {
+            position: 15% above #medulla;
+        }
+
+        #medulla {
+            position: 20%, 45%;
+        }
+    </style>
+
 </cell-diagram>
