@@ -164,7 +164,7 @@ export class Group extends DiagramElement
     constructor(diagram, domElement)
     {
         super(diagram, domElement);
-        this.components = [];
+        this.elements = [];
         this.groups = [];
         this.group = null;
         this.unitConverter = null;
@@ -173,13 +173,14 @@ export class Group extends DiagramElement
     addComponent(component)
     //=====================
     {
-        this.components.push(component);
+        this.elements.push(component);
         component.setGroup(this);
     }
 
     addGroup(group)
     //=============
     {
+        this.elements.push(group);
         this.groups.push(group);
         group.position.addDependency(this);
         group.group = this;
@@ -221,15 +222,31 @@ export class Group extends DiagramElement
         }
     }
 
-    generateSvg()
+    move(offset)
+    //==========
+    {
+        super.move(offset);
+        for (let element of this.elements) {
+            element.move(offset, false);
+        }
+        this.redrawEdges();
+    }
+
+    redrawEdges()
     //===========
     {
-        const svgNode = super.generateSvg();
-        for (let group of this.groups) {
-            svgNode.appendChild(group.generateSvg());
+        super.redrawEdges();
+        for (let element of this.elements) {
+            element.redrawEdges();
         }
-        for (let component of this.components) {
-            svgNode.appendChild(component.generateSvg());
+    }
+
+    generateSvg(highlight=false)
+    //==========================
+    {
+        const svgNode = super.generateSvg(highlight);
+        for (let element of this.elements) {
+            svgNode.appendChild(element.generateSvg());
         }
         return svgNode;
     }

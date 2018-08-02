@@ -198,7 +198,8 @@ export class CellDiagram {
 
         for (let edge of this._edges) {
             edge.parseLine();
-            edge.assignPath(diagramUnitConverter);
+            edge.setUnitConverter(diagramUnitConverter);
+            edge.assignPath();
         }
 
  // Space flow lines going through a transporter
@@ -239,28 +240,8 @@ export class CellDiagram {
         return svgNode;
     }
 
-    highlight(element, highlight)
-    //===========================
-    {
-        element.updateSvg(highlight);
-    }
-
-    reposition(element, offset, highlight=false)
-    //==========================================
-    {
-        element.position.addOffset(offset);
-        element.assignGeometry();
-
-        for (let edge of element.edges) {
-            edge.reassignPath();
-            edge.updateSvg();
-        }
-
-        element.updateSvg(highlight);
-    }
-
-    addManualPosition(element)
-    //========================
+    addManualPositionedElement(element)
+    //=================================
     {
         if (!this._manualPositions.includes(element.id)) {
             this._manualPositions.push(element.id);

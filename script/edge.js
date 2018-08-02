@@ -46,6 +46,7 @@ export class Edge
         this.styleElementId = styleElementId;
         this.line = null;
         this.path = null;
+        this.validPath = false;
         this.id = toParent ? `${fromId}-${parentElement.id.slice(1)}`
                            : `${parentElement.id.slice(1)}-${fromId}`;
     }
@@ -140,27 +141,33 @@ export class Edge
     return path;
     }
 
-    assignPath(unitConverter)
-    //=======================
+    setUnitConverter(unitConverter)
+    //=============================
     {
         this.unitConverter = unitConverter;
-        if (this.toParent) {
-            this.path = this.getLineStringAsPath(this.otherElement, this.parentElement);
-        } else {
-            this.path = this.getLineStringAsPath(this.parentElement, this.otherElement);
-        }
     }
 
-    reassignPath()
-    //===============
+    assignPath()
+    //==========
     {
-        // either parent's or other's position has changed
         if (this.toParent) {
             this.path = this.getLineStringAsPath(this.otherElement, this.parentElement);
         } else {
             this.path = this.getLineStringAsPath(this.parentElement, this.otherElement);
         }
-        // we could save unitconvertor above and simply assignPath
+        this.validPath = true;
+    }
+
+    get invalidPath()
+    //===============
+    {
+        return (this.validPath === false);
+    }
+
+    invalidatePath()
+    //==============
+    {
+        this.validPath = false;
     }
 
     generateSvg()

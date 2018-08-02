@@ -151,9 +151,16 @@ export class DiagramEditor
                 if (diagramElement !== null) {
                     if (this.diagramElement !== null
                      && this.diagramElement !== diagramElement) {
-                        this.diagram.highlight(this.diagramElement, false);
+                        this.diagramElement.updateSvg(false);
                     }
-                    this.diagram.highlight(diagramElement, true);
+// TODO: Unselect any palette element...
+                    diagramElement.updateSvg(true);
+                    if (event.altKey) {
+                        if (this.diagramElement !== diagramElement) {
+                            this.diagram.bondGraph.connect(this.diagramElement, diagramElement);
+                            diagramElement.updateSVG(true);
+                        }
+                    }
                     this.diagramElement = diagramElement;
                     this.startPosition = this.getMousePosition(event);
                     this.elementStartCoordinates = diagramElement.coordinates;
@@ -165,7 +172,7 @@ export class DiagramEditor
                 if (nodePosition === 0) {
                     // if `svg` is first node in path then are we in clear space
                     if (this.diagramElement !== null) {
-                        this.diagram.highlight(this.diagramElement, false);
+                        this.diagramElement.updateSvg(false);
                         this.diagramElement = null;
                     }
                     const newElement = this.palette.copySelectedElementTo(this.diagram);
@@ -207,9 +214,9 @@ export class DiagramEditor
         if (this.moving && this.diagramElement !== null) {
             event.preventDefault();
             const position = this.getMousePosition(event);
-            this.diagram.reposition(this.diagramElement,
-                                    [position.x - this.startPosition.x,
-                                     position.y - this.startPosition.y], true);
+            this.diagramElement.move([position.x - this.startPosition.x,
+                                      position.y - this.startPosition.y]);
+            this.diagramElement.updateSvg(true);
             this.startPosition = position;
             this.elementCurrentCoordinates = this.diagramElement.coordinates;
         }
@@ -226,7 +233,7 @@ export class DiagramEditor
         // Add/update CSS rule giving element's final position
 
         if (this.diagramElement != null) {
-            this.diagram.addManualPosition(this.diagramElement);
+            this.diagram.addManualPositionedElement(this.diagramElement);
         }
 
         this.moving = false;
