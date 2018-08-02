@@ -271,10 +271,43 @@ export class DiagramElement {
         }
     }
 
+    move(offset, drawEdges=true)
+    //==========================
+    {
+        this.invalidateEdges();
+        this.position.addOffset(offset);
+        if (this.textPosition !== this.position) {
+            this.textPosition.addOffset(offset);
+        }
+        this.assignGeometry();
+        if (drawEdges) {
+            this.redrawEdges();
+        }
+    }
+
     addEdge(edge)
     //===========
     {
         this.edges.push(edge);
+    }
+
+    invalidateEdges()
+    //===============
+    {
+        for (let edge of this.edges) {
+            edge.invalidatePath();
+        }
+    }
+
+    redrawEdges()
+    //===========
+    {
+        for (let edge of this.edges) {
+            if (edge.invalidPath) {
+                edge.assignPath();
+                edge.updateSvg();
+            }
+        }
     }
 
     labelSize()

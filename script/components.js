@@ -222,14 +222,16 @@ export class Group extends DiagramElement
         }
     }
 
-    move(offset)
-    //==========
+    move(offset, drawEdges=true)
+    //==========================
     {
-        super.move(offset);
+        super.move(offset, false);
         for (let element of this.elements) {
             element.move(offset, false);
         }
-        this.redrawEdges();
+        if (drawEdges) {
+            this.redrawEdges();
+        }
     }
 
     redrawEdges()
