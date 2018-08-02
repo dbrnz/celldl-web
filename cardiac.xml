@@ -263,7 +263,7 @@
             size: 50%, 90%;
             }
         #intrathoracic-extracardiac-ganglia-label {
-            text-position: 148%, 60%;
+            position: 148%, 50%;
         }
         #intrathoracic-extracardiac-ganglia-lcn {
             position: 40%, 23%;
