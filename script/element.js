@@ -54,8 +54,8 @@ export class DiagramElement {
         this.classes.push(this.tagName);
         this.label = ('label' in this.attributes) ? this.attributes.label.textContent : this.name;
         this.style = diagram.stylesheet.style(domElement);
-        this.position = new layout.Position(diagram);
-        this.textPosition = new layout.Position(diagram);
+        this.position = new layout.Position(diagram, this);
+        this.textPosition = new layout.Position(diagram, this);
         this.size = ('size' in this.style) ? stylesheet.parseSize(this.style['size']) : null;
         this.pixelWidth = null;
         this.pixelHeight = null;

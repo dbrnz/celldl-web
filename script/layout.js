@@ -72,6 +72,7 @@ export class Position
     constructor(diagram, element)
     {
         this.diagram = diagram;
+        this.element = element;
         this.lengths = null;             // Position as a pair of Offsets
         this.relationships = [];
         this.coordinates = null;         // Resolved position in pixels
@@ -136,8 +137,8 @@ export class Position
                              coordinates.y/dependencies.length);
     }
 
-    parseComponent(tokens, previousDirn, defaultOffset, defaultDependency)
-    //====================================================================
+    parseComponent(tokens, previousDirn, defaultOffset=null, defaultDependency=null)
+    //==============================================================================
     {
         let offset = null;
         let usingDefaultOffset = false;
@@ -225,8 +226,8 @@ export class Position
         }
     }
 
-    static getCoordinates(unitConverter, offset, reln, dependencies)
-    //==============================================================
+    getCoordinates(unitConverter, offset, reln, dependencies)
+    //=======================================================
     {
         /*
         :return: tuple(tuple(x, y), index) where index == 0 means
@@ -242,15 +243,18 @@ export class Position
             } else {
                 value += adjust;
             }
-
             if (dependencies.length === 1 && dependencies[0].sizeAsPixels !== null) {
                 if      (reln === "left")  value -= dependencies[0].pixelWidth/2;
                 else if (reln === "right") value += dependencies[0].pixelWidth/2;
                 else if (reln === "above") value -= dependencies[0].pixelHeight/2;
                 else if (reln === "below") value += dependencies[0].pixelHeight/2;
             }
-
-
+            if (this.element.sizeAsPixels !== null) {
+                if      (reln === "left")  value -= this.element.pixelWidth/2;
+                else if (reln === "right") value += this.element.pixelWidth/2;
+                else if (reln === "above") value -= this.element.pixelHeight/2;
+                else if (reln === "below") value += this.element.pixelHeight/2;
+            }
             coordinates.setValueAt(index, value);
         }
         return [coordinates, index];
@@ -267,16 +271,16 @@ export class Position
                 const offset = this.relationships[0].offset;
                 const reln = this.relationships[0].relation;
                 const dependencies = this.relationships[0].dependencies;
-                this.coordinates = Position.getCoordinates(unitConverter, offset, reln, dependencies)[0];
+                this.coordinates = this.getCoordinates(unitConverter, offset, reln, dependencies)[0];
             } else {
                 this.coordinates = new geo.Point(0, 0);
                 for (let relationship of this.relationships) {
                     const offset = relationship.offset;
                     const reln = relationship.relation;
                     const dependencies = relationship.dependencies;
-                    let [coordinates, index] = Position.getCoordinates(unitConverter, offset, reln, dependencies);
+                    let [coordinates, index] = this.getCoordinates(unitConverter, offset, reln, dependencies);
                     if (offset === null) {
-                        index -= 1;
+                        index = 1 - index;
                     }
                     this.coordinates.setValueAt(index, coordinates.valueAt(index));
                 }
