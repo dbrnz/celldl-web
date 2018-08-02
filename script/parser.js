@@ -94,7 +94,6 @@ export class Parser
                 throw new exception.SyntaxError(e, "Invalid element for <components>");
             }
         }
-
     }
 
     parseComponent(element)

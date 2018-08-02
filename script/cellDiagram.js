@@ -155,7 +155,6 @@ export class CellDiagram {
         for (let element of this._elements) {
             element.resolveReferences();
             element.parsePosition();
-
             if (!element.hasValidPosition) {
                 element.position.coordinates = new geo.Point(25, 20);
             }
