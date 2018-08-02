@@ -128,7 +128,7 @@ export class Position
         let coordinates = new geo.Point(0, 0);
         for (let dependency of dependencies) {
             if (!dependency.hasCoordinates) {
-                throw new exception.ReferenceError(`No coordinates for the '${dependency}' element`);
+                throw new exception.ValueError(`No coordinates for the '${dependency}' element`);
             }
             coordinates = coordinates.add(dependency.coordinates.asOffset());
         }
