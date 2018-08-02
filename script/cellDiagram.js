@@ -251,11 +251,10 @@ export class CellDiagram {
             for (let id of this._manualPositions) {
                 const e = this.findElement(id);
                 if (e !== null) {
+                    // % needs to be local using unitconverter...
                     let w = 100*e.coordinates.x/this.width;
-                    if (w < 0) w = 0; else if (w > 100) w = 100;
                     let h = 100*e.coordinates.y/this.height;
-                    if (h < 0) h = 0; else if (h > 100) h = 100;
-                    positions.push(`    ${e.id} { position: ${w.toFixed(2)}%, ${h.toFixed(2)}%; }`);
+                    positions.push(`    ${e.id} { position: ${w.toFixed(2)}vw, ${h.toFixed(2)}vh; }`);
                 }
             }
             positions.push('</style>');
