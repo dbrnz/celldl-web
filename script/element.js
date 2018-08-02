@@ -25,9 +25,9 @@ limitations under the License.
 import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
+import * as stylesheet from './stylesheet.js';
 
 import {setAttributes} from './utils.js';
-import {parseColour, parseSize, styleAsString} from './stylesheet.js';
 import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
@@ -55,7 +55,8 @@ export class DiagramElement {
         this.label = ('label' in this.attributes) ? this.attributes.label.textContent : this.name;
         this.style = diagram.stylesheet.style(domElement);
         this.position = new layout.Position(diagram);
-        this.size = ('size' in this.style) ? parseSize(this.style['size']) : null;
+        this.textPosition = new layout.Position(diagram);
+        this.size = ('size' in this.style) ? stylesheet.parseSize(this.style['size']) : null;
         this.pixelWidth = null;
         this.pixelHeight = null;
         this.geometry = null;
@@ -122,7 +123,7 @@ export class DiagramElement {
     get colour()
     //==========
     {
-        return ('color' in this.style) ? parseColour(this.diagram, this.style.color)
+        return ('color' in this.style) ? stylesheet.parseColour(this.diagram, this.style.color)
                                        : '#808080'; // TODO: specify defaults in one place
     }
 
@@ -133,11 +134,23 @@ export class DiagramElement {
         return d ? {display: d} : {};
     }
 
-    get textColour()
+    get fontSize()
+    //============
+    {
+        return ('font-size' in this.style) ? stylesheet.parseNumber(this.style['font-size'])
+                                           : 18; // TODO: specify defaults in one place
+    }
+
+    get fontStyle()
+    //=============
+    {
+        return this.getStyleAsString('font-style', '');
+    }
+
+    get fontWeight()
     //==============
     {
-        return ('text-color' in this.style) ? parseColour(this.diagram, this.style['text-color'])
-                                            : '#202020'; // TODO: specify defaults in one place
+        return this.getStyleAsString('font-weight', '');
     }
 
     get stroke()
@@ -152,10 +165,17 @@ export class DiagramElement {
         return this.getStyleAsString('stroke-width', '1');
     }
 
+    get textColour()
+    //==============
+    {
+        return ('text-color' in this.style) ? stylesheet.parseColour(this.diagram, this.style['text-color'])
+                                            : '#202020'; // TODO: specify defaults in one place
+    }
+
     getStyleAsString(name, defaultValue='')
     //=====================================
     {
-        return styleAsString(this.style, name, defaultValue);
+        return stylesheet.styleAsString(this.style, name, defaultValue);
     }
 
     hasClass(name)
@@ -194,6 +214,14 @@ export class DiagramElement {
         this.position.assignCoordinates(unitConverter);
     }
 
+    assignTextCoordinates(unitConverter)
+    //==================================
+    {
+        if (this.textPosition !== this.position) {
+            this.textPosition.assignCoordinates(unitConverter);
+        }
+    }
+
     get hasCoordinates()
     //==================
     {
@@ -215,6 +243,11 @@ export class DiagramElement {
         */
         if ('position' in this.style) {
             this.position.parse(this.style.position, defaultOffset, defaultDependency);
+        }
+        if ('text-position' in this.style) {
+            this.textPosition.parse(this.style['text-position'], null, defaultDependency);
+        } else {
+            this.textPosition = this.position;
         }
     }
 
@@ -250,31 +283,41 @@ export class DiagramElement {
         return [0, 0]
     }
 
-    labelAsSvg()
-    //==========
+    appendLabelAsSvg(parentNode)
+    //==========================
     {
-        const x = this.coordinates.x;
-        let y = this.coordinates.y;
+        let [x, y] = this.textPosition.coordinates.asOffset();
         if (this.label.startsWith('$')) {
             // Pass this.textcolour to MathJax...
             // see https://groups.google.com/forum/#!msg/mathjax-users/fo93aucG5Bo/7dH3s8szbNYJ
             const rotation = Number.parseFloat(this.getStyleAsString("text-rotation", "0"));
-            return this.diagram.svgFactory.typeset(this.label.slice(1, -1), x, y, rotation, this.textColour);
-        } else {
+            parentNode.appendChild(this.diagram.svgFactory.typeset(this.label.slice(1, -1),
+                                                                   x, y, rotation, this.textColour));
+        } else if (this.label !== "") {
             const svgNode = document.createElementNS(SVG_NS, 'g');
             const lines = this.label.split('\\n');
-            const LINE_HEIGHT = 18;
+            const LINE_HEIGHT = this.fontSize; // Baseline to baseline height
             y -= LINE_HEIGHT*(lines.length - 1)/2;
             for (let line of lines) {
-               const textNode = document.createElementNS(SVG_NS, 'text');
-                setAttributes(textNode, { x: x, y: y, fill: this.textColour,
-                                          'dominant-baseline': "central",
-                                          'text-anchor': "middle"});
+                const textNode = document.createElementNS(SVG_NS, 'text');
+                const textAttributes = { x: x, y: y, fill: this.textColour,
+                                         'dominant-baseline': "central",
+                                         'text-anchor': "middle",
+                                         'font-size': LINE_HEIGHT};
+                const styleAttributes = [];
+                if (this.fontStyle !== "") {
+                    styleAttributes.push(`font-style: ${this.fontStyle};`)
+                }
+                if (this.fontWeight !== "") {
+                    styleAttributes.push(`font-weight: ${this.fontWeight};`)
+                }
+                textAttributes.style = styleAttributes.join(' ');
+                setAttributes(textNode, textAttributes);
                 textNode.textContent = line;
                 svgNode.appendChild(textNode);
                 y += LINE_HEIGHT;
             }
-            return svgNode;
+            parentNode.appendChild(svgNode);
         }
     }
 
@@ -288,7 +331,7 @@ export class DiagramElement {
             setAttributes(node, { stroke: this.stroke, fill: this.colour,
                                   'stroke-width': this.strokeWidth});
             svgNode.appendChild(node);
-            svgNode.appendChild(this.labelAsSvg());
+            this.appendLabelAsSvg(svgNode);
             if (highlight) {
                 const border = this.geometry.svgNode(HIGHLIGHT_BORDER + 2);
                 setAttributes(border, { "fill": "none",

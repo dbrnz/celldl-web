@@ -116,11 +116,14 @@ export class Component extends DiagramElement
     assignCoordinates(unitConverter)
     //==============================
     {
-        super.assignCoordinates(this.group === null ? unitConverter
-                                                    : this.group.unitConverter);
+        if (this.group !== null) {
+            unitConverter = this.group.unitConverter;
+        }
+        super.assignCoordinates(unitConverter);
         if (this.sizeAsPixels === null) {
             this.setSizeAsPixels([100, 50]);
         }
+        super.assignTextCoordinates(unitConverter);
     }
 
     assignGeometry()
@@ -188,6 +191,8 @@ export class Group extends DiagramElement
         const [width, height] = this.sizeAsPixels;
         this.unitConverter = new layout.UnitConverter(diagramSize, this.sizeAsPixels,
                                                       this.coordinates.subtract([width/2, height/2]).asOffset());
+        this.assignTextCoordinates(this.unitConverter);
+
         for (let group of this.groups) {
             group.assignCoordinates(this.unitConverter);
             group.setUnitConverter(diagramSize);
