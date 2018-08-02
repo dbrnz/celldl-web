@@ -1,7 +1,7 @@
 ﻿<cell-diagram>
 
     <components>
-        <group id="central-level" label="Central Level">
+        <group id="central-level" label="Central\nLevel" class="level">
             <component id="higher-centers" label="Higher\nCenters" class="efferent"/>
             <component id="medulla" label="Medulla" class="efferent"/>
             <component id="c1-c2" label="C1-C2" class="efferent"/>
@@ -13,10 +13,14 @@
             <component id="aortic-arterial-baro" label="Aortic arterial\nbaroreceptors" class="afferent"/>
             <component id="nodose-afferent-soma" label="Nodose\nAff. soma" class="afferent"/>
             <component id="drg-afferent-soma" label="DRG\nAff. soma" class="afferent"/>
+            <component id="spinal-cord" label="Spinal\nCord" class="big-label"/>
+            <component id="brainstem" label="Brainstem" class="big-label"/>
         </group>
 
-        <group id="intrathoracic-level" label="Intrathoracic Level">
-            <group id="intrathoracic-extracardiac-ganglia" label="Intrathoracic extracardiac ganglia">
+        <group id="intrathoracic-level" label="Intra-\nthoracic\nLevel" class="level">
+            <group id="intrathoracic-extracardiac-ganglia" label="" class="module">
+                <component id="intrathoracic-extracardiac-ganglia-label"
+                           label="Intrathoracic\nExtracardiac\nGanglia" class="big-label"/>
                 <component id="intrathoracic-extracardiac-ganglia-lcn"
                            label="Local Circuit\nNeurons" class="efferent"/>
                 <component id="intrathoracic-extracardiac-ganglia-afferrent-soma"
@@ -26,8 +30,9 @@
             </group>
         </group>
 
-        <group id="cardiac-level" label="Cardiac Level">
-            <group id="icns" label="Intrinsic cardiac ganglionated plexus">
+        <group id="cardiac-level" label="Cardiac\nLevel" class="level">
+            <group id="icns" label="" class="module">
+                <component id="icns-label" label="Intrinsic\nCardiac\nGanglionated\nPlexus" class="big-label"/>
                 <component id="icns-lcn" label="Local Circuit\nNeurons" class="efferent"/>
                 <component id="icns-sympath-efferent-soma"
                            label="Sympath\nEff. soma" class="efferent"/>
@@ -37,7 +42,7 @@
                            label="Afferent\nsoma" class="afferent"/>
             </group>
 
-            <group id="heart" label="Heart">
+            <group id="heart" label="Heart" class="big-label">
                 <component id="heart-neurite-drg" label="Neurite" class="afferent" type="boundary"/>
                 <component id="heart-neurite-iteg" label="Neurite" class="afferent" type="boundary"/>
                 <component id="heart-neurite-icns" label="Neurite" class="afferent" type="boundary"/>
@@ -127,6 +132,18 @@
         }
 
 /* Colours */
+        .level {
+            font-size: 30;
+            font-style: italic;
+            font-weight: bold;
+            text-color: #808080;
+        }
+        .big-label {
+            font-size: 30;
+            font-weight: bold;
+            text-color: black;
+            color: none;
+        }
 
         component {
             color: #black;
@@ -134,12 +151,10 @@
             stroke-width: 2px;
         }
 
-        #intrathoracic-extracardiac-ganglia,
-        #icns {
+        .module {
             color: #800080;
-            text-color: white;
-            stroke: #C000C0;
-            stroke-width: 2px;
+            stroke: #400040;
+            stroke-width: 4px;
         }
 
         group {
@@ -167,20 +182,21 @@
 /* Central */
 
         #central-level {
-            color: white;
+            color: #D0FFFF;
             stroke: none;
             position: 50%, 15%;  /* Position of centre */
             size: 100%, 30%;
+            text-position: 7%, 85%;  /* Relative positioning requires better dependency code... */
         }
 
         #higher-centers {
-            position: 5vh above #medulla;
+            position: 6vh above #medulla;
             size: 8vw, 6vh;
         }
 
         #medulla {
-            position: 50%, 40%;
-            size: 30vw, 4vh;
+            position: 55%, 40%;
+            size: 40vw, 4vh;
         }
 
         #petrosal-ganglia {
@@ -188,25 +204,25 @@
             size: 8vw, 6vh;
         }
         #carotid-body-chem {
-            position: 10vw left #petrosal-ganglia, 2vw above #petrosal-ganglia;
+            position: 10vw left #petrosal-ganglia, 1vw above #petrosal-ganglia;
             size: 12vw, 6vh;
         }
         #carotid-sinus-baro {
-            position: 10vw left #petrosal-ganglia, 2vw below #petrosal-ganglia;
-            size: 10vw, 6vh;
+            position: 10vw left #petrosal-ganglia, 1vw below #petrosal-ganglia;
+            size: 12vw, 6vh;
         }
 
         #nodose-afferent-soma {
-            position: 10vw right #medulla;
+            position: 20vw right #c1-c2 #t1-t4;
             size: 10vw, 6vh;
         }
         #aortic-chem {
-            position: 10vw right #nodose-afferent-soma, 2vw above #nodose-afferent-soma;
+            position: 10vw right #nodose-afferent-soma, 1vw above #nodose-afferent-soma;
             size: 12vw, 6vh;
         }
         #aortic-arterial-baro {
-            position: 10vw right #nodose-afferent-soma, 2vw below #nodose-afferent-soma;
-            size: 10vw, 6vh;
+            position: 10vw right #nodose-afferent-soma, 1vw below #nodose-afferent-soma;
+            size: 12vw, 6vh;
         }
 
         #c1-c2 {
@@ -220,50 +236,70 @@
         }
 
         #drg-afferent-soma {
-            position: 20vw left #t1-t4;
+            position: 15vh below #petrosal-ganglia #carotid-body-chem;
             size: 8vw, 6vh;
+        }
+
+        #spinal-cord {
+            position: 30%, 70%;
+            color: none;
+        }
+        #brainstem {
+        /* Not yet...    position: 10vh above #aortic-chem; */
+            position: 90%, 35%;
+            color: none;
         }
 
 /* Intrathoracic */
 
         #intrathoracic-level {
-            position: 50%, 47%;
-            size: 100%, 28%;
+            color: #FFFFC0;
+            position: 50%, 42.5%;
+            size: 100%, 25%;
+            text-position: 7%, 50%;
         }
         #intrathoracic-extracardiac-ganglia {
-            position: 40%, 40%;
+            position: 40%, 50%;
             size: 50%, 90%;
+            }
+        #intrathoracic-extracardiac-ganglia-label {
+            text-position: 148%, 60%;
         }
         #intrathoracic-extracardiac-ganglia-lcn {
-            position: 40%, 20%;
+            position: 40%, 23%;
             size: 30vw, 8vh;
         }
         #intrathoracic-extracardiac-ganglia-afferrent-soma {
-            position: 20%, 80%;
+            position: 20%, 77%;
             size: 10vw, 8vh;
         }
         #intrathoracic-extracardiac-ganglia-sympath-efferent-soma {
-            position: 50%, 80%;
+            position: 50%, 77%;
             size: 10vw, 8vh;
         }
 
 /* Cardiac */
 
         #cardiac-level {
-            position: 50%, 80%;
-            size: 100%, 40%;
+            color: #FFE0FF;
+            position: 50%, 77.5%;
+            size: 100%, 45%;
+            text-position: 7%, 30%;
         }
 
         #icns {
-            position: 60%, 30%;
-            size: 50%, 50%;
+            position: 55%, 30%;
+            size: 45%, 50%;
+        }
+        #icns-label {
+            position: 125%, 50%;
         }
         #icns-lcn {
             position: 40%, 23%;
             size: 30vw, 8vh;
         }
         #icns-sympath-efferent-soma {
-            position: 20%, 80%;
+            position: 18%, 80%;
             size: 10vw, 6vh;
         }
         #icns-parasym-efferent-soma {
@@ -271,13 +307,14 @@
             size: 10vw, 6vh;
         }
         #icns-afferrent-soma {
-            position: 80%, 80%;
+            position: 83%, 80%;
             size: 10vw, 6vh;
         }
 
         #heart {
-            position: 50%, 80%;
-            size: 80%, 30%;
+            position: 43%, 80%;
+            size: 75%, 30%;
+            text-position: 92%, 78%;
         }
         #heart-neurite-drg {
             position: 10%, 0%;
