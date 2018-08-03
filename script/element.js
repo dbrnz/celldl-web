@@ -55,7 +55,7 @@ export class DiagramElement {
         this.label = ('label' in this.attributes) ? this.attributes.label.textContent : this.name;
         this.style = diagram.stylesheet.style(domElement);
         this.position = new layout.Position(diagram, this);
-        this.textPosition = new layout.Position(diagram, this);
+        this.textPosition = this.position;
         this.size = ('size' in this.style) ? stylesheet.parseSize(this.style['size']) : null;
         this.pixelWidth = null;
         this.pixelHeight = null;
@@ -245,8 +245,11 @@ export class DiagramElement {
             this.position.parse(this.style.position, defaultOffset, defaultDependency);
         }
         if ('text-position' in this.style) {
+            if (this.textPosition === this.position) {
+                this.textPosition = new layout.Position(this.diagram, this);
+            }
             this.textPosition.parse(this.style['text-position'], null, defaultDependency);
-        } else {
+        } else if (this.textPosition !== this.position) {
             this.textPosition = this.position;
         }
     }

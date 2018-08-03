@@ -119,9 +119,9 @@ export class Palette
                 if (diagramElement !== null) {
                     if (this.diagramElement !== null
                      && this.diagramElement !== diagramElement) {
-                        this.diagram.highlight(this.diagramElement, false);
+                        this.diagramElement.updateSvg(false);
                     }
-                    this.diagram.highlight(diagramElement, true);
+                    diagramElement.updateSvg(true);
                     this.diagramElement = diagramElement;
                     break;
                 }
@@ -129,7 +129,7 @@ export class Palette
                 if (nodePosition === 0) {
                     // if `svg` is first node in path then are we in clear space
                     if (this.diagramElement !== null) {
-                        this.diagram.highlight(this.diagramElement, false);
+                        this.diagramElement.updateSvg(false);
                         this.diagramElement = null;
                     }
                 }
@@ -146,7 +146,7 @@ export class Palette
         const selected = this.diagramElement;
         this.diagramElement = null;
         if (selected !== null) {
-            this.diagram.highlight(selected, false);
+            selected.updateSvg(false);
             return selected.copyToNewDiagram(diagram);
         }
         return null;
