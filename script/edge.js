@@ -103,15 +103,21 @@ export class Edge
         this.line.parse();
     }
 
-    getLineStringAsPath(fromElement, toElement)
-    //=========================================
+    lineAsPath(fromElement, toElement)
+    //================================
     {
-        const path = this.line.toLineString(fromElement.coordinates, toElement.coordinates);
+        return this.line.toLineString(fromElement.coordinates, toElement.coordinates);
+    }
+
+    static trimPath(path, fromElement, toElement)
+    //===========================================
+    {
         const lines = path.lineSegments;
         const coords = path.coordinates;
         for (let n = 0; n < lines.length; ++n) {
             if (fromElement.geometry.outside(lines[n].end)) {
-                const start = fromElement.geometry.lineIntersections(lines[n])[0];
+                const intersections = fromElement.geometry.lineIntersections(lines[n])
+                const start = (intersections.length > 0) ? intersections[0] : lines[n].start;
                 lines[n] = new geo.LineSegment(start, lines[n].end);
                 coords[n] = lines[n].start;
                 break;
@@ -122,7 +128,8 @@ export class Edge
         }
         for (let n = lines.length - 1; n >= 0; --n) {
             if (lines[n] !== null && toElement.geometry.outside(lines[n].start)) {
-                const end = toElement.geometry.lineIntersections(lines[n])[0];
+                const intersections = toElement.geometry.lineIntersections(lines[n])
+                const end = (intersections.length > 0) ? intersections[0] : lines[n].end;
                 lines[n] = (new geo.LineSegment(lines[n].start, end)).truncateEnd(5);
                 coords[n+1] = lines[n].end;
                 break;
@@ -145,11 +152,9 @@ export class Edge
     assignPath()
     //==========
     {
-        if (this.toParent) {
-            this.path = this.getLineStringAsPath(this.otherElement, this.parentElement);
-        } else {
-            this.path = this.getLineStringAsPath(this.parentElement, this.otherElement);
-        }
+        const fromElement = this.toParent ? this.otherElement : this.parentElement;
+        const toElement = this.toParent ? this.parentElement : this.otherElement;
+        this.path = Edge.trimPath(this.lineAsPath(fromElement, toElement), fromElement, toElement);
         this.validPath = true;
     }
 

@@ -156,12 +156,12 @@ export class Connection extends Edge
               false, fromComponent, [Component]);
     }
 
-    getLineStringAsPath(fromComponent, toComponent)
-    //=============================================
+    lineAsPath(fromComponent, toComponent)
+    //====================================
     {
-        const overlapEdgeSet = fromComponent.geometry.boundedProjection(toComponent.geometry);
+        const overlapEdgeSet = fromComponent.geometry.boundedProjection(toComponent.geometry, 10);
         if (overlapEdgeSet.length < 2) {
-            return super.getLineStringAsPath(fromComponent, toComponent);
+            return super.lineAsPath(fromComponent, toComponent);
         } else {
             return new geo.LineString([overlapEdgeSet.lineSegments[0].middle(),
                                        overlapEdgeSet.lineSegments[1].middle()])
