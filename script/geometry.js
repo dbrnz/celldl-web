@@ -248,6 +248,12 @@ export class LineSegment extends ProjectiveLine
         return validPoint ? point : null;
     }
 
+    middle()
+    //======
+    {
+        return new Point((this.start.x + this.end.x)/2, (this.start.y + this.end.y)/2)
+    }
+
     translate(offset)
     //===============
     {
@@ -294,6 +300,12 @@ export class LineSegmentSet extends GeoObject
         this.lineSegments.append(lineSegment);
     }
 
+    get length()
+    //==========
+    {
+        return this.lineSegments.length;
+    }
+
     lineIntersections(line)
     //=====================
     {
@@ -314,7 +326,7 @@ export class LineString extends GeoObject
         this.lineSegments = [];
         this.coordinates = [];
         try {
-            if (points.length > 0) {
+            if (points.length > 1) {
                 for (let n = 0; n < (points.length - 1); n += 1) {
                     const segment = new LineSegment(points[n], points[n + 1]);
                     this.lineSegments.push(segment);
@@ -420,6 +432,64 @@ export class Rectangle extends Polygon
         const offset = point.offset(this.centre);
         return Math.abs(offset[0]) > this.width/2.0
             || Math.abs(offset[1]) > this.height/2.0;
+    }
+
+    left(other)
+    //=========
+    {
+        return (this.bottomRight.x - EPISILON) < other.topLeft.x;
+    }
+
+    right(other)
+    //==========
+    {
+        return (this.topLeft.x + EPISILON) > other.bottomRight.x;
+    }
+
+    above(other)
+    //=========
+    {
+        return (this.bottomRight.y - EPISILON) < other.topLeft.y;
+    }
+
+    below(other)
+    //=========
+    {
+        return (this.topLeft.y + EPISILON) > other.bottomRight.y;
+    }
+
+    boundedProjection(other)
+    //======================
+    {
+        const edgeSet = new LineSegmentSet([]);
+
+        if ((this.left(other) || this.right(other))
+         && (this.above(other) || this.below(other))) {
+            // Saves nest
+        } else if (this.left(other) || this.right(other)) {
+            const yTop = Math.max(this.topLeft.y, other.topLeft.y);
+            const yBottom = Math.min(this.bottomRight.y, other.bottomRight.y);
+            if (this.left(other)) {
+                edgeSet.add(new LineSegment([this.bottomRight.x, yTop], [this.bottomRight.x, yBottom]));
+                edgeSet.add(new LineSegment([other.topLeft.x, yTop], [other.topLeft.x, yBottom]));
+            } else {
+                edgeSet.add(new LineSegment([this.topLeft.x, yTop], [this.topLeft.x, yBottom]));
+                edgeSet.add(new LineSegment([other.bottomRight.x, yTop], [other.bottomRight.x, yBottom]));
+            }
+
+        } else if (this.above(other) || this.below(other)) {
+            const xLeft = Math.max(this.topLeft.x, other.topLeft.x);
+            const xRight = Math.min(this.bottomRight.x, other.bottomRight.x);
+            if (this.above(other)) {
+                edgeSet.add(new LineSegment([xLeft, this.bottomRight.y], [xRight, this.bottomRight.y]));
+                edgeSet.add(new LineSegment([xLeft, other.topLeft.y], [xRight, other.topLeft.y]));
+            } else {
+                edgeSet.add(new LineSegment([xLeft, this.topLeft.y], [xRight, this.topLeft.y]));
+                edgeSet.add(new LineSegment([xLeft, other.bottomRight.y], [xRight, other.bottomRight.y]));
+            }
+        }
+
+        return edgeSet;
     }
 
     lineIntersections(line)

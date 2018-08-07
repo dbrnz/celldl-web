@@ -148,12 +148,24 @@ export class Connection extends Edge
         if (!("from" in domElement.attributes)) {
             throw new exception.KeyError(`Expected 'from' attribute`);
         }
-        const fromElement = diagram.findElement(`#${domElement.attributes["from"].textContent}`, Component);
-        if (fromElement === null) {
+        const fromComponent = diagram.findElement(`#${domElement.attributes["from"].textContent}`, Component);
+        if (fromComponent === null) {
             throw new exception.KeyError(`No component with 'from' id`);
         }
         super(diagram, domElement, domElement.attributes["to"].textContent,
-              false, fromElement, [Component]);
+              false, fromComponent, [Component]);
+    }
+
+    getLineStringAsPath(fromComponent, toComponent)
+    //=============================================
+    {
+        const overlapEdgeSet = fromComponent.geometry.boundedProjection(toComponent.geometry);
+        if (overlapEdgeSet.length < 2) {
+            return super.getLineStringAsPath(fromComponent, toComponent);
+        } else {
+            return new geo.LineString([overlapEdgeSet.lineSegments[0].middle(),
+                                       overlapEdgeSet.lineSegments[1].middle()])
+        }
     }
 }
 

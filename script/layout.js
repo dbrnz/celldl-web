@@ -303,6 +303,7 @@ export class LinePath
         this.reversePath = false;
         this.constraints = [];
         this.lengths = null;
+        this.unitConverter = null;
     }
 
     parseConstraint(tokens)
@@ -429,9 +430,17 @@ export class LinePath
         }
     }
 
-    toLineString(unitConverter, startCoordinates, endCoordinates)
-    //===========================================================
+    setUnitConverter(unitConverter)
+    //=============================
     {
+        this.unitConverter = unitConverter;
+    }
+
+    toLineString(startCoordinates, endCoordinates)
+    //============================================
+    {
+        // If coords are the same we will return an empty path
+
         const lineStart = this.reversePath ? endCoordinates : startCoordinates;
         const lineEnd = this.reversePath ? startCoordinates : endCoordinates;
 
@@ -440,7 +449,7 @@ export class LinePath
 
         for (let constraint of this.constraints) {
             const angle = constraint.angle;
-            const offset = unitConverter.toPixelPair(constraint.offsets, false);
+            const offset = this.unitConverter.toPixelPair(constraint.offsets, false);
             const targetPoint = Position.centroid(constraint.dependencies);
             let x, y;
             if (constraint.limit === -1) {              // until-x
@@ -451,7 +460,7 @@ export class LinePath
                 x = currentPoint.x + (y - currentPoint.y)*Math.tan((angle-90)*Math.PI/180);
             }
             if (constraint.lineOffset !== null) {
-                const lineOffset = unitConverter.toPixelPair(constraint.lineOffset, false);
+                const lineOffset = this.unitConverter.toPixelPair(constraint.lineOffset, false);
                 points.slice(-1)[0][0] += lineOffset[0];
                 points.slice(-1)[0][1] += lineOffset[1];
                 x += lineOffset[0];

@@ -106,12 +106,7 @@ export class Edge
     getLineStringAsPath(fromElement, toElement)
     //=========================================
     {
-        // Only of coords are different...
-        // if (fromElement.coordinates.notEqual(toElement.coordinates))...
-
-        const path = this.line.toLineString(this.unitConverter,
-                                            fromElement.coordinates,
-                                            toElement.coordinates);
+        const path = this.line.toLineString(fromElement.coordinates, toElement.coordinates);
         const lines = path.lineSegments;
         const coords = path.coordinates;
         for (let n = 0; n < lines.length; ++n) {
@@ -144,7 +139,7 @@ export class Edge
     setUnitConverter(unitConverter)
     //=============================
     {
-        this.unitConverter = unitConverter;
+        this.line.setUnitConverter(unitConverter);
     }
 
     assignPath()
