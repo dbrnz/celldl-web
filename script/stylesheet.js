@@ -178,7 +178,7 @@ export function parseLength(tokens, defaultValue=null)
         }
     }
     const unit = (tokens.type === "DIMENSION") ? tokens.unit : "";
-    if (["vw", "vh"].indexOf(unit) < 0) {
+    if (["vw", "vh", "px"].indexOf(unit) < 0) {
         throw new exception.StyleError(tokens, "Units must be 'vw' or 'vh'");
     }
     return new layout.Length(tokens.value, unit);
