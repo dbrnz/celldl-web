@@ -56,7 +56,7 @@ export class Point extends GeoObject
     toString()
     //========
     {
-        return `Point(${this.x}, ${this.y})`;
+        return `POINT(${this.x}, ${this.y})`;
     }
 
     valueAt(index)
@@ -424,6 +424,12 @@ export class Rectangle extends Polygon
                                          new LineSegment(bottomRight, bottomRight.subtract([this.width, 0])),
                                          new LineSegment(topLeft.add([0, this.height]), topLeft)
                                         ]);
+    }
+
+    toString()
+    //========
+    {
+        return `RECT(${this.width}x${this.height}): ${this.topLeft} - ${this.bottomRight}`;
     }
 
     outside(point)
