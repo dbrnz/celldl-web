@@ -155,12 +155,12 @@ export function parsePercentageOffset(tokens, defaultValue=null)
     if (["", "w", "h"].indexOf(modifier) < 0) {
         throw new exception.StyleError(tokens, "Modifier (${modifier}) must be 'w' or 'h'");
     }
-    return new layout.Offset(percentage, unit);
+    return new layout.Length(percentage, unit);
 }
 
 //==============================================================================
 
-export function parseOffset(tokens, defaultValue=null)
+export function parseLength(tokens, defaultValue=null)
 {
     /*
     :param tokens: `StyleTokens` of tokens
@@ -181,7 +181,7 @@ export function parseOffset(tokens, defaultValue=null)
     if (["vw", "vh"].indexOf(unit) < 0) {
         throw new exception.StyleError(tokens, "Units must be 'vw' or 'vh'");
     }
-    return new layout.Offset(tokens.value, unit);
+    return new layout.Length(tokens.value, unit);
 }
 
 //==============================================================================
@@ -202,7 +202,7 @@ export function parseOffsetPair(tokens, allowLocal=true)
 // TODO                <offset> <reln> <id_list>
             } else if (["DIMENSION", "NUMBER"].indexOf(token.type) >= 0
                    || (allowLocal && token.type === "PERCENTAGE")) {
-                offsets.push(parseOffset(token));
+                offsets.push(parseLength(token));
             } else {
                 throw new exception.StyleError(tokens, "Invalid syntax");
             }

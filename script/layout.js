@@ -33,6 +33,15 @@ import {List} from './utils.js';
 
 //==============================================================================
 
+export class Length {
+    constructor(length=0, unit='') {
+        this.length = length;
+        this.unit = unit;
+    }
+}
+
+//==============================================================================
+
 export const ELEMENT_RADIUS = 15;
 
 export const STROKE_WIDTH = 2.5;
@@ -55,15 +64,6 @@ export const HORIZONTAL_BOUNDARIES = new List(['top', 'bottom']);
 export const VERTICAL_BOUNDARIES = new List(['left', 'right']);
 export const CORNER_BOUNDARIES = new List(['top-left', 'top-right', 'bottom-left', 'bottom-right']);
 export const COMPARTMENT_BOUNDARIES = new List().extend(HORIZONTAL_BOUNDARIES).extend(VERTICAL_BOUNDARIES);
-
-//==============================================================================
-
-export class Offset {
-    constructor(offset=0, unit='') {
-        this.offset = offset;
-        this.unit = unit;
-    }
-}
 
 //==============================================================================
 
@@ -149,7 +149,7 @@ export class Position
             switch (state) {
               case 0:
                 if (token.type !== 'ID') {
-                    offset = stylesheet.parseOffset(token, defaultOffset);
+                    offset = stylesheet.parseLength(token, defaultOffset);
                     state = 1;
                     break;
                 } else {
@@ -268,14 +268,16 @@ export class Position
 
         } else if (this.coordinates === null) {
             if (this.relationships.length === 1) {
-                const offset = this.relationships[0].offset;
+                const offset = this.relationships[0].length;
                 const reln = this.relationships[0].relation;
                 const dependencies = this.relationships[0].dependencies;
                 this.coordinates = this.getCoordinates(unitConverter, offset, reln, dependencies)[0];
             } else {
                 this.coordinates = new geo.Point(0, 0);
                 for (let relationship of this.relationships) {
-                    const offset = relationship.offset;
+                    // May not have an offset
+                    // OK since more than one reln
+                    const offset = relationship.length;
                     const reln = relationship.relation;
                     const dependencies = relationship.dependencies;
                     let [coordinates, index] = this.getCoordinates(unitConverter, offset, reln, dependencies);
@@ -313,7 +315,7 @@ export class LinePath
         let limit = null;
         let offset = null;
         let reln = null;
-        let offsets = [new Offset(), new Offset()];
+        let offsets = [new Length(), new Length()];
         let dependencies = [];
         let lineOffset = null;
 
@@ -344,7 +346,7 @@ export class LinePath
 
               case 2:
                 if (['NUMBER', 'DIMENSION', 'PERCENTAGE'].indexOf(token.type) >= 0) {
-                    offset = stylesheet.parseOffset(token);
+                    offset = stylesheet.parseLength(token);
                     state = 9;
                     break;
                 }
@@ -373,9 +375,9 @@ export class LinePath
                 }
                 reln = token.value;
                 if (HORIZONTAL_RELATIONS.indexOf(reln) >= 0) {
-                    offsets[0] = new Offset(((reln === 'right') ? offset.offset : -offset.offset), offset.unit);
+                    offsets[0] = new Length(((reln === 'right') ? offset.length : -offset.length), offset.unit);
                 } else {
-                    offsets[1] = new Offset(((reln === 'below') ? offset.offset : -offset.offset), offset.unit);
+                    offsets[1] = new Length(((reln === 'below') ? offset.length : -offset.length), offset.unit);
                 }
                 state = 4;
                 break;
@@ -524,10 +526,10 @@ export class UnitConverter
                 index = 1;
             }
             if (unit.startsWith("%")) {
-                const offset = length.offset*this.localSize[index]/100.0;
+                const offset = length.length*this.localSize[index]/100.0;
                 pixels = (addOffset ? this.localOffset[index] : 0) + offset;
             } else {
-                pixels = length.offset*this.globalSize[index]/100.0;
+                pixels = length.length*this.globalSize[index]/100.0;
             }
         }
         return pixels;

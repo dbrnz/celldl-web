@@ -222,7 +222,7 @@ export class Flow extends Node
                 }
                 componentOffsets.push({component: component, offset: offset/(1 + component.toPotentials.length)});
             }
-            componentOffsets.sort((a, b) => a.offset - b.offset);
+            componentOffsets.sort((a, b) => a.length - b.length);
 
             for n, p in enumerate(sorted(component_offset.items(), key=operator.itemgetter(1))):
                 w = self.diagram.unitConverter.pixels(self.transporter.width, index, add_offset=False)
@@ -257,7 +257,7 @@ export class Flow extends Node
             const transporterEnd = this.transporter.coords.copy();
             transporterEnd[index] += (sign * this.diagram.unitConverter.toPixels(layout.TRANSPORTER_EXTRA, index, false));
 
-            const offset = self.componentOffsets.find(co => co.component === component).offset;
+            const offset = self.componentOffsets.find(co => co.component === component).length;
 
             if ((compartment.contains(this.geometry) === compartment.contains(component.fromPotential.geometry))) {
                 points.extend([(offset + this.coordinates), (offset + transporterEnd)]);
