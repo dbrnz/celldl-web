@@ -44,7 +44,7 @@ export class Length {
 
 export const ELEMENT_RADIUS = 15;
 
-export const STROKE_WIDTH = 2.5;
+export const STROKE_WIDTH = new Length(2.5, 'px');
 
 export const FLOW_OFFSET = {value: 60, unit: 'vw'};
 

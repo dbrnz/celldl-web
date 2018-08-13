@@ -57,6 +57,8 @@ export class DiagramElement {
         this.position = new layout.Position(diagram, this);
         this.textPosition = this.position;
         this.size = ('size' in this.style) ? stylesheet.parseSize(this.style['size']) : null;
+        this._strokeWidth = ('stroke-width' in this.style) ? stylesheet.parseLength(this.style['stroke-width'])
+                                                           : layout.STROKE_WIDTH;
         this.pixelWidth = null;
         this.pixelHeight = null;
         this.geometry = null;
@@ -162,7 +164,7 @@ export class DiagramElement {
     get strokeWidth()
     //===============
     {
-        return this.getStyleAsString('stroke-width', '1');
+        return this.diagram.toPixels(this._strokeWidth);
     }
 
     get textColour()

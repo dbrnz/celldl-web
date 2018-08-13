@@ -49,6 +49,7 @@ export class CellDiagram {
         this._edges = [];
         this.width = 0;
         this.height = 0;
+        this.diagonal = 0;
         this.componentGroups = new components.ComponentGroups(this);
         this.bondGraph = new bondgraph.BondGraph(this);
         this.svgFactory = new SvgFactory(id);
@@ -70,6 +71,25 @@ export class CellDiagram {
     //========
     {
         return [this.width, this.height];
+    }
+
+    toPixels(length)
+    //==============
+    {
+        if (!length.unit || length.unit === 'px') {
+            return length.length;
+        }
+        else if (length.unit === 'vh') {
+            return length.length*this.height/100;
+        }
+        else if (length.unit === 'vw') {
+            return length.length*this.width/100;
+        }
+        else if (length.unit === '%') {
+            return length.length*this.diagonal/100;
+        } else {
+            return length.length;
+        }
     }
 
     addElement(element)
@@ -149,6 +169,7 @@ export class CellDiagram {
         */
         if (this.width === 0) this.width = width;
         if (this.height === 0) this.height = height;
+        this.diagonal = Math.sqrt(this.width*this.width + this.height*this.height);
 
         let dependencyGraph = new jsnx.DiGraph();
 
