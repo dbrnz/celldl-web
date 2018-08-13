@@ -56,9 +56,20 @@ export class DiagramElement {
         this.style = diagram.stylesheet.style(domElement);
         this.position = new layout.Position(diagram, this);
         this.textPosition = this.position;
+        this.colour = ('color' in this.style) ? stylesheet.parseColour(this.diagram, this.style.color)
+                                              : '#808080'; // TODO: specify defaults in one place
+        this.display = ('display' in this.style) ? this.getStyleAsString("display")
+                                                 : {};
+        this.fontSize = ('font-size' in this.style) ? stylesheet.parseNumber(this.style['font-size'])
+                                                    : 18; // TODO: specify defaults in one place
+        this.fontStyle = this.getStyleAsString('font-style', '');
+        this.fontWeight = this.getStyleAsString('font-weight', '');
         this.size = ('size' in this.style) ? stylesheet.parseSize(this.style['size']) : null;
+        this.stroke = this.getStyleAsString('stroke', 'none');
         this._strokeWidth = ('stroke-width' in this.style) ? stylesheet.parseLength(this.style['stroke-width'])
                                                            : layout.STROKE_WIDTH;
+        this.textColour = ('text-color' in this.style) ? stylesheet.parseColour(this.diagram, this.style['text-color'])
+                                                       : '#202020'; // TODO: specify defaults in one place
         this.pixelWidth = null;
         this.pixelHeight = null;
         this.geometry = null;
@@ -122,56 +133,10 @@ export class DiagramElement {
         return `<${this.tagName} id="${this.id.slice(1)}"/>`;
     }
 
-    get colour()
-    //==========
-    {
-        return ('color' in this.style) ? stylesheet.parseColour(this.diagram, this.style.color)
-                                       : '#808080'; // TODO: specify defaults in one place
-    }
-
-    get display()
-    //===========
-    {
-        const d = this.getStyleAsString("display");
-        return d ? {display: d} : {};
-    }
-
-    get fontSize()
-    //============
-    {
-        return ('font-size' in this.style) ? stylesheet.parseNumber(this.style['font-size'])
-                                           : 18; // TODO: specify defaults in one place
-    }
-
-    get fontStyle()
-    //=============
-    {
-        return this.getStyleAsString('font-style', '');
-    }
-
-    get fontWeight()
-    //==============
-    {
-        return this.getStyleAsString('font-weight', '');
-    }
-
-    get stroke()
-    //==========
-    {
-        return this.getStyleAsString('stroke', 'none');
-    }
-
     get strokeWidth()
     //===============
     {
         return this.diagram.toPixels(this._strokeWidth);
-    }
-
-    get textColour()
-    //==============
-    {
-        return ('text-color' in this.style) ? stylesheet.parseColour(this.diagram, this.style['text-color'])
-                                            : '#202020'; // TODO: specify defaults in one place
     }
 
     getStyleAsString(name, defaultValue='')
