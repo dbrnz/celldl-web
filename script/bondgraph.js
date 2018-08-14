@@ -64,8 +64,8 @@ export class BondGraph
         this.diagram.addEdge(edge);
     }
 
-    drawEdges(svgNode)
-    //================
+    drawConnections(svgNode)
+    //======================
     {
         for (let edge of this.edges) {
             svgNode.appendChild(edge.generateSvg());
@@ -85,7 +85,7 @@ export class BondGraph
     {
         const svgNode = document.createElementNS(SVG_NS, 'g');
         svgNode.id = this.id;
-        this.drawEdges(svgNode);
+        this.drawConnections(svgNode);
         this.drawElements(svgNode, Flow);
         this.drawElements(svgNode, Gyrator);
         this.drawElements(svgNode, Potential);
