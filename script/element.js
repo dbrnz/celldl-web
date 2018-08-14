@@ -32,7 +32,9 @@ import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
 
-const HIGHLIGHT_BORDER = 7;   // in layout.js ??
+const HIGHLIGHT_BORDER = 9;   // in layout.js ??
+const HIGHLIGHT_COLOUR = "#FFFF00";
+const HIGHLIGHT_OPACITY = 0.8;
 
 //==============================================================================
 
@@ -350,9 +352,9 @@ export class DiagramElement {
             if (highlight) {
                 const border = this.geometry.svgNode(HIGHLIGHT_BORDER + 2);
                 setAttributes(border, { "fill": "none",
-                                        "stroke": "#004A9C",
+                                        "stroke": HIGHLIGHT_COLOUR,
                                         "stroke-width": HIGHLIGHT_BORDER,
-                                        "stroke-opacity": 0.5 });
+                                        "stroke-opacity": HIGHLIGHT_OPACITY });
                 svgNode.appendChild(border);
             }
         }
