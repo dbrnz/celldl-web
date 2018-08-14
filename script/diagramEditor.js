@@ -108,8 +108,10 @@ export class DiagramEditor
         this.currentElement = null;
         this.currentLocation = null;
         this.currentNode = null;
-        this.movedElement = null;
+        this.selectedElement = null;
         this.moving = false;
+        this.resizable = false;
+        this.resizing = false;
         this.undoStack = new HistoryStack();
     }
 
@@ -152,14 +154,19 @@ export class DiagramEditor
     {
         // `boundary` types (of components) must stay on a boundary...
 
-        if (this.moving && this.movedElement !== null) {
+        if ((this.moving || this.resizing) && this.selectedElement !== null) {
             event.preventDefault();
-            const position = this.getMousePosition(event);
-            this.movedElement.move([position.x - this.startPosition.x,
-                                    position.y - this.startPosition.y]);
-            this.movedElement.updateSvg(true);
-            this.startPosition = position;
-            this.elementCurrentCoordinates = this.movedElement.coordinates;
+            const mousePosition = this.getMousePosition(event);
+            if (this.moving) {
+                this.selectedElement.move([mousePosition.x - this.startMousePosition.x,
+                                           mousePosition.y - this.startMousePosition.y]);
+            } else {
+                this.selectedElement.resize([mousePosition.x - this.startMousePosition.x,
+                                             mousePosition.y - this.startMousePosition.y],
+                                            this.currentLocation);
+            }
+            this.selectedElement.updateSvg(true);
+            this.startMousePosition = mousePosition;
         } else {
             this.currentElement = null;
             for (let node of event.composedPath()) {
@@ -169,27 +176,24 @@ export class DiagramEditor
                     const diagramElement = this.diagram.findElementById(node.id);
                     if (diagramElement !== null) {
                         const coords = this.getMousePosition(event);
-
-                        // inside, left, right, top, bottom, top-left, top-right, bottom-left, bottom-right
-                        // Check if close to boundary...
-                        const location = diagramElement.geometry.location(coords, diagramElement.strokeWidth);
-
-                        //console.log(coords, location);
-
-                        if        (location === 'inside') {
-                            node.style.cursor = 'move';  // grab ??
-                        } else if (['left', 'right'].indexOf(location) >= 0) {
+                        // Check if close to or on boundary...
+                        const location = diagramElement.location(coords, diagramElement.strokeWidth);
+                        if        (['left', 'right'].indexOf(location) >= 0) {
+                            this.resizable = true;
                             node.style.cursor = 'ew-resize';
                         } else if (['top', 'bottom'].indexOf(location) >= 0) {
+                            this.resizable = true;
                             node.style.cursor = 'ns-resize';
                         } else if (['top-left', 'bottom-right'].indexOf(location) >= 0) {
+                            this.resizable = true;
                             node.style.cursor = 'nwse-resize';
                         } else if (['top-right', 'bottom-left'].indexOf(location) >= 0) {
+                            this.resizable = true;
                             node.style.cursor = 'nesw-resize';
                         } else {
-                            node.style.cursor = 'pointer';
+                            this.resizable = false;
+                            node.style.cursor = 'hand';
                         }
-
                         this.currentNode = node;
                         this.currentElement = diagramElement;
                         this.currentLocation = location;
@@ -205,40 +209,39 @@ export class DiagramEditor
     mouseDown(event)
     //==============
     {
-        //event.preventDefault(); ???
-
         if (this.currentElement !== null) {
             const diagramElement = this.currentElement;
 
-            if (this.movedElement !== null
-             && this.movedElement !== diagramElement) {
-                this.movedElement.updateSvg(false);
+            if (this.selectedElement !== null
+             && this.selectedElement !== diagramElement) {
+                this.selectedElement.updateSvg(false);
             }
 // TODO: Unselect any palette element...
             diagramElement.updateSvg(true);
 
             // Test drawing connections...
             if (event.altKey) {
-                if (this.movedElement !== diagramElement) {
+                if (this.selectedElement !== diagramElement) {
                     this.diagram.bondGraph.connect(this.diagramElement, diagramElement);
                     diagramElement.updateSVG(true);
                 }
             }
 
-            this.movedElement = diagramElement;
-            this.startPosition = this.getMousePosition(event);
-            this.elementStartCoordinates = diagramElement.coordinates;
-            this.elementCurrentCoordinates = diagramElement.coordinates;
-            this.currentNode.style.cursor = 'move';
-            this.moving = true;
-
+            this.selectedElement = diagramElement;
+            this.startMousePosition = this.getMousePosition(event);
+            if (this.resizable) {
+                this.resizing = true;
+            } else {
+                this.currentNode.style.cursor = 'move';
+                this.moving = true;
+            }
         } else {
             // If `svg` is first node in path then are we in clear space
             // We also need to allow adding elements to a Group...
 
-            if (this.movedElement !== null) {
-                this.movedElement.updateSvg(false);
-                this.movedElement = null;
+            if (this.selectedElement !== null) {
+                this.selectedElement.updateSvg(false);
+                this.selectedElement = null;
             }
 
             const newElement = this.palette.copySelectedElementTo(this.diagram);
@@ -279,10 +282,15 @@ export class DiagramEditor
 
         // Add/update CSS rule giving element's final position
 
-        if (this.movedElement != null) {
-            this.diagram.addManualPositionedElement(this.movedElement);
+        if (this.selectedElement != null) {
+            if (this.moving) {
+                this.diagram.addManualPositionedElement(this.selectedElement);
+            } else if (this.resizing) {
+                this.diagram.addManualResizedElement(this.selectedElement);
+            }
         }
         this.moving = false;
+        this.resizing = false;
     }
 }
 

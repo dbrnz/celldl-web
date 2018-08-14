@@ -696,6 +696,18 @@ export class Ellipse extends GeoObject
               + Math.pow((point.y - this.centre.y)/this.yRadius, 2) > 1.0);
     }
 
+    location(point, delta)
+    //====================
+    {
+        if        (this.outside(point.add([delta, delta]))) {
+            return 'outside';
+        } else if (!this.outside(point.add([-delta, -delta]))) {
+            return 'inside';
+        } else {
+            return 'boundary'; // TODO: 'l, r, t, b, t-l, t-r, b-l, b-r'
+        }
+    }
+
     translate(offset)
     //===============
     {

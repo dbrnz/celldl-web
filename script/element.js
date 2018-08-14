@@ -241,8 +241,14 @@ export class DiagramElement {
         }
     }
 
-    move(offset, drawEdges=true)
-    //==========================
+    location(point, delta)
+    //====================
+    {
+        return this.geometry.location(point, delta);
+    }
+
+    move(offset, drawConnections=true)
+    //================================
     {
         this.invalidateEdges();
         this.position.addOffset(offset);
@@ -250,9 +256,15 @@ export class DiagramElement {
             this.textPosition.addOffset(offset);
         }
         this.assignGeometry();
-        if (drawEdges) {
-            this.redrawEdges();
+        if (drawConnections) {
+            this.redrawConnections();
         }
+    }
+
+    resize(offset, edge, drawConnections=true)
+    //========================================
+    {
+        // Not implemented for generic elements
     }
 
     addEdge(edge)
@@ -269,8 +281,8 @@ export class DiagramElement {
         }
     }
 
-    redrawEdges()
-    //===========
+    redrawConnections()
+    //=================
     {
         for (let edge of this.edges) {
             if (edge.invalidPath) {

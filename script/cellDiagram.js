@@ -54,6 +54,7 @@ export class CellDiagram {
         this.bondGraph = new bondgraph.BondGraph(this);
         this.svgFactory = new SvgFactory(id);
         this._manualPositions = [];
+        this._manualSizes = [];
     }
 
     initialise(style)
@@ -266,9 +267,24 @@ export class CellDiagram {
         if (!this._manualPositions.includes(element.id)) {
             this._manualPositions.push(element.id);
         }
+        this.updateManualAdjustments();
+    }
 
+    addManualResizedElement(element)
+    //==============================
+    {
+        if (!this._manualSizes.includes(element.id)) {
+            this._manualSizes.push(element.id);
+        }
+        // Resizing also moves centre
+        this.addManualPositionedElement(element);
+    }
+
+    updateManualAdjustments()
+    //=======================
+    {
         if (this.editor !== null) {
-            const positions = ['<style id="manual_positions">'];
+            const positions = ['<style id="manual_adjustments">'];
             for (let id of this._manualPositions) {
                 const e = this.findElement(id);
                 if (e !== null) {
@@ -278,9 +294,18 @@ export class CellDiagram {
                     positions.push(`    ${e.id} { position: ${w.toFixed(2)}vw, ${h.toFixed(2)}vh; }`);
                 }
             }
+            for (let id of this._manualSizes) {
+                const e = this.findElement(id);
+                if (e !== null) {
+                    // % needs to be local using unitconverter...
+                    let w = 100*e.pixelWidth/this.width;
+                    let h = 100*e.pixelHeight/this.height;
+                    positions.push(`    ${e.id} { size: ${w.toFixed(2)}vw, ${h.toFixed(2)}vh; }`);
+                }
+            }
             positions.push('</style>');
 
-            const stylePositionRegExp = new RegExp(`<style id=(["'])manual_positions\\1>[\\s\\S]*</style>`);
+            const stylePositionRegExp = new RegExp(`<style id=(["'])manual_adjustments\\1>[\\s\\S]*</style>`);
 
             // NB. Ace editor search and replace appears to be broken so
             //     we simply use Javascript string methods
@@ -296,13 +321,18 @@ export class CellDiagram {
         }
     }
 
-    setManualPositionedElements(styleRules)
-    //=====================================
+    setManualAdjustedElements(styleRules)
+    //===================================
     {
-        const ids = stylesheet.positionedElements(styleRules);
-        for (let id of ids) {
+        const [positioned, resized] = stylesheet.adjustedElements(styleRules);
+        for (let id of positioned) {
             if (!this._manualPositions.includes(id)) {
                 this._manualPositions.push(id);
+            }
+        }
+        for (let id of resized) {
+            if (!this._manualSizes.includes(id)) {
+                this._manualSizes.push(id);
             }
         }
     }

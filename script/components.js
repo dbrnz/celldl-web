@@ -98,11 +98,62 @@ export class ComponentGroups
 
 //==============================================================================
 
-export class Component extends DiagramElement
+class RectangularElement extends DiagramElement
 {
     constructor(diagram, domElement)
     {
         super(diagram, domElement);
+    }
+
+    assignGeometry()
+    //==============
+    {
+        if (this.hasCoordinates) {
+            const [width, height] = this.sizeAsPixels;
+            const x = this.coordinates.x;
+            const y = this.coordinates.y;
+            this.geometry = new geo.Rectangle([x - width/2, y - height/2],
+                                              [x + width/2, y + height/2]);
+        }
+    }
+
+    resize(offset, edge, drawConnections=true)
+    //========================================
+    {
+        let [width, height] = this.sizeAsPixels;
+        let dx = 0;
+        let dy = 0;
+        if (edge.indexOf('left') >= 0) {
+            width -= offset[0];
+            dx = offset[0]/2;
+        } else if (edge.indexOf('right') >= 0) {
+            width += offset[0];
+            dx = offset[0]/2;
+        }
+        if (edge.indexOf('top') >= 0) {
+            height -= offset[1];
+            dy = offset[1]/2;
+        } else if (edge.indexOf('bottom') >= 0) {
+            height += offset[1];
+            dy = offset[1]/2;
+        }
+        this.setSizeAsPixels([width, height]);
+        this.move([dx, dy], drawConnections);
+    }
+}
+
+//==============================================================================
+
+export class Component extends RectangularElement
+{
+    constructor(diagram, domElement)
+    {
+        super(diagram, domElement);
+
+        // Get `type` attribute; if `boundary` then constrain position to
+        // boundary of group. `position` style attribute then has different
+        // meaning??
+
         this.group = null;
     }
 
@@ -171,7 +222,7 @@ export class Connection extends Edge
 
 //==============================================================================
 
-export class Group extends DiagramElement
+export class Group extends RectangularElement
 {
     constructor(diagram, domElement)
     {
@@ -222,36 +273,24 @@ export class Group extends DiagramElement
         }
     }
 
-    assignGeometry()
-    //==============
-    {
-        if (this.hasCoordinates) {
-            const [width, height] = this.sizeAsPixels;
-            const x = this.coordinates.x;
-            const y = this.coordinates.y;
-            this.geometry = new geo.Rectangle([x - width/2, y - height/2],
-                                              [x + width/2, y + height/2]);
-        }
-    }
-
-    move(offset, drawEdges=true)
-    //==========================
+    move(offset, drawConnections=true)
+    //================================
     {
         super.move(offset, false);
         for (let element of this.elements) {
             element.move(offset, false);
         }
-        if (drawEdges) {
-            this.redrawEdges();
+        if (drawConnections) {
+            this.redrawConnections();
         }
     }
 
-    redrawEdges()
-    //===========
+    redrawConnections()
+    //=================
     {
-        super.redrawEdges();
+        super.redrawConnections();
         for (let element of this.elements) {
-            element.redrawEdges();
+            element.redrawConnections();
         }
     }
 

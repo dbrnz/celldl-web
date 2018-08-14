@@ -283,19 +283,20 @@ export function styleAsString(styling, name, defaultValue='')
 
 //==============================================================================
 
-export function positionedElements(cssText)
+export function adjustedElements(cssText)
 {
-    const ids = [];
+    const positioned = [];
+    const resized = [];
     const parser = new cssparser.Parser();
     const ast = parser.parse(cssText);
     const rules = ast._props_.value;
     for (let rule of rules) {
-        let styling = cssparser.toSimple(rule._props_.value);
-        if (styling.position) {
-            ids.push(cssparser.toSimple(rule._props_.selectors)[0]);
-        }
+        const styling = cssparser.toSimple(rule._props_.value);
+        const id = cssparser.toSimple(rule._props_.selectors)[0];
+        if (styling.position) positioned.push(id);
+        if (styling.size) resized.push(id);
     }
-    return ids;
+    return [positioned, resized];
 }
 
 //==============================================================================
