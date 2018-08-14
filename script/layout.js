@@ -268,7 +268,7 @@ export class Position
 
         } else if (this.coordinates === null) {
             if (this.relationships.length === 1) {
-                const offset = this.relationships[0].length;
+                const offset = this.relationships[0].offset;
                 const reln = this.relationships[0].relation;
                 const dependencies = this.relationships[0].dependencies;
                 this.coordinates = this.getCoordinates(unitConverter, offset, reln, dependencies)[0];
@@ -277,7 +277,7 @@ export class Position
                 for (let relationship of this.relationships) {
                     // May not have an offset
                     // OK since more than one reln
-                    const offset = relationship.length;
+                    const offset = relationship.offset;
                     const reln = relationship.relation;
                     const dependencies = relationship.dependencies;
                     let [coordinates, index] = this.getCoordinates(unitConverter, offset, reln, dependencies);
