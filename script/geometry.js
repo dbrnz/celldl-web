@@ -36,6 +36,12 @@ const EPISILON = 1.0e-6;
 
 class GeoObject
 {
+    location(coords)
+    //==============
+    {
+        return null;
+    }
+
     svgNode()
     //=======
     {
@@ -478,6 +484,51 @@ export class Rectangle extends Polygon
     {
         return new List(this.edges.lineIntersections(line));
     }
+
+    location(point, delta)
+    //====================
+    {
+        const offset = point.offset(this.centre);
+        const W2 = 2*Math.abs(offset[0]);
+        const H2 = 2*Math.abs(offset[1]);
+        if        (W2 > (this.width + delta) || H2 > (this.height + delta)) {
+            return 'outside';
+        } else if (W2 < (this.width - delta) && H2 < (this.height - delta)) {
+            return 'inside';
+        } else if (W2 > (this.width - delta)) {
+            if (H2 > (this.height - delta)) {
+                if (offset[0] < 0) {
+                    return (offset[1] < 0) ? 'top-left' : 'bottom-left';
+                } else {
+                    return (offset[1] < 0) ? 'top-right' : 'bottom-right';
+                }
+            } else {
+                return (offset[0] < 0) ? 'left' : 'right';
+            }
+        } else {
+            return (offset[1] < 0) ? 'top' : 'bottom';
+        }
+    }
+/*
+
+
+                       H2 > +delta
+
+                 +---------------------+
+                 |                     |
+                 |     H2 < -delta     |
+                 |                     |
+                 |                     |
+W2 > +delta      |     W2 < -delta     |      W2 > +delta
+                 |                     |
+                 |                     |
+                 |     H2 < -delta     |
+                 |                     |
+                 +---------------------+
+
+                      H2 > +delta
+
+*/
 
     svgNode(expand=0)
     //===============

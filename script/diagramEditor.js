@@ -105,7 +105,10 @@ export class DiagramEditor
         this.palette = palette;
         this.svgNode = null;
         this.bondgraphNode = null;
-        this.diagramElement = null;
+        this.currentElement = null;
+        this.currentLocation = null;
+        this.currentNode = null;
+        this.movedElement = null;
         this.moving = false;
         this.undoStack = new HistoryStack();
     }
@@ -114,15 +117,15 @@ export class DiagramEditor
     {
         this.svgNode = svgNode;
         this.bondgraphNode = document.getElementById(`${this.diagram.id}_bondgraph`);
-        svgNode.addEventListener('mousedown', this.startMouseMove.bind(this));
+        svgNode.addEventListener('mousedown', this.mouseDown.bind(this));
         svgNode.addEventListener('mousemove', this.mouseMove.bind(this));
-        svgNode.addEventListener('mouseup', this.endMouseMove.bind(this));
-        svgNode.addEventListener('mouseleave', this.endMouseMove.bind(this));
-        svgNode.addEventListener('touchstart', this.startMouseMove.bind(this));
+        svgNode.addEventListener('mouseup', this.mouseUp.bind(this));
+        svgNode.addEventListener('mouseleave', this.mouseUp.bind(this));
+        svgNode.addEventListener('touchstart', this.mouseDown.bind(this));
         svgNode.addEventListener("touchmove", this.mouseMove.bind(this));
-        svgNode.addEventListener('touchend', this.endMouseMove.bind(this));
-        svgNode.addEventListener('touchleave', this.endMouseMove.bind(this));
-        svgNode.addEventListener('touchcancel', this.endMouseMove.bind(this));
+        svgNode.addEventListener('touchend', this.mouseUp.bind(this));
+        svgNode.addEventListener('touchleave', this.mouseUp.bind(this));
+        svgNode.addEventListener('touchcancel', this.mouseUp.bind(this));
 
         // Also listen for keys, for example `^Z`, `Shift^Z` (undo, redo)
 
@@ -135,107 +138,150 @@ export class DiagramEditor
         if (event.touches) {
             event = event.touches[0];
         }
-        return {
-            x: (event.clientX - CTM.e) / CTM.a,
-            y: (event.clientY - CTM.f) / CTM.d
-        };
+        return new geo.Point((event.clientX - CTM.e)/CTM.a,
+                             (event.clientY - CTM.f)/CTM.d);
     }
 
-    startMouseMove(event)
-    //===================
-    {
-        let nodePosition = 0;
-        for (let node of event.composedPath()) {
-            if (node.classList.contains('draggable')) {
-                const diagramElement = this.diagram.findElementById(node.id);
-                if (diagramElement !== null) {
-                    if (this.diagramElement !== null
-                     && this.diagramElement !== diagramElement) {
-                        this.diagramElement.updateSvg(false);
-                    }
-// TODO: Unselect any palette element...
-                    diagramElement.updateSvg(true);
-                    if (event.altKey) {
-                        if (this.diagramElement !== diagramElement) {
-                            this.diagram.bondGraph.connect(this.diagramElement, diagramElement);
-                            diagramElement.updateSVG(true);
-                        }
-                    }
-                    this.diagramElement = diagramElement;
-                    this.startPosition = this.getMousePosition(event);
-                    this.elementStartCoordinates = diagramElement.coordinates;
-                    this.elementCurrentCoordinates = diagramElement.coordinates;
-                    this.moving = true;
-                    break;
-                }
-            } else if (node.tagName === 'svg') {
-                if (nodePosition === 0) {
-                    // if `svg` is first node in path then are we in clear space
-                    if (this.diagramElement !== null) {
-                        this.diagramElement.updateSvg(false);
-                        this.diagramElement = null;
-                    }
-                    const newElement = this.palette.copySelectedElementTo(this.diagram);
-                    if (newElement) {
-                        const coords = this.getMousePosition(event);
-                        // We are able to create a new element in the diagram
-                        newElement.position.coordinates = new geo.Point(coords.x, coords.y);
-                        newElement.assignGeometry();
 
-                        // Note: If we use `appendChild` then `url()` links in the SVG
-                        //       are not resolved
-                        const elementSvg = newElement.generateSvg();
 
-                        // We could have new <defs> if say a new element type is
-                        // not in the current diagram...
 
-                        const definesSvg = this.diagram.svgFactory.defines(false);
-                        this.bondgraphNode.insertAdjacentHTML('beforeend', definesSvg.outerHTML);
 
-                        this.bondgraphNode.insertAdjacentHTML('beforeend', elementSvg.outerHTML);
-                        //this.bondgraphNode.appendChild(elementSvg);
-
-                        this.diagramElement = newElement;
-
-                        // Need to insert node into diagram's bondgraph...
-                        this.diagram.bondGraph.addElement(newElement);
-                    }
-                }
-                break;
-            }
-            nodePosition += 1;
-        }
-        event.stopPropagation();
-    }
 
     mouseMove(event)
     //==============
     {
-        if (this.moving && this.diagramElement !== null) {
+        // `boundary` types (of components) must stay on a boundary...
+
+        if (this.moving && this.movedElement !== null) {
             event.preventDefault();
             const position = this.getMousePosition(event);
-            this.diagramElement.move([position.x - this.startPosition.x,
-                                      position.y - this.startPosition.y]);
-            this.diagramElement.updateSvg(true);
+            this.movedElement.move([position.x - this.startPosition.x,
+                                    position.y - this.startPosition.y]);
+            this.movedElement.updateSvg(true);
             this.startPosition = position;
-            this.elementCurrentCoordinates = this.diagramElement.coordinates;
+            this.elementCurrentCoordinates = this.movedElement.coordinates;
+        } else {
+            this.currentElement = null;
+            for (let node of event.composedPath()) {
+                if (node.tagName === 'svg') {
+                    break;  // Don't look for elements outside of SVG diagram
+                } else if (node.classList && node.classList.contains('draggable')) { //resizeable
+                    const diagramElement = this.diagram.findElementById(node.id);
+                    if (diagramElement !== null) {
+                        const coords = this.getMousePosition(event);
+
+                        // inside, left, right, top, bottom, top-left, top-right, bottom-left, bottom-right
+                        // Check if close to boundary...
+                        const location = diagramElement.geometry.location(coords, diagramElement.strokeWidth);
+
+                        //console.log(coords, location);
+
+                        if        (location === 'inside') {
+                            node.style.cursor = 'move';  // grab ??
+                        } else if (['left', 'right'].indexOf(location) >= 0) {
+                            node.style.cursor = 'ew-resize';
+                        } else if (['top', 'bottom'].indexOf(location) >= 0) {
+                            node.style.cursor = 'ns-resize';
+                        } else if (['top-left', 'bottom-right'].indexOf(location) >= 0) {
+                            node.style.cursor = 'nwse-resize';
+                        } else if (['top-right', 'bottom-left'].indexOf(location) >= 0) {
+                            node.style.cursor = 'nesw-resize';
+                        } else {
+                            node.style.cursor = 'pointer';
+                        }
+
+                        this.currentNode = node;
+                        this.currentElement = diagramElement;
+                        this.currentLocation = location;
+                        break;
+                    }
+                }
+            }
         }
         event.stopPropagation();
         return false;
     }
 
-    endMouseMove(event)
-    //=================
+    mouseDown(event)
+    //==============
+    {
+        //event.preventDefault(); ???
+
+        if (this.currentElement !== null) {
+            const diagramElement = this.currentElement;
+
+            if (this.movedElement !== null
+             && this.movedElement !== diagramElement) {
+                this.movedElement.updateSvg(false);
+            }
+// TODO: Unselect any palette element...
+            diagramElement.updateSvg(true);
+
+            // Test drawing connections...
+            if (event.altKey) {
+                if (this.movedElement !== diagramElement) {
+                    this.diagram.bondGraph.connect(this.diagramElement, diagramElement);
+                    diagramElement.updateSVG(true);
+                }
+            }
+
+            this.movedElement = diagramElement;
+            this.startPosition = this.getMousePosition(event);
+            this.elementStartCoordinates = diagramElement.coordinates;
+            this.elementCurrentCoordinates = diagramElement.coordinates;
+            this.currentNode.style.cursor = 'move';
+            this.moving = true;
+
+        } else {
+            // If `svg` is first node in path then are we in clear space
+            // We also need to allow adding elements to a Group...
+
+            if (this.movedElement !== null) {
+                this.movedElement.updateSvg(false);
+                this.movedElement = null;
+            }
+
+            const newElement = this.palette.copySelectedElementTo(this.diagram);
+            if (newElement) {
+                const coords = this.getMousePosition(event);
+                // We are able to create a new element in the diagram
+                newElement.position.coordinates = new geo.Point(coords.x, coords.y);
+                newElement.assignGeometry();
+
+                // Note: If we use `appendChild` then `url()` links in the SVG
+                //       are not resolved
+                const elementSvg = newElement.generateSvg();
+
+                // We could have new <defs> if say a new element type is
+                // not in the current diagram...
+
+                const definesSvg = this.diagram.svgFactory.defines(false);
+                this.bondgraphNode.insertAdjacentHTML('beforeend', definesSvg.outerHTML);
+
+                this.bondgraphNode.insertAdjacentHTML('beforeend', elementSvg.outerHTML);
+                //this.bondgraphNode.appendChild(elementSvg);
+
+                // New element is not selected, this.moving is false
+//                 this.movedElement = newElement;
+
+                // Need to insert node into diagram's bondgraph...
+                this.diagram.bondGraph.addElement(newElement);
+            }
+        }
+        event.stopPropagation();
+    }
+
+    mouseUp(event)
+    //============
     {
         // push operation, element, starting attributes,
         // ending attributes on history stack
 
         // Add/update CSS rule giving element's final position
 
-        if (this.diagramElement != null) {
-            this.diagram.addManualPositionedElement(this.diagramElement);
+        if (this.movedElement != null) {
+            this.diagram.addManualPositionedElement(this.movedElement);
         }
-
         this.moving = false;
     }
 }
