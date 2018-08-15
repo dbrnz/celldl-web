@@ -138,7 +138,7 @@ export class DiagramElement {
     get strokeWidth()
     //===============
     {
-        return this.diagram.toPixels(this._strokeWidth);
+        return this.diagram.strokeWidthToPixels(this._strokeWidth);
     }
 
     getStyleAsString(name, defaultValue='')

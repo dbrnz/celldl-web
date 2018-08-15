@@ -74,8 +74,8 @@ export class CellDiagram {
         return [this.width, this.height];
     }
 
-    toPixels(length)
-    //==============
+    strokeWidthToPixels(length)
+    //=========================
     {
         if (!length.unit || length.unit === 'px') {
             return length.length;

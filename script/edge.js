@@ -176,7 +176,7 @@ export class Edge
         const svgNode = this.path.svgNode();
         setAttributes(svgNode, {id: this.diagramId, fill: 'none',
                                 stroke: this.lineColour,
-                                'stroke-width': this.diagram.toPixels(layout.STROKE_WIDTH),
+                                'stroke-width': this.diagram.strokeWidthToPixels(layout.STROKE_WIDTH),
                                 'marker-end': this.diagram.svgFactory.arrow(this.lineColour)});
         if (styleAsString(this.style, 'line-style') === 'dashed') {
             setAttributes(svgNode, {'stroke-dasharray': '10,5'});
