@@ -89,7 +89,20 @@ layout(list_of_elements):
     + wrt. diagram viewport's diagonal (`%`)
 
 
+Editing
+=======
+
+* Maintain a live SVG display of CellDL XML editor contents.
+* Each bond graph element has line number of source.
+* `add` element results in CellDL XML being added.
+* Modifying attributes also updates CellDL.
+
 Moving and resizing elements
-============================
+----------------------------
 
 - Those with `type="boundary"` are to be constrained to a boundary.
+- When a group's geometry changes then positions/sizes of sibling and child groups
+  need recalculating and that of *all* components that have some (indirect)
+  dependency on the group.
+- When a component's geometry changes then positions/sizes of *all* components that
+  have some (indirect) dependency on the component.
