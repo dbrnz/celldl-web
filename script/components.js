@@ -27,7 +27,7 @@ import * as geo from './geometry.js';
 import * as layout from './layout.js';
 
 import {DiagramElement} from './element.js';
-import {Edge} from './edge.js';
+import {Connection} from './connections.js';
 import {setAttributes} from './utils.js';
 import {SVG_NS} from './svgElements.js';
 
@@ -55,7 +55,7 @@ export class ComponentGroups
     //=======================
     {
         this.connections.push(connection);
-        this.diagram.addEdge(connection);
+        this.diagram.addConnection(connection);
     }
 
     addGroup(group)
@@ -192,7 +192,7 @@ export class Component extends RectangularElement
 
 //==============================================================================
 
-export class Connection extends Edge
+export class ComponentConnection extends Connection
 {
     constructor(diagram, domElement)
     {
@@ -210,12 +210,12 @@ export class Connection extends Edge
     lineAsPath(fromComponent, toComponent)
     //====================================
     {
-        const overlapEdgeSet = fromComponent.geometry.boundedProjection(toComponent.geometry, 10);
-        if (overlapEdgeSet.length < 2) {
+        const overlappedSet = fromComponent.geometry.boundedProjection(toComponent.geometry, 10);
+        if (overlappedSet.length < 2) {
             return super.lineAsPath(fromComponent, toComponent);
         } else {
-            return new geo.LineString([overlapEdgeSet.lineSegments[0].middle(),
-                                       overlapEdgeSet.lineSegments[1].middle()])
+            return new geo.LineString([overlappedSet.lineSegments[0].middle(),
+                                       overlappedSet.lineSegments[1].middle()])
         }
     }
 }

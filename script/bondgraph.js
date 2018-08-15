@@ -27,7 +27,7 @@ import * as geo from './geometry.js';
 import * as layout from './layout.js';
 
 import {DiagramElement} from './element.js';
-import {Edge} from './edge.js';
+import {Connection} from './connections.js';
 import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
@@ -61,11 +61,11 @@ export class BondGraph
     //===========
     {
         this.edges.push(edge);
-        this.diagram.addEdge(edge);
+        this.diagram.addConnection(edge);
     }
 
-    drawConnections(svgNode)
-    //======================
+    drawEdges(svgNode)
+    //================
     {
         for (let edge of this.edges) {
             svgNode.appendChild(edge.generateSvg());
@@ -85,7 +85,7 @@ export class BondGraph
     {
         const svgNode = document.createElementNS(SVG_NS, 'g');
         svgNode.id = this.id;
-        this.drawConnections(svgNode);
+        this.drawEdges(svgNode);
         this.drawElements(svgNode, Flow);
         this.drawElements(svgNode, Gyrator);
         this.drawElements(svgNode, Potential);
@@ -142,7 +142,7 @@ for (let to of this.toPotentials) {
 
 //==============================================================================
 
-export class FlowEdge extends Edge
+export class FlowEdge extends Connection
 {
     constructor(diagram, element, fromId, toParent, parentElement, validClasses, direction, count)
     {
@@ -286,14 +286,14 @@ export class Gyrator extends DiagramElement
     addInput(domElement)
     //==================
     {
-        this.bondGraph.addEdge(Edge.createFromAttributeValue(this.diagram, domElement,
+        this.bondGraph.addEdge(Connection.createFromAttributeValue(this.diagram, domElement,
                                                              'flow', true, this, [Flow]));
     }
 
     addOutput(domElement)
     //===================
     {
-        this.bondGraph.addEdge(Edge.createFromAttributeValue(this.diagram, domElement,
+        this.bondGraph.addEdge(Connection.createFromAttributeValue(this.diagram, domElement,
                                                              'flow', false, this, [Flow]));
     }
 }
@@ -309,10 +309,10 @@ export class Potential extends Node
 
         if ('quantity' in domElement.attributes) {
             this.quantityId = domElement.attributes.quantity.textContent;
-            const edge = new Edge(diagram, domElement, this.quantityId, false,
+            const edge = new Connection(diagram, domElement, this.quantityId, false,
                                   this, [Quantity], `#${this.quantityId}`);
             this.bondGraph.addEdge(edge);
-            this.addEdge(edge);
+            this.addConnection(edge);
         } else {
             this.quantityId = null;
         }
@@ -379,21 +379,21 @@ export class Reaction extends DiagramElement
     addInput(domElement)
     //==================
     {
-        this.bondGraph.addEdge(Edge.createFromAttributeValue(this.diagram, domElement, 'flow',
+        this.bondGraph.addEdge(Connection.createFromAttributeValue(this.diagram, domElement, 'flow',
                                                              true, this, [Flow]));
     }
 
     addOutput(domElement)
     //===================
     {
-        this.bondGraph.addEdge(Edge.createFromAttributeValue(this.diagram, domElement, 'flow',
+        this.bondGraph.addEdge(Connection.createFromAttributeValue(this.diagram, domElement, 'flow',
                                                              false, this, [Flow]));
     }
 
     addModulator(domElement)
     //======================
     {
-        this.bondGraph.addEdge(Edge.createFromAttributeValue(this.diagram, domElement, 'potential',
+        this.bondGraph.addEdge(Connection.createFromAttributeValue(this.diagram, domElement, 'potential',
                                                              true, this, [Potential]));
     }
 
@@ -418,14 +418,14 @@ export class Transformer extends DiagramElement
     addInput(domElement)
     //==================
     {
-        this.bondGraph.addEdge(Edge.createFromAttributeValue(this.diagram, domElement, 'potential',
+        this.bondGraph.addEdge(Connection.createFromAttributeValue(this.diagram, domElement, 'potential',
                                                              true, this, [Potential]));
     }
 
     addOutput(domElement)
     //===================
     {
-        this.bondGraph.addEdge(Edge.createFromAttributeValue(this.diagram, domElement, 'potential',
+        this.bondGraph.addEdge(Connection.createFromAttributeValue(this.diagram, domElement, 'potential',
                                                              false, this, [Potential]));
     }
 }

@@ -46,7 +46,7 @@ export class CellDiagram {
         this.editor = editor;
         this._elements = [];
         this._elementsById = {};
-        this._edges = [];
+        this._connections = [];
         this.width = 0;
         this.height = 0;
         this.diagonal = 0;
@@ -127,35 +127,35 @@ export class CellDiagram {
             : null;
     }
 
-    addEdge(edge)
+    addConnection(connection)
     //===========
     {
-        this._edges.push(edge);
+        this._connections.push(connection);
     }
 
-    edges()
+    connections()
     //=====
     {
-         return this._edges;
+         return this._connections;
     }
 
 /* FUTURE ??
-    edgesTo(fromId)
+    connectionsTo(fromId)
     //=============
     {
-         return Array.from(this._edges).filter(edge => edge.id.split(' ')[1] === fromId)
+         return Array.from(this._connections).filter(connection => connection.id.split(' ')[1] === fromId)
     }
 
     elementsFrom(element)
     //===================
     {
-        return this.edgesFrom(element.id).filter(id => this._elementsById[id])
+        return this.connectionsFrom(element.id).filter(id => this._elementsById[id])
     }
 
     elementsTo(element)
     //===================
     {
-        return this.edgesTo(element.id).filter(id => this._elementsById[id])
+        return this.connectionsTo(element.id).filter(id => this._elementsById[id])
     }
 */
 
@@ -189,8 +189,8 @@ export class CellDiagram {
             }
         }
 
-        for (let edge of this._edges) {
-            edge.resolveReferences();
+        for (let connection of this._connections) {
+            connection.resolveReferences();
         }
 
 
@@ -217,10 +217,10 @@ export class CellDiagram {
             }
 */
 
-        for (let edge of this._edges) {
-            edge.parseLine();
-            edge.setUnitConverter(diagramUnitConverter);
-            edge.assignPath();
+        for (let connection of this._connections) {
+            connection.parseLine();
+            connection.setUnitConverter(diagramUnitConverter);
+            connection.assignPath();
         }
 
  // Space flow lines going through a transporter

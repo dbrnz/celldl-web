@@ -75,7 +75,7 @@ export class DiagramElement {
         this.pixelWidth = null;
         this.pixelHeight = null;
         this.geometry = null;
-        this.edges = [];
+        this.connections = [];
         diagram.addElement(this);
     }
 
@@ -252,7 +252,7 @@ export class DiagramElement {
     move(offset, drawConnections=true)
     //================================
     {
-        this.invalidateEdges();
+        this.invalidateConnections();
         this.position.addOffset(offset);
         if (this.textPosition !== this.position) {
             this.textPosition.addOffset(offset);
@@ -263,33 +263,33 @@ export class DiagramElement {
         }
     }
 
-    resize(offset, edge, drawConnections=true)
+    resize(offset, connection, drawConnections=true)
     //========================================
     {
         // Not implemented for generic elements
     }
 
-    addEdge(edge)
+    addConnection(connection)
     //===========
     {
-        this.edges.push(edge);
+        this.connections.push(connection);
     }
 
-    invalidateEdges()
+    invalidateConnections()
     //===============
     {
-        for (let edge of this.edges) {
-            edge.invalidatePath();
+        for (let connection of this.connections) {
+            connection.invalidatePath();
         }
     }
 
     redrawConnections()
     //=================
     {
-        for (let edge of this.edges) {
-            if (edge.invalidPath) {
-                edge.assignPath();
-                edge.updateSvg();
+        for (let connection of this.connections) {
+            if (connection.invalidPath) {
+                connection.assignPath();
+                connection.updateSvg();
             }
         }
     }

@@ -31,7 +31,7 @@ import {parseColour, styleAsString} from './stylesheet.js';
 
 //==============================================================================
 
-export class Edge
+export class Connection
 {
     constructor(diagram, domElement, fromId, toParent, parentElement, validClasses, styleElementId=null) {
         this.diagram = diagram;
@@ -40,7 +40,7 @@ export class Edge
         this.otherElement = null;
         this.toParent = toParent;
         this.parentElement = parentElement;
-        this.parentElement.addEdge(this);
+        this.parentElement.addConnection(this);
         this.validClasses = validClasses;
         this.style = null;
         this.styleElementId = styleElementId;
@@ -58,8 +58,8 @@ export class Edge
         if (!(attributeName in domElement.attributes)) {
             throw new exception.KeyError(`Expected '${attributeName}' attribute`);
         }
-        return new Edge(diagram, domElement, domElement.attributes[attributeName].textContent,
-                        toParent, parentElement, validClasses);
+        return new Connection(diagram, domElement, domElement.attributes[attributeName].textContent,
+                              toParent, parentElement, validClasses);
     }
 
     get diagramId()
@@ -78,7 +78,7 @@ export class Edge
                                             ? this.diagram.findElement(this.styleElementId).domElement
                                             : this.domElement;
                 this.style = this.diagram.stylesheet.style(styleDomElement);
-                this.otherElement.addEdge(this);
+                this.otherElement.addConnection(this);
                 return;
             }
         }
@@ -154,7 +154,7 @@ export class Edge
     {
         const fromElement = this.toParent ? this.otherElement : this.parentElement;
         const toElement = this.toParent ? this.parentElement : this.otherElement;
-        this.path = Edge.trimPath(this.lineAsPath(fromElement, toElement), fromElement, toElement);
+        this.path = Connection.trimPath(this.lineAsPath(fromElement, toElement), fromElement, toElement);
         this.validPath = true;
     }
 

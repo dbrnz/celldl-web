@@ -105,7 +105,7 @@ export class Parser
     parseConnection(element)
     //======================
     {
-        return new components.Connection(this.diagram, element);
+        return new components.ComponentConnection(this.diagram, element);
     }
 
     parseGroup(element)
