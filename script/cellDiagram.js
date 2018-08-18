@@ -22,16 +22,13 @@ limitations under the License.
 
 //==============================================================================
 
-import '../thirdparty/jsnetworkx.js';
-
-//==============================================================================
-
 import * as bondgraph from './bondgraph.js';
+import * as components from './components.js';
 import * as exception from './exception.js';
 import * as geo from './geometry.js';
-import * as components from './components.js';
 import * as layout from './layout.js';
 import * as stylesheet from './stylesheet.js';
+import * as utils from './utils.js';
 
 import {DiagramElement} from './element.js';
 import {SvgFactory, SVG_NS, SVG_VERSION} from './svgElements.js';
@@ -72,6 +69,16 @@ export class CellDiagram {
     //========
     {
         return [this.width, this.height];
+    }
+
+    lengthToPixels(length, index)
+    //===========================
+    {
+        if (!length.unit || length.unit === 'px') {
+            return length.length;
+        } else {
+            return utils.lengthToPixels(length, index, this.width, this.height);
+        }
     }
 
     strokeWidthToPixels(length)
@@ -128,13 +135,13 @@ export class CellDiagram {
     }
 
     addConnection(connection)
-    //===========
+    //=======================
     {
         this._connections.push(connection);
     }
 
     connections()
-    //=====
+    //===========
     {
          return this._connections;
     }
@@ -162,64 +169,38 @@ export class CellDiagram {
     layout(width=0, height=0)
     //=======================
     {
-        /*
-        Set positions (and sizes) of all components in the diagram.
+        // Position and size all elements of the diagram.
 
-        We position and size all compartments before positioning
-        other elements.
-        */
         if (this.width === 0) this.width = width;
         if (this.height === 0) this.height = height;
         this.diagonal = Math.sqrt(this.width*this.width + this.height*this.height);
 
-        let dependencyGraph = new jsnx.DiGraph();
+        // Resolve ID references and parse position definitions
+        // for all elements
 
         for (let element of this._elements) {
             element.resolveReferences();
             element.parsePosition();
-            if (!element.hasValidPosition) {
+            if (!element.hasPositionSpecified) {
                 element.position.coordinates = new geo.Point(25, 20);
             }
-            dependencyGraph.addNode(element);
+        }
 
-        }
-        for (let node of dependencyGraph) {
-            for (let dependency of node.position.dependencies) {
-                dependencyGraph.addEdge(dependency, node);
-            }
-        }
+        // Resolve ID references and parse line definitions
+        // for all connections
 
         for (let connection of this._connections) {
             connection.resolveReferences();
+            connection.parseLine();
         }
 
+        // Layout all groups and their elements
 
-        const diagramUnitConverter = new layout.UnitConverter([this.width, this.height]);
+        this.componentGroups.layout();
 
-// Each group has its own unit converter
-        this.componentGroups.setUnitConverter(diagramUnitConverter);
-
-        for (let node of jsnx.topologicalSort(dependencyGraph)) {
-            if (!(node instanceof components.Group)) {
-                node.assignCoordinates(diagramUnitConverter);
-            }
-            node.assignGeometry();
-        }
-/*
-            if (node instanceof components.Group) {
-                // push current UC ??
-                // node.group ??
-
-                // diagram.uc
-
-                node.setSizeAsPixels(node.container.unitConverter.toPixelPair(node.size.size, false));
-                node.setUnitConverter(new layout.UnitConverter(this.pixelSize, node.pixelSize, node.position.asPixels));
-            }
-*/
+        // Assign paths to all connections
 
         for (let connection of this._connections) {
-            connection.parseLine();
-            connection.setUnitConverter(diagramUnitConverter);
             connection.assignPath();
         }
 

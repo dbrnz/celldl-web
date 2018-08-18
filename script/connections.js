@@ -143,12 +143,6 @@ export class Connection
     return path;
     }
 
-    setUnitConverter(unitConverter)
-    //=============================
-    {
-        this.line.setUnitConverter(unitConverter);
-    }
-
     assignPath()
     //==========
     {

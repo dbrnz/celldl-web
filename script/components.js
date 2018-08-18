@@ -22,22 +22,102 @@ limitations under the License.
 
 //==============================================================================
 
+//import {aggregation} from '../thirdparty/aggregation/src/aggregation-es6.js';
+
+//==============================================================================
+
 import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
+import * as utils from './utils.js';
 
 import {DiagramElement} from './element.js';
 import {Connection} from './connections.js';
-import {setAttributes} from './utils.js';
 import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
 
-export class ComponentGroups
+export let Container = mixwith.Mixin((superclass) => class extends superclass
+{
+    constructor(...args)
+    {
+        super(...args)
+        this.diagram = args[0];
+        this.width = 0;
+        this.height = 0;
+        this.elements = [];
+        this.origin = [0, 0]
+    }
+
+    addElement(element)
+    //=================
+    {
+        this.elements.push(element);
+    }
+
+    setDimensions(origin, width, height)
+    //==================================
+    {
+        this.origin[0] = origin.x;
+        this.origin[1] = origin.y;
+        this.width = width;
+        this.height = height;
+    }
+
+    lengthToPixels(length, index, addOffset=false)
+    //============================================
+    {
+        let pixels = (length.unit.indexOf('%') >= 0) ? utils.lengthToPixels(length, index, this.width, this.height)
+                                                     : this.diagram.lengthToPixels(length, index);
+        if (addOffset) {
+            pixels += this.origin[index];
+        }
+        return pixels;
+    }
+
+    offsetToPixels(size, addOffset=false)
+    //===================================
+    {
+        return [this.lengthToPixels(size[0], 0, addOffset),
+                this.lengthToPixels(size[1], 1, addOffset)];
+    }
+
+    layoutElements()
+    //==============
+    {
+        /*
+        - Hierarchical positioning
+        - An element's position can depend on those of its siblings and any element
+          at a higher level in the diagram. In the following, ``cm2`` may depend on
+          ``gr1``, ``cm1``, ``gr2`` and ``gr0``, while ``gr3`` may depend on ``gr4``,
+          ``cm3``, ``gr1``, ``cm1``, ``gr2`` and ``gr0``.
+        - This means we need to position the container's elements before laying out
+          any sub-containers.
+        */
+
+        // Need to ensure dependencies are amongst or above our elements
+
+        for (let element of layout.dependencyGraph(this.elements)) {
+            element.assignCoordinates(this);
+            element.assignGeometry();
+        }
+
+        for (let container of this.elements.filter((e) => mixwith.hasMixin(e, Container))) {
+            const g = container.geometry;
+            container.setDimensions(g.topLeft, g.width, g.height);
+            container.layoutElements();
+        }
+    }
+
+});
+
+//==============================================================================
+
+export class ComponentGroups extends mixwith.mix(Object).with(Container)
 {
     constructor(diagram)
     {
-        this.diagram = diagram;
+        super(diagram);
         this.id = `${this.diagram.id}_components`;
         this.components = [];
         this.connections = [];
@@ -47,6 +127,7 @@ export class ComponentGroups
     addComponent(component)
     //=====================
     {
+        super.addElement(component);
         this.components.push(component);
         component.group = this;
     }
@@ -61,21 +142,16 @@ export class ComponentGroups
     addGroup(group)
     //=============
     {
+        super.addElement(group);
         this.groups.push(group);
         group.group = this;
     }
 
-    setUnitConverter(diagramUnitConverter)
-    //====================================
+    layout()
+    //======
     {
-        this.unitConverter = diagramUnitConverter;
-        for (let group of this.groups) {
-            group.assignCoordinates(diagramUnitConverter);
-            if (group.size !== null) {
-                group.setSizeAsPixels(this.unitConverter.toPixelPair(group.size, false));
-            }
-            group.setUnitConverter(diagramUnitConverter.globalSize);
-        }
+        super.setDimensions(new geo.Point(0, 0), this.diagram.width, this.diagram.height);
+        super.layoutElements();
     }
 
     generateSvg()
@@ -138,7 +214,20 @@ class RectangularElement extends DiagramElement
             dy = offset[1]/2;
         }
         this.setSizeAsPixels([width, height]);
+
+
         this.move([dx, dy], drawConnections);
+
+        /* This will move our centre but any child elements
+           need to move by a different offset...
+
+           e.g. when top edge is moved then elements on top edge
+           move by [0, offset[1]] and elements on bottom edge
+           stay fixed.
+
+           Simplest to recalculate positions??
+
+        */
     }
 }
 
@@ -164,30 +253,20 @@ export class Component extends RectangularElement
         this.position.addDependency(group);
     }
 
-    assignCoordinates(unitConverter)
-    //==============================
+    assignCoordinates(container)
+    //==========================
     {
-        if (this.group !== null) {
-            unitConverter = this.group.unitConverter;
-        }
-        super.assignCoordinates(unitConverter);
+        // Set our position and size in terms of our container
+
+        super.assignCoordinates(container);
+
+        // Just in case no size has been specified
+
         if (this.sizeAsPixels === null) {
-            this.setSizeAsPixels([100, 50]);
+            this.setSizeAsPixels([100, 50]);  // TODO: Get default size from layout constants
         }
-        super.assignTextCoordinates(unitConverter);
     }
 
-    assignGeometry()
-    //==============
-    {
-        if (this.hasCoordinates) {
-            const [width, height] = this.sizeAsPixels;
-            const x = this.coordinates.x;
-            const y = this.coordinates.y;
-            this.geometry = new geo.Rectangle([x - width/2, y - height/2],
-                                              [x + width/2, y + height/2]);
-        }
-    }
 }
 
 //==============================================================================
@@ -222,7 +301,7 @@ export class ComponentConnection extends Connection
 
 //==============================================================================
 
-export class Group extends RectangularElement
+export class Group extends mixwith.mix(RectangularElement).with(Container)
 {
     constructor(diagram, domElement)
     {
@@ -236,6 +315,7 @@ export class Group extends RectangularElement
     addComponent(component)
     //=====================
     {
+        super.addElement(component);
         this.elements.push(component);
         component.setGroup(this);
     }
@@ -243,34 +323,29 @@ export class Group extends RectangularElement
     addGroup(group)
     //=============
     {
+        super.addElement(group);
         this.elements.push(group);
         this.groups.push(group);
-        group.position.addDependency(this);
+        //group.position.addDependency(this);
         group.group = this;
     }
 
-    setUnitConverter(diagramSize)
-    //===========================
+    assignCoordinates(container)
+    //==========================
     {
-        const [width, height] = this.sizeAsPixels;
-        this.unitConverter = new layout.UnitConverter(diagramSize, this.sizeAsPixels,
-                                                      this.coordinates.subtract([width/2, height/2]).asOffset());
-        this.assignTextCoordinates(this.unitConverter);
+        // Set our position and size in terms of our container
 
-        for (let group of this.groups) {
-            group.assignCoordinates(this.unitConverter);
-            group.setUnitConverter(diagramSize);
-        }
-    }
+        super.assignCoordinates(container);
 
-    assignCoordinates(unitConverter)
-    //==============================
-    {
-        super.assignCoordinates(this.group === null ? unitConverter
-                                                    : this.group.unitConverter);
+        // Just in case no size has been specified
+
         if (this.sizeAsPixels === null) {
-            this.setSizeAsPixels([300, 200]);
+            this.setSizeAsPixels([300, 200]);  // TODO: Get default size from layout constants
         }
+
+        // Set the position of our label
+
+        this.assignTextCoordinates(this);
     }
 
     move(offset, drawConnections=true)

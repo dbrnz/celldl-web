@@ -79,8 +79,8 @@ export class Position
         this.dependencies = new Set();
     }
 
-    get valid()
-    //=========
+    get specified()
+    //=============
     {
         return (this.dependencies.size > 0 || this.lengths !== null);
     }
@@ -206,7 +206,7 @@ export class Position
     //=======================================================
     {
         /*
-        * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
+        * Position as coords: absolute or % of container -- `100, 300` or `10%, 30%`
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
         */
 
@@ -226,8 +226,8 @@ export class Position
         }
     }
 
-    getCoordinates(unitConverter, offset, reln, dependencies)
-    //=======================================================
+    getCoordinates(container, offset, reln, dependencies)
+    //===================================================
     {
         /*
         :return: tuple(tuple(x, y), index) where index == 0 means
@@ -236,7 +236,7 @@ export class Position
         let coordinates = Position.centroid(dependencies);
         let index = Position.orientation[reln];
         if (index >= 0) {
-            const adjust = unitConverter.toPixels(offset, index, false);
+            const adjust = (offset !== null) ? container.lengthToPixels(offset, index, false) : 0;
             let value = coordinates.valueAt(index);
             if (["left", "above"].indexOf(reln) >= 0) {
                 value -= adjust;
@@ -260,18 +260,18 @@ export class Position
         return [coordinates, index];
     }
 
-    assignCoordinates(unitConverter)
-    //==============================
+    assignCoordinates(container)
+    //==========================
     {
         if (this.lengths !== null) {
-            this.coordinates = new geo.Point(...unitConverter.toPixelPair(this.lengths));
+            this.coordinates = new geo.Point(...container.offsetToPixels(this.lengths, true));
 
         } else if (this.coordinates === null) {
             if (this.relationships.length === 1) {
                 const offset = this.relationships[0].offset;
                 const reln = this.relationships[0].relation;
                 const dependencies = this.relationships[0].dependencies;
-                this.coordinates = this.getCoordinates(unitConverter, offset, reln, dependencies)[0];
+                this.coordinates = this.getCoordinates(container, offset, reln, dependencies)[0];
             } else {
                 this.coordinates = new geo.Point(0, 0);
                 for (let relationship of this.relationships) {
@@ -280,7 +280,7 @@ export class Position
                     const offset = relationship.offset;
                     const reln = relationship.relation;
                     const dependencies = relationship.dependencies;
-                    let [coordinates, index] = this.getCoordinates(unitConverter, offset, reln, dependencies);
+                    let [coordinates, index] = this.getCoordinates(container, offset, reln, dependencies);
                     if (offset === null) {
                         index = 1 - index;
                     }
@@ -305,7 +305,6 @@ export class LinePath
         this.reversePath = false;
         this.constraints = [];
         this.lengths = null;
-        this.unitConverter = null;
     }
 
     parseConstraint(tokens)
@@ -320,7 +319,30 @@ export class LinePath
         let lineOffset = null;
 
         let state = 0;
-        // TODO: all token parssing needs to be in `stylesheet.js`
+        // TODO: all token parsing needs to be in `stylesheet.js`
+
+        // ANGLE UNTIL [OFFSET] ID-LIST [LINE-OFFSET]
+
+        // [SIDE-OFFSET [SIDE]] ANGLE UNTIL [OFFSET] ID-LIST [LINE-OFFSET]
+
+        // line-start: 10% bottom vertical;  /* Means start is 10% along bottom edge,
+        //                                      line is vertical (i.e. down) until either
+        //                                      destination top edge or half-way down
+        //                                      a left or right edge of the destination
+        //                                      and then horizontal until edge.  */
+
+        // 10% bottom to 30% left
+
+        // We can get the relevant sides from the positions (and sizes) of the two
+        // elements (from and to).
+
+        // When elements are rectangular then find OVERLAP of adjoining sides and
+        // start/end line in middle of overlap.
+
+        // Need to consider number of lines between the two elements and space
+        // the lines apart.
+
+
         for (let token of tokens.value) {
             switch (state) {
               case 0:
@@ -432,12 +454,6 @@ export class LinePath
         }
     }
 
-    setUnitConverter(unitConverter)
-    //=============================
-    {
-        this.unitConverter = unitConverter;
-    }
-
     toLineString(startCoordinates, endCoordinates)
     //============================================
     {
@@ -451,7 +467,7 @@ export class LinePath
 
         for (let constraint of this.constraints) {
             const angle = constraint.angle;
-            const offset = this.unitConverter.toPixelPair(constraint.offsets, false);
+            const offset = this.diagram.offsetToPixels(constraint.offsets);
             const targetPoint = Position.centroid(constraint.dependencies);
             let x, y;
             if (constraint.limit === -1) {              // until-x
@@ -462,7 +478,7 @@ export class LinePath
                 x = currentPoint.x + (y - currentPoint.y)*Math.tan((angle-90)*Math.PI/180);
             }
             if (constraint.lineOffset !== null) {
-                const lineOffset = this.unitConverter.toPixelPair(constraint.lineOffset, false);
+                const lineOffset = this.diagram.offsetToPixels(constraint.lineOffset);
                 points.slice(-1)[0][0] += lineOffset[0];
                 points.slice(-1)[0][1] += lineOffset[1];
                 x += lineOffset[0];
@@ -488,57 +504,25 @@ export class LinePath
 
 //==============================================================================
 
-export class UnitConverter
+export function dependencyGraph(elements)
 {
-    constructor(globalSize, localSize=null, localOffset=null)
-    {
-        /*
-        :param globalSize: tuple(width, height) of diagram, in pixels
-        :param localSize: tuple(width, height) of current container, in pixels
-        :param localOffset: tuple(x_pos, y_pos) of current container, in pixels
-        */
-        this.globalSize = globalSize;
-        if (localSize === null) {
-            localSize = globalSize;
-        }
-        this.localSize = localSize;
-        if (localOffset === null) {
-            localOffset = [0, 0];
-        }
-        this.localOffset = localOffset;
+    let dependencyGraph = new jsnx.DiGraph();
+    for (let element of elements) {
+        dependencyGraph.addNode(element);
     }
-
-    toString()
-    //========
-    {
-        return `UC: global=[${this.globalSize[0]}, ${this.globalSize[1]}], local=[${this.localSize[0]}, ${this.localSize[1]}], offset=[${this.localOffset[0]}, ${this.localOffset[1]}]`;
-    }
-
-    toPixels(length, index, addOffset=true)
-    //=====================================
-    {
-        let pixels = 0;
-        if (length !== null) {
-            const unit = length.unit;
-            if (unit.indexOf('w') >= 0) {
-                index = 0;
-            } else if (unit.indexOf('h') >= 0) {
-                index = 1;
-            }
-            if (unit.startsWith("%")) {
-                const offset = length.length*this.localSize[index]/100.0;
-                pixels = (addOffset ? this.localOffset[index] : 0) + offset;
-            } else {
-                pixels = length.length*this.globalSize[index]/100.0;
-            }
+    for (let element of dependencyGraph) {
+        for (let dependency of element.position.dependencies) {
+            dependencyGraph.addEdge(dependency, element);
         }
-        return pixels;
     }
-
-    toPixelPair(coords, addOffset=true)
-    //=================================
-    {
-        return [this.toPixels(coords[0], 0, addOffset), this.toPixels(coords[1], 1, addOffset)];
+    try {
+        return Array.from(jsnx.topologicalSort(dependencyGraph));
+    } catch (e) {
+        if (e instanceof jsnx.NetworkXUnfeasible) {
+            return []; // We have a cycle  TODO: Generate an error message
+        } else {
+            console.log(e);
+        }
     }
 }
 

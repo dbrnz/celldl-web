@@ -43,7 +43,7 @@ export class List extends Array {
     }
 
     extend(other) {
-        if (this == other) {
+        if (this === other) {
             throw new exception.ValueError('Cannot extend a list with itself...');
         } else {
             for (let element of other) {
@@ -75,6 +75,25 @@ export function setAttributes(domNode, ...attributeObjects)
             if (attributePair[1] !== '')
                 domNode.setAttribute(...attributePair);
         }
+    }
+}
+
+//==============================================================================
+
+// Part of a mixin that adds width and height (or size ??) attributes
+
+export function lengthToPixels(length, index, width, height)
+{
+    if        (length.unit.indexOf('w') >= 0) {
+        return length.length*width/100;
+    } else if (length.unit.indexOf('h') >= 0) {
+        return length.length*height/100;
+    } else if (index === 0) {
+        return length.length*width/100;
+    } else if (index === 1) {
+        return length.length*height/100;
+    } else {
+        return length.length;
     }
 }
 

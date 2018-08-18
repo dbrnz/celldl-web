@@ -174,20 +174,20 @@ export class DiagramElement {
         return this.position.coordinates;
     }
 
-    assignCoordinates(unitConverter)
-    //==============================
+    assignCoordinates(container)
+    //==========================
     {
         if (this.size !== null) {
-            this.setSizeAsPixels(unitConverter.toPixelPair(this.size, false));
+            this.setSizeAsPixels(container.offsetToPixels(this.size));
         }
-        this.position.assignCoordinates(unitConverter);
+        this.position.assignCoordinates(container);
     }
 
-    assignTextCoordinates(unitConverter)
-    //==================================
+    assignTextCoordinates(container)
+    //==============================
     {
         if (this.textPosition !== this.position) {
-            this.textPosition.assignCoordinates(unitConverter);
+            this.textPosition.assignCoordinates(container);
         }
     }
 
@@ -197,14 +197,14 @@ export class DiagramElement {
         return this.position.hasCoordinates;
     }
 
-    get hasValidPosition()
-    //====================
+    get hasPositionSpecified()
+    //========================
     {
-        return this.position.valid;
+        return this.position.specified;
     }
 
     parsePosition(defaultOffset=null, defaultDependency=null)
-    //======================================================
+    //=======================================================
     {
         /*
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
