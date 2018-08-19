@@ -138,3 +138,30 @@ Moving and resizing elements
   dependency on the group.
 - When a component's geometry changes then positions/sizes of **all** components that
   have some (indirect) dependency on the component.
+
+
+Diagram class hierarchy
+=======================
+
+::
+
+    DiagramElement
+      - position, size, geometry, connections
+      - draggable
+      - geometry is a Circle
+
+      ContainerElement extends DiagramElement
+        - contains DiagramElement objects, ``this.elements``
+        - ``layoutElements``
+
+      RectangularElement mixin
+        - resizable
+        - geometry is a Rectangle
+
+    Group == ContainerElement + RectangularElement mixin
+
+    Component == DiagramElement + RectangularElement mixin
+
+    Diagram == ContainerElement but **not** draggable and no connections.
+
+
