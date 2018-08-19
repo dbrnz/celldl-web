@@ -51,7 +51,7 @@ import {SVG_NS} from './svgElements.js';
 //==============================================================================
 
 const HIGHLIGHT_BORDER = 9;   // in layout.js ??
-const HIGHLIGHT_COLOUR = "#FFFF00";
+const HIGHLIGHT_COLOUR = "#004A9C";
 const HIGHLIGHT_OPACITY = 0.8;
 
 //==============================================================================
