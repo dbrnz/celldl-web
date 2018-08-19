@@ -20,25 +20,33 @@ Styling
 Positions
 ---------
 
-- wrt. diagram or container: ``LENGTH_PAIR``
-- wrt. other elements: ``LENGTH DIRECTION ID_LIST [, LENGTH DIRECTION ID_LIST]``
-- ``boundary`` elements are in terms of their container: ``SIDE LENGTH``
-
 ::
+
+    POSITION ::= LENGTH_PAIR | RELATIVE_POSITION | BOUNDARY_POSITION
+
+    LENGTH_PAIR ::= LENGTH, LENGTH
 
     LENGTH ::= NUMBER[UNIT]
 
     UNIT ::= 'px' | %' | '%v' | '%w' | 'vw' | 'vh'
 
-    LENGTH_PAIR ::= LENGTH, LENGTH
+    RELATIVE_POSITION ::= LENGTH DIRECTION ID_LIST [, LENGTH DIRECTION ID_LIST]
 
     DIRECTION ::= 'left' | 'right' | 'above' | 'below'
 
-    SIDE ::= 'left' | 'right' | 'top' | 'bottom'
-
-    ID_LIST ::= ID+   // One or more IDs
+    ID_LIST ::= ID+          // One or more IDs
 
     ID ::= '#'ELEMENT_ID
+
+    // type="boundary" elements are in terms of their container
+
+    BOUNDARY_POSITION ::= SIDE LENGTH
+
+    SIDE ::= 'left' | 'right' | 'top' | 'bottom'
+
+- Extend to allow relative positions from the side of an element?? ::
+
+    RELATIVE_SIDE_POSITION ::= LENGTH DIRECTION ID SIDE
 
 
 - Hierarchical positioning
@@ -63,6 +71,14 @@ Positions
          /         /  |  \
         /         /   |   \
       cm2       gr3  gr4  cm3
+
+
+Sizes
+-----
+
+::
+
+  SIZE ::= ::= LENGTH, LENGTH
 
 
 Diagram layout
@@ -139,6 +155,13 @@ Moving and resizing elements
 - When a component's geometry changes then positions/sizes of **all** components that
   have some (indirect) dependency on the component.
 
+Saving moved/resized state
+--------------------------
+
+- ``<style id="manual_adjustments">`` block contains rules, selected by element ID, for each
+   moved/resized element.
+- ``Position`` objects have ``toText()`` and ``adjust(offset)`` methods that respectively return
+  a textual representation of the current position rule and adjust the current rule by an offset.
 
 Diagram class hierarchy
 =======================
