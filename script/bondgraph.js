@@ -73,7 +73,6 @@ export class BondGraph extends ContainerElement
         // Add element to the bondgraph's container
         this.addElement(element);
     }
-    }
 
     addEdge(edge)
     //===========
