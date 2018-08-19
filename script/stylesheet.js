@@ -53,6 +53,8 @@ export class StyleSheet
     //================
     {
         const ast = this._parser.parse(cssText);
+        if (!ast._props_) return;
+
         const rules = ast._props_.value;
         for (let rule of rules) {
             const selectors = cssparser.toSimple(rule._props_.selectors);
