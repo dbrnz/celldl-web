@@ -198,7 +198,7 @@ export function parseOffsetPair(tokens, allowLocal=true)
     */
     let offsets = [];
 
-    if (tokens instanceof Array && tokens.length == 2) {
+    if (tokens instanceof Array && tokens.length === 2) {
         for (let token of tokens) {
             if (token.type === 'SEQUENCE') {
 // TODO                <offset> <reln> <id_list>
