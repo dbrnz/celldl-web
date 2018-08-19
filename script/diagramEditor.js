@@ -177,7 +177,7 @@ export class DiagramEditor
                     if (diagramElement !== null) {
                         const coords = this.getMousePosition(event);
                         // Check if close to or on boundary...
-                        const location = diagramElement.location(coords, diagramElement.strokeWidth);
+                        const location = diagramElement.location(coords, diagramElement.strokeWidth+2);
                         if        (['left', 'right'].indexOf(location) >= 0) {
                             this.resizable = true;
                             node.style.cursor = 'ew-resize';
