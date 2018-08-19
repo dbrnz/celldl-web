@@ -200,6 +200,12 @@ export class CellDiagram {
             this.componentGroups.layout();
         }
 
+        // Layout bondgraph
+
+        if (this.bondGraph !== null) {
+            this.bondGraph.layout();
+        }
+
         // Assign paths to all connections
 
         for (let connection of this._connections) {

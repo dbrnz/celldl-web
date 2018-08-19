@@ -26,8 +26,8 @@ import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
 
-import {DiagramElement} from './elements.js';
 import {Connection} from './connections.js';
+import {ContainerElement, DiagramElement} from './elements.js';
 import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
@@ -36,25 +36,43 @@ import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
 
-export class BondGraph
+export class BondGraph extends ContainerElement
 {
-    constructor(diagram)
+    constructor(diagram, domElement)
     {
+        super(diagram, domElement, false);
         this.diagram = diagram;
         this.id = `${this.diagram.id}_bondgraph`;
         this.edges = [];
     }
 
-    addElement(element)
-    //=================
+    documentElement()
+    //===============
+    {
+        return document.getElementById(`${this.diagram.id}_bondgraph`);
+    }
+
+    addXml(element)
+    //=============
     {
         // NB. Ace editor search and replace appears to be broken so
         //     we simply use Javascript string methods
         const text = this.diagram.editor.getValue();
         const bondGraphEndRegExp = new RegExp(`(\\n?)([ \\t]*)(</bond-graph>)`);
-        this.diagram.editor.setValue(text.replace(bondGraphEndRegExp,
-            `$1$2    ${element.toXml()}\n$2$3`));
+
+        if (text.search(bondGraphEndRegExp) >= 0) {
+            this.diagram.editor.setValue(text.replace(bondGraphEndRegExp,
+                `$1$2    ${element.toXml()}\n$2$3`));
+        } else {
+            const cellDiagramEndRegExp = new RegExp(`(\\n?)([ \\t]*)(</cell-diagram>)`);
+            this.diagram.editor.setValue(text.replace(cellDiagramEndRegExp,
+                `$1$2    <bond-graph>\n$2        ${element.toXml()}\n$2    </bond-graph>\n$2$3`));
+        }
         this.diagram.editor.clearSelection();
+
+        // Add element to the bondgraph's container
+        this.addElement(element);
+    }
     }
 
     addEdge(edge)
@@ -80,6 +98,14 @@ export class BondGraph
         }
     }
 
+    layout()
+    //======
+    {
+        this.position.coordinates = new geo.Point(this.diagram.width/2, this.diagram.height/2);
+        this.setSizeAsPixels([this.diagram.width, this.diagram.height]);
+        this.layoutElements();
+    }
+
     generateSvg()
     //===========
     {
@@ -100,10 +126,6 @@ export class BondGraph
 
 export class Node extends DiagramElement
 {
-    constructor(diagram, element)
-    {
-        super(diagram, element);
-    }
 }
 
 //==============================================================================

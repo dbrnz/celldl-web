@@ -118,7 +118,7 @@ export class DiagramEditor
     svgLoaded(svgNode)
     {
         this.svgNode = svgNode;
-        this.bondgraphNode = document.getElementById(`${this.diagram.id}_bondgraph`);
+        this.bondgraphNode = this.diagram.bondGraph.documentElement();
         svgNode.addEventListener('mousedown', this.mouseDown.bind(this));
         svgNode.addEventListener('mousemove', this.mouseMove.bind(this));
         svgNode.addEventListener('mouseup', this.mouseUp.bind(this));
@@ -268,7 +268,7 @@ export class DiagramEditor
 //                 this.movedElement = newElement;
 
                 // Need to insert node into diagram's bondgraph...
-                this.diagram.bondGraph.addElement(newElement);
+                this.diagram.bondGraph.addXml(newElement);
             }
         }
         event.stopPropagation();

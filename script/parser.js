@@ -130,20 +130,20 @@ export class Parser
     parseBondGraph(element)
     //=====================
     {
-        this.diagram.bondGraph = new bondgraph.BondGraph(this.diagram);
+        this.diagram.bondGraph = new bondgraph.BondGraph(this.diagram, element);
         for (let e of element.children) {
             if        (e.nodeName === "flow") {
-                this.parseFlow(e);
+                this.diagram.bondGraph.addElement(this.parseFlow(e));
             } else if (e.nodeName === "gyrator") {
-                this.parseGyrator(e);
+                this.diagram.bondGraph.addElement(this.parseGyrator(e));
             } else if (e.nodeName === "potential") {
-                this.parsePotential(e);
+                this.diagram.bondGraph.addElement(this.parsePotential(e));
             } else if (e.nodeName === "quantity") {
-                this.parseQuantity(e);
+                this.diagram.bondGraph.addElement(this.parseQuantity(e));
             } else if (e.nodeName === "reaction") {
-                this.parseReaction(e);
+                this.diagram.bondGraph.addElement(this.parseReaction(e));
             } else if (e.nodeName === "transformer") {
-                this.parseTransformer(e);
+                this.diagram.bondGraph.addElement(this.parseTransformer(e));
             } else {
                 throw new exception.SyntaxError(e, "Invalid element for <bond-graph>");
             }
@@ -166,6 +166,8 @@ export class Parser
                 throw new exception.SyntaxError(e, `Unexpected <flow> element`);
             }
         }
+        return flow;
+    }
         // check we have at least one input and one output
         // each component has its own styling
         // inherit styles from parent
@@ -185,7 +187,6 @@ export class Parser
                     }
                 }
 */
-    }
 
     parseGyrator(element)
     //===================
@@ -200,18 +201,19 @@ export class Parser
                 throw new exception.SyntaxError(e, `Unexpected <gyrator> element`);
             }
         }
+        return gyrator;
     }
 
     parsePotential(element)
     //=====================
     {
-        const potential = new bondgraph.Potential(this.diagram, element);
+        return new bondgraph.Potential(this.diagram, element);
     }
 
     parseQuantity(element)
     //====================
     {
-        const quantity = new bondgraph.Quantity(this.diagram, element);
+        return new bondgraph.Quantity(this.diagram, element);
     }
 
     parseReaction(element)
@@ -229,6 +231,7 @@ export class Parser
                 throw new exception.SyntaxError(e, `Unexpected <reaction> element`);
             }
         }
+        return reaction;
     }
 
     parseTransformer(element)
@@ -244,6 +247,7 @@ export class Parser
                 throw new exception.SyntaxError(e, `Unexpected <transformer> element`);
             }
         }
+        return transformer;
     }
 
     //==========================================================================
@@ -299,6 +303,12 @@ export class Parser
             }
         }
 
+        // The graphical editor requires a <bond-graph> node...
+
+        if (this.bondGraphElement === null) {
+            this.bondGraphElement = document.createElementNS(CELLDL_NAMESPACE, 'bond-graph');
+        }
+
         return Promise.all(stylePromises)
                       .then(() => {
                             this.diagram.initialise(stylesheet.style(xmlRoot));
@@ -309,9 +319,9 @@ export class Parser
 //                            } else {
 //                                this.diagram = new dia.Diagram();
 //                            }
-                            if (this.bondGraphElement !== null) {
-                                this.parseBondGraph(this.bondGraphElement);
-                            }
+
+                            this.parseBondGraph(this.bondGraphElement);
+
                             if (this.componentsElement !== null) {
                                 this.parseComponents(this.componentsElement);
                             }
