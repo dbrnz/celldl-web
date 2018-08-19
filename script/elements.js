@@ -90,8 +90,8 @@ export class DiagramElement {
                                                            : layout.STROKE_WIDTH;
         this.textColour = ('text-color' in this.style) ? stylesheet.parseColour(this.diagram, this.style['text-color'])
                                                        : '#202020'; // TODO: specify defaults in one place
-        this.pixelWidth = null;
-        this.pixelHeight = null;
+        this.pixelWidth = 0;
+        this.pixelHeight = 0;
         this.geometry = null;
         this.connections = [];
         diagram.addElement(this);
@@ -201,11 +201,11 @@ export class DiagramElement {
         this.position.assignCoordinates(container);
     }
 
-    assignTextCoordinates(container)
-    //==============================
+    assignTextCoordinates()
+    //=====================
     {
         if (this.textPosition !== this.position) {
-            this.textPosition.assignCoordinates(container);
+            this.textPosition.assignCoordinates(this);
         }
     }
 
@@ -213,6 +213,7 @@ export class DiagramElement {
     //================
     {
         this.position.clearCoordinates();
+        this.textPosition.clearCoordinates();
     }
 
     get hasCoordinates()
@@ -245,6 +246,31 @@ export class DiagramElement {
         } else if (this.textPosition !== this.position) {
             this.textPosition = this.position;
         }
+    }
+
+    lengthToPixels(length, index, addOffset=false)
+    //============================================
+    {
+        if (length.unit.indexOf('%') >= 0) {
+            let pixels = utils.lengthToPixels(length, index, this.pixelWidth, this.pixelHeight);
+            if (addOffset) {
+                if (index === 0) {
+                    pixels += (this.coordinates.x - this.pixelWidth/2);
+                } else {
+                    pixels += (this.coordinates.y - this.pixelHeight/2);
+                }
+            }
+            return pixels;
+        } else {
+            return this.diagram.lengthToPixels(length, index);
+        }
+    }
+
+    offsetToPixels(size, addOffset=false)
+    //===================================
+    {
+        return [this.lengthToPixels(size[0], 0, addOffset),
+                this.lengthToPixels(size[1], 1, addOffset)];
     }
 
     get sizeAsPixels()
@@ -294,13 +320,13 @@ export class DiagramElement {
     }
 
     addConnection(connection)
-    //===========
+    //=======================
     {
         this.connections.push(connection);
     }
 
     invalidateConnections()
-    //===============
+    //=====================
     {
         for (let connection of this.connections) {
             connection.invalidatePath();
@@ -405,39 +431,12 @@ export class ContainerElement extends DiagramElement
     {
         super(diagram, domElement, requireId);
         this.elements = [];
-        this.origin = [0, 0]
     }
 
     addElement(element)
     //=================
     {
         this.elements.push(element);
-    }
-
-    setOrigin(origin)
-    //===============
-    {
-        this.origin[0] = origin.x;
-        this.origin[1] = origin.y;
-    }
-
-    lengthToPixels(length, index, addOffset=false)
-    //============================================
-    {
-        let pixels = (length.unit.indexOf('%') >= 0)
-                    ? utils.lengthToPixels(length, index, this.pixelWidth, this.pixelHeight)
-                    : this.diagram.lengthToPixels(length, index);
-        if (addOffset) {
-            pixels += this.origin[index];
-        }
-        return pixels;
-    }
-
-    offsetToPixels(size, addOffset=false)
-    //===================================
-    {
-        return [this.lengthToPixels(size[0], 0, addOffset),
-                this.lengthToPixels(size[1], 1, addOffset)];
     }
 
     clearElementCoordinates()
@@ -467,11 +466,11 @@ export class ContainerElement extends DiagramElement
             if (!element.hasCoordinates) {
                 element.assignCoordinates(this);
                 element.assignGeometry();
+                element.assignTextCoordinates();
             }
         }
 
         for (let container of this.elements.filter((e) => e instanceof ContainerElement)) {
-            container.setOrigin(container.geometry.topLeft);
             container.layoutElements();
         }
     }
@@ -556,6 +555,13 @@ export class RectangularMixin
         // Set geometry to have new size and position
 
         this.assignGeometry();
+
+        // Set the position of our label
+
+        if (this.textPosition !== this.position) {
+            this.textPosition.clearCoordinates();
+            this.assignTextCoordinates();
+        }
 
         // Draw connections using new sizes and positions
 

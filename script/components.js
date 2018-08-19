@@ -85,9 +85,9 @@ export class ComponentGroups extends elements.ContainerElement
     layout()
     //======
     {
+        this.position.coordinates = new geo.Point(this.diagram.width/2, this.diagram.height/2);
         this.setSizeAsPixels([this.diagram.width, this.diagram.height]);
-        super.setOrigin(new geo.Point(0, 0));
-        super.layoutElements();
+        this.layoutElements();
     }
 
     generateSvg()
@@ -216,9 +216,6 @@ export class Group extends aggregation(elements.ContainerElement, elements.Recta
             this.setSizeAsPixels([300, 200]);  // TODO: Get default size from layout constants
         }
 
-        // Set the position of our label
-
-        this.assignTextCoordinates(this);
     }
 
     move(offset, drawConnections=true)
@@ -237,11 +234,6 @@ export class Group extends aggregation(elements.ContainerElement, elements.Recta
     //========================================
     {
         if (super.resize(offset, edge, false)) {
-            // Set the origin of our container superclass to
-            // our new top-left corner
-
-            this.setOrigin(this.geometry.topLeft);
-
             // Child elements may depend on our size and so need
             // their positions reassigned
 
