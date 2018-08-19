@@ -80,8 +80,6 @@ export function setAttributes(domNode, ...attributeObjects)
 
 //==============================================================================
 
-// Part of a mixin that adds width and height (or size ??) attributes
-
 export function lengthToPixels(length, index, width, height)
 {
     if        (length.unit.indexOf('w') >= 0) {

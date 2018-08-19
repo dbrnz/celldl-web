@@ -18,6 +18,23 @@ limitations under the License.
 
 ******************************************************************************/
 
+/******************************************************************************
+
+    DiagramElement
+      - position, size, geometry, connections
+      - draggable
+      - geometry is a Circle
+
+      ContainerElement extends DiagramElement
+        - contains DiagramElement objects, ``this.elements``
+        - ``layoutElements``
+
+      RectangularElement mixin
+        - resizable
+        - geometry is a Rectangle
+
+******************************************************************************/
+
 'use strict';
 
 //==============================================================================
@@ -26,6 +43,7 @@ import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
 import * as stylesheet from './stylesheet.js';
+import * as utils from './utils.js';
 
 import {setAttributes} from './utils.js';
 import {SVG_NS} from './svgElements.js';
@@ -189,6 +207,12 @@ export class DiagramElement {
         if (this.textPosition !== this.position) {
             this.textPosition.assignCoordinates(container);
         }
+    }
+
+    clearCoordinates()
+    //================
+    {
+        this.position.clearCoordinates();
     }
 
     get hasCoordinates()
@@ -366,8 +390,182 @@ export class DiagramElement {
     {
         const svgNode = this.generateSvg(highlight);
         const currentNode = document.getElementById(this.diagramId);
+//        const parentNode = currentNode.parentNode;
+//        parentNode.removeChild(currentNode);
+//        parentNode.appendChild(currentNode);  // Will be on top ??
         currentNode.outerHTML = svgNode.outerHTML;
     }
+}
+
+//==============================================================================
+
+export class ContainerElement extends DiagramElement
+{
+    constructor(diagram, domElement, requireId=true)
+    {
+        super(diagram, domElement, requireId);
+        this.elements = [];
+        this.origin = [0, 0]
+    }
+
+    addElement(element)
+    //=================
+    {
+        this.elements.push(element);
+    }
+
+    setOrigin(origin)
+    //===============
+    {
+        this.origin[0] = origin.x;
+        this.origin[1] = origin.y;
+    }
+
+    lengthToPixels(length, index, addOffset=false)
+    //============================================
+    {
+        let pixels = (length.unit.indexOf('%') >= 0)
+                    ? utils.lengthToPixels(length, index, this.pixelWidth, this.pixelHeight)
+                    : this.diagram.lengthToPixels(length, index);
+        if (addOffset) {
+            pixels += this.origin[index];
+        }
+        return pixels;
+    }
+
+    offsetToPixels(size, addOffset=false)
+    //===================================
+    {
+        return [this.lengthToPixels(size[0], 0, addOffset),
+                this.lengthToPixels(size[1], 1, addOffset)];
+    }
+
+    clearElementCoordinates()
+    //=======================
+    {
+        for (let element of this.elements) {
+            element.clearCoordinates();
+        }
+    }
+
+    layoutElements()
+    //==============
+    {
+        /*
+        - Hierarchical positioning
+        - An element's position can depend on those of its siblings and any element
+          at a higher level in the diagram. In the following, ``cm2`` may depend on
+          ``gr1``, ``cm1``, ``gr2`` and ``gr0``, while ``gr3`` may depend on ``gr4``,
+          ``cm3``, ``gr1``, ``cm1``, ``gr2`` and ``gr0``.
+        - This means we need to position the container's elements before laying out
+          any sub-containers.
+        */
+
+        // Need to ensure dependencies are amongst or above our elements
+
+        for (let element of layout.dependencyGraph(this.elements)) {
+            if (!element.hasCoordinates) {
+                element.assignCoordinates(this);
+                element.assignGeometry();
+            }
+        }
+
+        for (let container of this.elements.filter((e) => e instanceof ContainerElement)) {
+            container.setOrigin(container.geometry.topLeft);
+            container.layoutElements();
+        }
+    }
+
+    redrawConnections()
+    //=================
+    {
+        super.redrawConnections();
+        for (let element of this.elements) {
+            element.redrawConnections();
+        }
+    }
+
+    generateSvg(highlight=false)
+    //==========================
+    {
+        const svgNode = super.generateSvg(highlight);
+
+        for (let element of this.elements) {
+            svgNode.appendChild(element.generateSvg());
+        }
+        return svgNode;
+    }
+}
+
+//==============================================================================
+
+export class RectangularMixin
+{
+    assignGeometry()
+    //==============
+    {
+        if (this.hasCoordinates) {
+            const [width, height] = this.sizeAsPixels;
+            const x = this.coordinates.x;
+            const y = this.coordinates.y;
+            this.geometry = new geo.Rectangle([x - width/2, y - height/2],
+                                              [x + width/2, y + height/2]);
+        }
+    }
+
+    resize(offset, edge, drawConnections=true)
+    //========================================
+    {
+        if (offset[0] === 0 && offset[1] === 0) {
+            return false;
+        }
+
+        const [width, height] = this.sizeAsPixels;
+        let newWidth = width;
+        let newHeight = height;
+
+
+        let dx = 0;
+        let dy = 0;
+
+        if (edge.indexOf('left') >= 0) {
+            newWidth -= offset[0];
+            if (newWidth <= 0) newWidth = 1;
+            dx = (width - newWidth)/2;
+        } else if (edge.indexOf('right') >= 0) {
+            newWidth += offset[0];
+            if (newWidth <= 0) newWidth = 1;
+            dx = (newWidth - width)/2;
+        }
+        if (edge.indexOf('top') >= 0) {
+            newHeight -= offset[1];
+            if (newHeight <= 0) newHeight = 1;
+            dy = (height - newHeight)/2;
+        } else if (edge.indexOf('bottom') >= 0) {
+            newHeight += offset[1];
+            if (newHeight <= 0) newHeight = 1;
+            dy = (newHeight - height)/2;
+        }
+
+        this.setSizeAsPixels([newWidth, newHeight]);
+
+        // Reposition element so the centre of the element stays fixed
+
+        this.move([dx, dy], false);
+
+        // Set geometry to have new size and position
+
+        this.assignGeometry();
+
+        // Draw connections using new sizes and positions
+
+        if (drawConnections) {
+            this.redrawConnections();
+        }
+
+        return true;
+    }
+
 }
 
 //==============================================================================

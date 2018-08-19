@@ -85,6 +85,12 @@ export class Position
         return (this.dependencies.size > 0 || this.lengths !== null);
     }
 
+    clearCoordinates()
+    //================
+    {
+        this.coordinates = null;
+    }
+
     get hasCoordinates()
     //==================
     {
@@ -263,28 +269,29 @@ export class Position
     assignCoordinates(container)
     //==========================
     {
-        if (this.lengths !== null) {
-            this.coordinates = new geo.Point(...container.offsetToPixels(this.lengths, true));
-
-        } else if (this.coordinates === null) {
-            if (this.relationships.length === 1) {
-                const offset = this.relationships[0].offset;
-                const reln = this.relationships[0].relation;
-                const dependencies = this.relationships[0].dependencies;
-                this.coordinates = this.getCoordinates(container, offset, reln, dependencies)[0];
+        if (this.coordinates === null) {
+            if (this.lengths !== null) {
+                this.coordinates = new geo.Point(...container.offsetToPixels(this.lengths, true));
             } else {
-                this.coordinates = new geo.Point(0, 0);
-                for (let relationship of this.relationships) {
-                    // May not have an offset
-                    // OK since more than one reln
-                    const offset = relationship.offset;
-                    const reln = relationship.relation;
-                    const dependencies = relationship.dependencies;
-                    let [coordinates, index] = this.getCoordinates(container, offset, reln, dependencies);
-                    if (offset === null) {
-                        index = 1 - index;
+                if (this.relationships.length === 1) {
+                    const offset = this.relationships[0].offset;
+                    const reln = this.relationships[0].relation;
+                    const dependencies = this.relationships[0].dependencies;
+                    this.coordinates = this.getCoordinates(container, offset, reln, dependencies)[0];
+                } else {
+                    this.coordinates = new geo.Point(0, 0);
+                    for (let relationship of this.relationships) {
+                        // May not have an offset
+                        // OK since more than one reln
+                        const offset = relationship.offset;
+                        const reln = relationship.relation;
+                        const dependencies = relationship.dependencies;
+                        let [coordinates, index] = this.getCoordinates(container, offset, reln, dependencies);
+                        if (offset === null) {
+                            index = 1 - index;
+                        }
+                        this.coordinates.setValueAt(index, coordinates.valueAt(index));
                     }
-                    this.coordinates.setValueAt(index, coordinates.valueAt(index));
                 }
             }
         }

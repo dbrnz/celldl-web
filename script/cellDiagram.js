@@ -30,7 +30,7 @@ import * as layout from './layout.js';
 import * as stylesheet from './stylesheet.js';
 import * as utils from './utils.js';
 
-import {DiagramElement} from './element.js';
+import {DiagramElement} from './elements.js';
 import {SvgFactory, SVG_NS, SVG_VERSION} from './svgElements.js';
 
 //==============================================================================
@@ -47,8 +47,8 @@ export class CellDiagram {
         this.width = 0;
         this.height = 0;
         this.diagonal = 0;
-        this.componentGroups = new components.ComponentGroups(this);
-        this.bondGraph = new bondgraph.BondGraph(this);
+        this.componentGroups = null;
+        this.bondGraph = null;
         this.svgFactory = new SvgFactory(id);
         this._manualPositions = [];
         this._manualSizes = [];
@@ -196,7 +196,9 @@ export class CellDiagram {
 
         // Layout all groups and their elements
 
-        this.componentGroups.layout();
+        if (this.componentGroups !== null) {
+            this.componentGroups.layout();
+        }
 
         // Assign paths to all connections
 
@@ -227,17 +229,19 @@ export class CellDiagram {
 //            svg.extend(c.svg());
 //        }
 
-        const componentGroupsSvg = this.componentGroups.generateSvg();
-        const bondgraphSvg = this.bondGraph.generateSvg();
+        if (this.componentGroups !== null) {
+            svgNode.appendChild(this.componentGroups.generateSvg());
+        }
+
+        if (this.bondGraph !== null) {
+            svgNode.appendChild(this.bondGraph.generateSvg());
+        }
 
 //        for (let transporter of this.transporters) {
 //            svg.extend(transporter.svg());
 //        }
 
         svgNode.appendChild(this.svgFactory.defines());
-
-        svgNode.appendChild(componentGroupsSvg);
-        svgNode.appendChild(bondgraphSvg);
 
         return svgNode;
     }

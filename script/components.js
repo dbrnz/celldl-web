@@ -18,107 +18,42 @@ limitations under the License.
 
 ******************************************************************************/
 
+/******************************************************************************
+
+    Group == ContainerElement + RectangularElement mixin
+
+    Component == DiagramElement + RectangularElement mixin
+
+    ComponentGroups == ContainerElement but **not** draggable and no connections.
+
+******************************************************************************/
+
 'use strict';
 
 //==============================================================================
 
-//import {aggregation} from '../thirdparty/aggregation/src/aggregation-es6.js';
+import {aggregation} from '../thirdparty/aggregation/src/aggregation-es6.js';
 
 //==============================================================================
 
 import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
-import * as utils from './utils.js';
 
-import {DiagramElement} from './element.js';
+import * as elements from './elements.js';
 import {Connection} from './connections.js';
 import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
 
-export let Container = mixwith.Mixin((superclass) => class extends superclass
+export class ComponentGroups extends elements.ContainerElement
 {
-    constructor(...args)
+    constructor(diagram, domElement)
     {
-        super(...args)
-        this.diagram = args[0];
-        this.width = 0;
-        this.height = 0;
-        this.elements = [];
-        this.origin = [0, 0]
-    }
-
-    addElement(element)
-    //=================
-    {
-        this.elements.push(element);
-    }
-
-    setDimensions(origin, width, height)
-    //==================================
-    {
-        this.origin[0] = origin.x;
-        this.origin[1] = origin.y;
-        this.width = width;
-        this.height = height;
-    }
-
-    lengthToPixels(length, index, addOffset=false)
-    //============================================
-    {
-        let pixels = (length.unit.indexOf('%') >= 0) ? utils.lengthToPixels(length, index, this.width, this.height)
-                                                     : this.diagram.lengthToPixels(length, index);
-        if (addOffset) {
-            pixels += this.origin[index];
+        super(diagram, domElement, false);
+        if (this.id === '') {
+            this.id = `${this.diagram.id}_components`;
         }
-        return pixels;
-    }
-
-    offsetToPixels(size, addOffset=false)
-    //===================================
-    {
-        return [this.lengthToPixels(size[0], 0, addOffset),
-                this.lengthToPixels(size[1], 1, addOffset)];
-    }
-
-    layoutElements()
-    //==============
-    {
-        /*
-        - Hierarchical positioning
-        - An element's position can depend on those of its siblings and any element
-          at a higher level in the diagram. In the following, ``cm2`` may depend on
-          ``gr1``, ``cm1``, ``gr2`` and ``gr0``, while ``gr3`` may depend on ``gr4``,
-          ``cm3``, ``gr1``, ``cm1``, ``gr2`` and ``gr0``.
-        - This means we need to position the container's elements before laying out
-          any sub-containers.
-        */
-
-        // Need to ensure dependencies are amongst or above our elements
-
-        for (let element of layout.dependencyGraph(this.elements)) {
-            element.assignCoordinates(this);
-            element.assignGeometry();
-        }
-
-        for (let container of this.elements.filter((e) => mixwith.hasMixin(e, Container))) {
-            const g = container.geometry;
-            container.setDimensions(g.topLeft, g.width, g.height);
-            container.layoutElements();
-        }
-    }
-
-});
-
-//==============================================================================
-
-export class ComponentGroups extends mixwith.mix(Object).with(Container)
-{
-    constructor(diagram)
-    {
-        super(diagram);
-        this.id = `${this.diagram.id}_components`;
         this.components = [];
         this.connections = [];
         this.groups = [];
@@ -150,7 +85,8 @@ export class ComponentGroups extends mixwith.mix(Object).with(Container)
     layout()
     //======
     {
-        super.setDimensions(new geo.Point(0, 0), this.diagram.width, this.diagram.height);
+        this.setSizeAsPixels([this.diagram.width, this.diagram.height]);
+        super.setOrigin(new geo.Point(0, 0));
         super.layoutElements();
     }
 
@@ -174,66 +110,7 @@ export class ComponentGroups extends mixwith.mix(Object).with(Container)
 
 //==============================================================================
 
-class RectangularElement extends DiagramElement
-{
-    constructor(diagram, domElement)
-    {
-        super(diagram, domElement);
-    }
-
-    assignGeometry()
-    //==============
-    {
-        if (this.hasCoordinates) {
-            const [width, height] = this.sizeAsPixels;
-            const x = this.coordinates.x;
-            const y = this.coordinates.y;
-            this.geometry = new geo.Rectangle([x - width/2, y - height/2],
-                                              [x + width/2, y + height/2]);
-        }
-    }
-
-    resize(offset, edge, drawConnections=true)
-    //========================================
-    {
-        let [width, height] = this.sizeAsPixels;
-        let dx = 0;
-        let dy = 0;
-        if (edge.indexOf('left') >= 0) {
-            width -= offset[0];
-            dx = offset[0]/2;
-        } else if (edge.indexOf('right') >= 0) {
-            width += offset[0];
-            dx = offset[0]/2;
-        }
-        if (edge.indexOf('top') >= 0) {
-            height -= offset[1];
-            dy = offset[1]/2;
-        } else if (edge.indexOf('bottom') >= 0) {
-            height += offset[1];
-            dy = offset[1]/2;
-        }
-        this.setSizeAsPixels([width, height]);
-
-
-        this.move([dx, dy], drawConnections);
-
-        /* This will move our centre but any child elements
-           need to move by a different offset...
-
-           e.g. when top edge is moved then elements on top edge
-           move by [0, offset[1]] and elements on bottom edge
-           stay fixed.
-
-           Simplest to recalculate positions??
-
-        */
-    }
-}
-
-//==============================================================================
-
-export class Component extends RectangularElement
+export class Component extends aggregation(elements.DiagramElement, elements.RectangularMixin)
 {
     constructor(diagram, domElement)
     {
@@ -301,22 +178,19 @@ export class ComponentConnection extends Connection
 
 //==============================================================================
 
-export class Group extends mixwith.mix(RectangularElement).with(Container)
+export class Group extends aggregation(elements.ContainerElement, elements.RectangularMixin)
 {
     constructor(diagram, domElement)
     {
         super(diagram, domElement);
-        this.elements = [];
         this.groups = [];
         this.group = null;
-        this.unitConverter = null;
     }
 
     addComponent(component)
     //=====================
     {
         super.addElement(component);
-        this.elements.push(component);
         component.setGroup(this);
     }
 
@@ -324,7 +198,6 @@ export class Group extends mixwith.mix(RectangularElement).with(Container)
     //=============
     {
         super.addElement(group);
-        this.elements.push(group);
         this.groups.push(group);
         //group.position.addDependency(this);
         group.group = this;
@@ -360,24 +233,29 @@ export class Group extends mixwith.mix(RectangularElement).with(Container)
         }
     }
 
-    redrawConnections()
-    //=================
+    resize(offset, edge, drawConnections=true)
+    //========================================
     {
-        super.redrawConnections();
-        for (let element of this.elements) {
-            element.redrawConnections();
+        if (super.resize(offset, edge, false)) {
+            // Set the origin of our container superclass to
+            // our new top-left corner
+
+            this.setOrigin(this.geometry.topLeft);
+
+            // Child elements may depend on our size and so need
+            // their positions reassigned
+
+            this.clearElementCoordinates();
+            this.layoutElements();
+
+            // Draw connections using new sizes and positions
+
+            if (drawConnections) {
+                this.redrawConnections();
+            }
         }
     }
 
-    generateSvg(highlight=false)
-    //==========================
-    {
-        const svgNode = super.generateSvg(highlight);
-        for (let element of this.elements) {
-            svgNode.appendChild(element.generateSvg());
-        }
-        return svgNode;
-    }
 }
 
 //==============================================================================

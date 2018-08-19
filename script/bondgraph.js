@@ -26,7 +26,7 @@ import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
 
-import {DiagramElement} from './element.js';
+import {DiagramElement} from './elements.js';
 import {Connection} from './connections.js';
 import {SVG_NS} from './svgElements.js';
 

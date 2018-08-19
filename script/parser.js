@@ -83,6 +83,7 @@ export class Parser
     parseComponents(element)
     //======================
     {
+        this.diagram.componentGroups = new components.ComponentGroups(this.diagram, element);
         for (let e of element.children) {
             if        (e.nodeName === "component") {
                 this.diagram.componentGroups.addComponent(this.parseComponent(e));
@@ -129,6 +130,7 @@ export class Parser
     parseBondGraph(element)
     //=====================
     {
+        this.diagram.bondGraph = new bondgraph.BondGraph(this.diagram);
         for (let e of element.children) {
             if        (e.nodeName === "flow") {
                 this.parseFlow(e);
