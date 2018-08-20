@@ -40,7 +40,6 @@ const PALETTE_XML = `<cell-diagram xmlns="http://www.cellml.org/celldl/1.0#">
         <gyrator id="r"/>
         <transformer id="z"/>
     </bond-graph>
-    <style src="./styles/colours.css"/>
     <style>
         #q { position: 50%, 10%; }
         #u { position: 50%, 25%; }
