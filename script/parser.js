@@ -269,7 +269,10 @@ export class Parser
         }
 
         const stylesheet = this.diagram.stylesheet;
+
         let stylePromises = [];
+        stylePromises.push(stylesheet.loadDefaultStylesheet());
+
         for (let element of xmlRoot.children) {
             if (element.nodeName === 'bond-graph') {
                 if (this.bondGraphElement === null) {

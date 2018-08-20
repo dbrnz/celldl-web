@@ -40,6 +40,10 @@ import * as SPECIFICITY from '../thirdparty/specificity.js';
 
 //==============================================================================
 
+const DEFAULT_STYLESHEET = './styles/colours.css';
+
+//==============================================================================
+
 export class StyleSheet
 {
     constructor() {
@@ -47,6 +51,12 @@ export class StyleSheet
         this.stylesheet = [];
         this._order = 0;
         this.classes = [];
+    }
+
+    loadDefaultStylesheet()
+    //=====================
+    {
+        return this.fetchStyles(DEFAULT_STYLESHEET);
     }
 
     addStyles(cssText)

@@ -17,6 +17,12 @@ Styling
 
 - Colours, positions, sizes
 
+Colours
+-------
+
+- Default stylesheet is implicitely loaded from web
+
+
 Positions
 ---------
 
