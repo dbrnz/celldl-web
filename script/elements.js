@@ -505,8 +505,7 @@ export class RectangularMixin
     {
         if (this.hasCoordinates) {
             const [width, height] = this.sizeAsPixels;
-            const x = this.coordinates.x;
-            const y = this.coordinates.y;
+            const [x, y] = this.coordinates.asOffset();
             this.geometry = new geo.Rectangle([x - width/2, y - height/2],
                                               [x + width/2, y + height/2]);
         }
@@ -520,12 +519,8 @@ export class RectangularMixin
         }
 
         const [width, height] = this.sizeAsPixels;
-        let newWidth = width;
-        let newHeight = height;
-
-
-        let dx = 0;
-        let dy = 0;
+        let [newWidth, newHeight] = [width, height];
+        let [dx, dy] = [0, 0];
 
         if (edge.indexOf('left') >= 0) {
             newWidth -= offset[0];
