@@ -90,8 +90,8 @@ export class DiagramElement {
                                                            : layout.STROKE_WIDTH;
         this.textColour = ('text-color' in this.style) ? stylesheet.parseColour(this.diagram, this.style['text-color'])
                                                        : '#202020'; // TODO: specify defaults in one place
-        this.pixelWidth = 0;
-        this.pixelHeight = 0;
+        this.pixelWidth = null;
+        this.pixelHeight = null;
         this.geometry = null;
         this.connections = [];
         diagram.addElement(this);
