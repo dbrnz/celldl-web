@@ -62,9 +62,9 @@ export class StyleSheet
     addStyles(cssText)
     //================
     {
-        const ast = this._parser.parse(cssText);
-        if (!ast._props_) return;
+        if (cssText.trim() === '') return;
 
+        const ast = this._parser.parse(cssText);
         const rules = ast._props_.value;
         for (let rule of rules) {
             const selectors = cssparser.toSimple(rule._props_.selectors);
@@ -299,15 +299,19 @@ export function adjustedElements(cssText)
 {
     const positioned = [];
     const resized = [];
-    const parser = new cssparser.Parser();
-    const ast = parser.parse(cssText);
-    const rules = ast._props_.value;
-    for (let rule of rules) {
-        const styling = cssparser.toSimple(rule._props_.value);
-        const id = cssparser.toSimple(rule._props_.selectors)[0];
-        if (styling.position) positioned.push(id);
-        if (styling.size) resized.push(id);
+
+    if (cssText.trim() !== '') {
+        const parser = new cssparser.Parser();
+        const ast = parser.parse(cssText);
+        const rules = ast._props_.value;
+        for (let rule of rules) {
+            const styling = cssparser.toSimple(rule._props_.value);
+            const id = cssparser.toSimple(rule._props_.selectors)[0];
+            if (styling.position) positioned.push(id);
+            if (styling.size) resized.push(id);
+        }
     }
+
     return [positioned, resized];
 }
 
