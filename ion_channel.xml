@@ -33,8 +33,6 @@
 
     </bond-graph>
 
-    <style src="./styles/colours.css"/>
-
     <style>
         cell-diagram {
             width: 600;            /* SVG `pixel` units */
