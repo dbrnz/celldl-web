@@ -218,22 +218,11 @@ export class Group extends aggregation(elements.ContainerElement, elements.Recta
 
     }
 
-    move(offset, drawConnections=true)
-    //================================
+    resize(offset, edge, grid=null, drawConnections=true)
+    //===================================================
     {
-        super.move(offset, false);
-        for (let element of this.elements) {
-            element.move(offset, false);
-        }
-        if (drawConnections) {
-            this.redrawConnections();
-        }
-    }
-
-    resize(offset, edge, drawConnections=true)
-    //========================================
-    {
-        if (super.resize(offset, edge, false)) {
+        const movedOffset = super.resize(offset, edge, grid, false);
+        if (movedOffset[0] !== 0 || movedOffset[1] !== 0) {
             // Child elements may depend on our size and so need
             // their positions reassigned
 
@@ -246,6 +235,7 @@ export class Group extends aggregation(elements.ContainerElement, elements.Recta
                 this.redrawConnections();
             }
         }
+        return movedOffset;
     }
 
 }

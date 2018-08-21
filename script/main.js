@@ -43,7 +43,6 @@ export function displayDiagram(cellDlEditor, svgContainerNode, palette)
     try {
         const stylesheet = new StyleSheet();
         const cellDiagram = new CellDiagram('diagram', stylesheet, cellDlEditor);
-        const diagramEditor = new DiagramEditor(cellDiagram, palette);
         const parser = new Parser(cellDiagram);
 
         parser.parseDocument(xmlDocument)
@@ -70,6 +69,8 @@ export function displayDiagram(cellDlEditor, svgContainerNode, palette)
                     document.body.style.cursor = 'default';
 
                     const svgNode = svgContainerNode.children[0];
+
+                    const diagramEditor = new DiagramEditor(cellDiagram, palette);
                     diagramEditor.svgLoaded(svgNode);
                     return cellDiagram;
                 });

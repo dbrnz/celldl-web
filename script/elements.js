@@ -299,10 +299,20 @@ export class DiagramElement {
         return this.geometry.location(point, delta);
     }
 
-    move(offset, drawConnections=true)
-    //================================
+    move(offset, grid=null, drawConnections=true)
+    //===========================================
     {
         this.invalidateConnections();
+
+        // Want offset so that new position is on the grid
+
+        if (grid !== null) {
+            const [x, y] = this.position.coordinates.toOffset();
+// but don't want to move in opposite direction to offset
+            offset = [utils.gridSnap(x + offset[0], grid, 0) - x,
+                      utils.gridSnap(y + offset[1], grid, 1) - y];
+        }
+
         this.position.addOffset(offset);
         if (this.textPosition !== this.position) {
             this.textPosition.addOffset(offset);
@@ -311,12 +321,7 @@ export class DiagramElement {
         if (drawConnections) {
             this.redrawConnections();
         }
-    }
-
-    resize(offset, connection, drawConnections=true)
-    //========================================
-    {
-        // Not implemented for generic elements
+        return offset;
     }
 
     addConnection(connection)
@@ -447,6 +452,19 @@ export class ContainerElement extends DiagramElement
         }
     }
 
+    move(offset, grid=null, drawConnections=true)
+    //===========================================
+    {
+        offset = super.move(offset, grid, false);
+        for (let element of this.elements) {
+            element.move(offset, null, false);
+        }
+        if (drawConnections) {
+            this.redrawConnections();
+        }
+        return offset;
+    }
+
     layoutElements()
     //==============
     {
@@ -511,41 +529,44 @@ export class RectangularMixin
         }
     }
 
-    resize(offset, edge, drawConnections=true)
-    //========================================
+    resize(offset, edge, grid=null, drawConnections=true)
+    //===================================================
     {
         if (offset[0] === 0 && offset[1] === 0) {
-            return false;
+            return offset;
         }
 
         const [width, height] = this.sizeAsPixels;
         let [newWidth, newHeight] = [width, height];
         let [dx, dy] = [0, 0];
 
+        const gridSnap = (value, grid, index) => {
+            const gridValue = utils.gridSnap(value, grid, index);
+            return (gridValue <= 0) ? 1 : gridValue;
+        }
+
         if (edge.indexOf('left') >= 0) {
-            newWidth -= offset[0];
-            if (newWidth <= 0) newWidth = 1;
-            dx = (width - newWidth)/2;
+            newWidth = gridSnap(width - offset[0], grid, 0);
+            dx = width - newWidth;
         } else if (edge.indexOf('right') >= 0) {
-            newWidth += offset[0];
-            if (newWidth <= 0) newWidth = 1;
-            dx = (newWidth - width)/2;
+            newWidth = gridSnap(width + offset[0], grid, 0);
+            dx = newWidth - width;
         }
         if (edge.indexOf('top') >= 0) {
-            newHeight -= offset[1];
-            if (newHeight <= 0) newHeight = 1;
-            dy = (height - newHeight)/2;
+            newHeight = gridSnap(height - offset[1], grid, 1);
+            dy = height - newHeight;
         } else if (edge.indexOf('bottom') >= 0) {
-            newHeight += offset[1];
-            if (newHeight <= 0) newHeight = 1;
-            dy = (newHeight - height)/2;
+            newHeight = gridSnap(height + offset[1], grid, 1);
+            dy = newHeight - height;
         }
+
+        const movedOffset = [dx, dy];
 
         this.setSizeAsPixels([newWidth, newHeight]);
 
         // Reposition element so the centre of the element stays fixed
 
-        this.move([dx, dy], false);
+        this.move([dx/2, dy/2], null, false);
 
         // Set geometry to have new size and position
 
@@ -564,7 +585,7 @@ export class RectangularMixin
             this.redrawConnections();
         }
 
-        return true;
+        return movedOffset;
     }
 
 }

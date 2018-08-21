@@ -96,3 +96,12 @@ export function lengthToPixels(length, index, width, height)
 }
 
 //==============================================================================
+
+// Return value on ``grid[index]``
+
+export function gridSnap(value, grid, index)
+{
+    return (grid !== null) ? grid[index]*Math.round(value/grid[index]) : value;
+}
+
+//==============================================================================

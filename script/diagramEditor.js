@@ -24,6 +24,13 @@ limitations under the License.
 
 import * as geo from './geometry.js';
 
+import {Length} from './layout.js';
+
+//==============================================================================
+
+const X_GRID_SPACING = new Length(1, 'vw');
+const Y_GRID_SPACING = new Length(1, 'vh');
+
 //==============================================================================
 
 class HistoryEvent {
@@ -113,9 +120,12 @@ export class DiagramEditor
         this.resizable = false;
         this.resizing = false;
         this.undoStack = new HistoryStack();
+        this.grid = [diagram.lengthToPixels(X_GRID_SPACING, 0),
+                     diagram.lengthToPixels(Y_GRID_SPACING, 1)]
     }
 
     svgLoaded(svgNode)
+    //================
     {
         this.svgNode = svgNode;
         this.bondgraphNode = this.diagram.bondGraph.documentElement();
@@ -131,10 +141,13 @@ export class DiagramEditor
 
         // Also listen for keys, for example `^Z`, `Shift^Z` (undo, redo)
 
+        // And allow arrow keys to move/resize (move by 1 grid unit if snap, else ?? some very fine grid??)
+
         this.undoStack.reset();
     }
 
     getMousePosition(event)
+    //=====================
     {
         const CTM = this.svgNode.getScreenCTM();
         if (event.touches) {
@@ -144,11 +157,6 @@ export class DiagramEditor
                              (event.clientY - CTM.f)/CTM.d);
     }
 
-
-
-
-
-
     mouseMove(event)
     //==============
     {
@@ -157,16 +165,16 @@ export class DiagramEditor
         if ((this.moving || this.resizing) && this.selectedElement !== null) {
             event.preventDefault();
             const mousePosition = this.getMousePosition(event);
-            if (this.moving) {
-                this.selectedElement.move([mousePosition.x - this.startMousePosition.x,
-                                           mousePosition.y - this.startMousePosition.y]);
-            } else {
-                this.selectedElement.resize([mousePosition.x - this.startMousePosition.x,
-                                             mousePosition.y - this.startMousePosition.y],
-                                            this.currentLocation);
-            }
+            const movedOffset = (this.moving) ? this.selectedElement.move(
+                                                    [mousePosition.x - this.startMousePosition.x,
+                                                     mousePosition.y - this.startMousePosition.y],
+                                                    this.grid)
+                                              : this.selectedElement.resize(
+                                                    [mousePosition.x - this.startMousePosition.x,
+                                                     mousePosition.y - this.startMousePosition.y],
+                                                    this.currentLocation, this.grid);
+            this.startMousePosition = this.startMousePosition.addOffset(movedOffset);
             this.selectedElement.updateSvg(true);
-            this.startMousePosition = mousePosition;
         } else {
             this.currentElement = null;
             for (let node of event.composedPath()) {
