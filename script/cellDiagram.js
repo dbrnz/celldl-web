@@ -23,7 +23,6 @@ limitations under the License.
 //==============================================================================
 
 import * as bondgraph from './bondgraph.js';
-import * as components from './components.js';
 import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
@@ -47,7 +46,7 @@ export class CellDiagram {
         this.width = 0;
         this.height = 0;
         this.diagonal = 0;
-        this.componentGroups = null;
+        this.flatMap = null;
         this.bondGraph = null;
         this.svgFactory = new SvgFactory(id);
         this._manualPositions = [];
@@ -196,8 +195,8 @@ export class CellDiagram {
 
         // Layout all groups and their elements
 
-        if (this.componentGroups !== null) {
-            this.componentGroups.layout();
+        if (this.flatMap !== null) {
+            this.flatMap.layout();
         }
 
         // Layout bondgraph
@@ -235,8 +234,8 @@ export class CellDiagram {
 //            svg.extend(c.svg());
 //        }
 
-        if (this.componentGroups !== null) {
-            svgNode.appendChild(this.componentGroups.generateSvg());
+        if (this.flatMap !== null) {
+            svgNode.appendChild(this.flatMap.generateSvg());
         }
 
         if (this.bondGraph !== null) {

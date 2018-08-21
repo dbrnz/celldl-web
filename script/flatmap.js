@@ -46,13 +46,13 @@ import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
 
-export class ComponentGroups extends elements.ContainerElement
+export class FlatMap extends elements.ContainerElement
 {
     constructor(diagram, domElement)
     {
         super(diagram, domElement, false);
         if (this.id === '') {
-            this.id = `${this.diagram.id}_components`;
+            this.id = `${this.diagram.id}_flatmap`;
         }
         this.components = [];
         this.connections = [];

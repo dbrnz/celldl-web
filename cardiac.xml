@@ -1,6 +1,6 @@
 ﻿<cell-diagram>
 
-    <components>
+    <flat-map>
         <group id="central-level" label="Central\nLevel" class="level">
             <component id="higher-centers" label="Higher\nCenters" class="efferent"/>
             <component id="medulla" label="Medulla" class="efferent"/>
@@ -123,7 +123,7 @@
         <connection from="heart-Gs" to="heart-adenylate-cyclase" class="no-arrow"/>
         <connection from="heart-Gi" to="heart-adenylate-cyclase" class="no-arrow"/>
 
-    </components>
+    </flat-map>
 
     <style>
         cell-diagram {

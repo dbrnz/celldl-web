@@ -24,7 +24,7 @@ limitations under the License.
 
 import * as bondgraph from './bondgraph.js';
 import * as exception from './exception.js';
-import * as components from './components.js';
+import * as flatmap from './flatmap.js';
 
 //==============================================================================
 
@@ -37,7 +37,7 @@ export class Parser
     constructor(diagram) {
         this.diagram = diagram;
         this.bondGraphElement = null;
-        this.componentsElement = null;
+        this.flatMapElement = null;
         this.diagramElement = null;
     }
 
@@ -80,19 +80,19 @@ export class Parser
 
     //==========================================================================
 
-    parseComponents(element)
-    //======================
+    parseFlatMap(element)
+    //===================
     {
-        this.diagram.componentGroups = new components.ComponentGroups(this.diagram, element);
+        this.diagram.flatMap = new flatmap.FlatMap(this.diagram, element);
         for (let e of element.children) {
             if        (e.nodeName === "component") {
-                this.diagram.componentGroups.addComponent(this.parseComponent(e));
+                this.diagram.flatMap.addComponent(this.parseComponent(e));
             } else if (e.nodeName === "connection") {
-                this.diagram.componentGroups.addConnection(this.parseConnection(e));
+                this.diagram.flatMap.addConnection(this.parseConnection(e));
             } else if (e.nodeName === "group") {
-                this.diagram.componentGroups.addGroup(this.parseGroup(e));
+                this.diagram.flatMap.addGroup(this.parseGroup(e));
             } else {
-                throw new exception.SyntaxError(e, "Invalid element for <components>");
+                throw new exception.SyntaxError(e, "Invalid element for <flat-map>");
             }
         }
     }
@@ -100,19 +100,19 @@ export class Parser
     parseComponent(element)
     //=====================
     {
-        return new components.Component(this.diagram, element);
+        return new flatmap.Component(this.diagram, element);
     }
 
     parseConnection(element)
     //======================
     {
-        return new components.ComponentConnection(this.diagram, element);
+        return new flatmap.ComponentConnection(this.diagram, element);
     }
 
     parseGroup(element)
     //=================
     {
-        const group = new components.Group(this.diagram, element);
+        const group = new flatmap.Group(this.diagram, element);
         for (let e of element.children) {
             if        (e.nodeName === "component") {
                 group.addComponent(this.parseComponent(e));
@@ -280,11 +280,11 @@ export class Parser
                 } else {
                     throw new exception.SyntaxError(element, "Can only declare a single <bond-graph>");
                 }
-            } else if (element.nodeName === 'components') {
-                if (this.componentsElement === null) {
-                    this.componentsElement = element;
+            } else if (element.nodeName === 'flat-map') {
+                if (this.flatMapElement === null) {
+                    this.flatMapElement = element;
                 } else {
-                    throw new exception.SyntaxError(element, "Can only declare a single <components> block");
+                    throw new exception.SyntaxError(element, "Can only declare a single <flat-map> block");
                 }
             } else if (element.nodeName === 'diagram') {
                 if ((this.diagramElement === null)) {
@@ -325,8 +325,8 @@ export class Parser
 
                             this.parseBondGraph(this.bondGraphElement);
 
-                            if (this.componentsElement !== null) {
-                                this.parseComponents(this.componentsElement);
+                            if (this.flatMapElement !== null) {
+                                this.parseFlatMap(this.flatMapElement);
                             }
                         });
     }
