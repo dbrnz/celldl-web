@@ -353,7 +353,7 @@ export class DiagramElement {
     appendLabelAsSvg(parentNode)
     //==========================
     {
-        let [x, y] = this.textPosition.coordinates.asOffset();
+        let [x, y] = this.textPosition.coordinates.toOffset();
         if (this.label.startsWith('$')) {
             // Pass this.textcolour to MathJax...
             // see https://groups.google.com/forum/#!msg/mathjax-users/fo93aucG5Bo/7dH3s8szbNYJ
@@ -505,7 +505,7 @@ export class RectangularMixin
     {
         if (this.hasCoordinates) {
             const [width, height] = this.sizeAsPixels;
-            const [x, y] = this.coordinates.asOffset();
+            const [x, y] = this.coordinates.toOffset();
             this.geometry = new geo.Rectangle([x - width/2, y - height/2],
                                               [x + width/2, y + height/2]);
         }

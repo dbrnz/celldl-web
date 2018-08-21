@@ -100,7 +100,7 @@ export class Position
     addOffset(offset)
     //===============
     {
-        this.coordinates = this.coordinates.add(offset);
+        this.coordinates = this.coordinates.addOffset(offset);
     }
 
     addDependency(dependency)
@@ -137,7 +137,7 @@ export class Position
             if (!dependency.hasCoordinates) {
                 throw new exception.ValueError(`No coordinates for the '${dependency}' element`);
             }
-            coordinates = coordinates.add(dependency.coordinates.asOffset());
+            coordinates = coordinates.addOffset(dependency.coordinates.toOffset());
         }
         return new geo.Point(coordinates.x/dependencies.length,
                              coordinates.y/dependencies.length);
@@ -470,7 +470,7 @@ export class LinePath
         const lineEnd = this.reversePath ? startCoordinates : endCoordinates;
 
         let currentPoint = lineStart;
-        const points = [currentPoint.asOffset()];
+        const points = [currentPoint.toOffset()];
 
         for (let constraint of this.constraints) {
             const angle = constraint.angle;
@@ -502,7 +502,7 @@ export class LinePath
             }
         }
 */
-        points.push(lineEnd.asOffset());
+        points.push(lineEnd.toOffset());
         if (this.reversePath) points.reverse();
 
         return new geo.LineString(points);
