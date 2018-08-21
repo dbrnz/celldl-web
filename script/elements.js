@@ -196,7 +196,7 @@ export class DiagramElement {
     //==========================
     {
         if (this.size !== null) {
-            this.setSizeAsPixels(container.offsetToPixels(this.size));
+            this.setSizeAsPixels(utils.offsetToPixels(container, this.size));
         }
         this.position.assignCoordinates(container);
     }
@@ -264,13 +264,6 @@ export class DiagramElement {
         } else {
             return this.diagram.lengthToPixels(length, index);
         }
-    }
-
-    offsetToPixels(size, addOffset=false)
-    //===================================
-    {
-        return [this.lengthToPixels(size[0], 0, addOffset),
-                this.lengthToPixels(size[1], 1, addOffset)];
     }
 
     get sizeAsPixels()

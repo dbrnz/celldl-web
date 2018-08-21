@@ -97,6 +97,15 @@ export function lengthToPixels(length, index, width, height)
 
 //==============================================================================
 
+export function offsetToPixels(container, size, addOffset=false)
+//==============================================================
+{
+    return [container.lengthToPixels(size[0], 0, addOffset),
+            container.lengthToPixels(size[1], 1, addOffset)];
+}
+
+//==============================================================================
+
 // Return value on ``grid[index]``
 
 export function gridSnap(value, grid, index)

@@ -28,6 +28,7 @@ limitations under the License.
 import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as stylesheet from './stylesheet.js';
+import * as utils from './utils.js';
 
 import {List} from './utils.js';
 
@@ -271,7 +272,7 @@ export class Position
     {
         if (this.coordinates === null) {
             if (this.lengths !== null) {
-                this.coordinates = new geo.Point(...container.offsetToPixels(this.lengths, true));
+                this.coordinates = new geo.Point(...utils.offsetToPixels(container, this.lengths, true));
             } else {
                 if (this.relationships.length === 1) {
                     const offset = this.relationships[0].offset;
@@ -474,7 +475,7 @@ export class LinePath
 
         for (let constraint of this.constraints) {
             const angle = constraint.angle;
-            const offset = this.diagram.offsetToPixels(constraint.offsets);
+            const offset = utils.offsetToPixels(this.diagram, constraint.offsets);
             const targetPoint = Position.centroid(constraint.dependencies);
             let x, y;
             if (constraint.limit === -1) {              // until-x
@@ -485,7 +486,7 @@ export class LinePath
                 x = currentPoint.x + (y - currentPoint.y)*Math.tan((angle-90)*Math.PI/180);
             }
             if (constraint.lineOffset !== null) {
-                const lineOffset = this.diagram.offsetToPixels(constraint.lineOffset);
+                const lineOffset = utils.offsetToPixels(this.diagram, constraint.lineOffset);
                 points.slice(-1)[0][0] += lineOffset[0];
                 points.slice(-1)[0][1] += lineOffset[1];
                 x += lineOffset[0];
