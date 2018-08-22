@@ -28,8 +28,11 @@ import {Length} from './layout.js';
 
 //==============================================================================
 
-const X_GRID_SPACING = new Length(1, 'vw');
-const Y_GRID_SPACING = new Length(1, 'vh');
+const GRID_X_SPACING = new Length(1, 'vw');
+const GRID_Y_SPACING = new Length(1, 'vh');
+
+const GRID_OPACITY   = 0.2;
+const GRID_COLOUR    = "blue";
 
 //==============================================================================
 
@@ -120,8 +123,8 @@ export class DiagramEditor
         this.resizable = false;
         this.resizing = false;
         this.undoStack = new HistoryStack();
-        this.grid = [diagram.lengthToPixels(X_GRID_SPACING, 0),
-                     diagram.lengthToPixels(Y_GRID_SPACING, 1)]
+        this.grid = [diagram.lengthToPixels(GRID_X_SPACING, 0),
+                     diagram.lengthToPixels(GRID_Y_SPACING, 1)]
     }
 
     svgLoaded(svgNode)
@@ -299,6 +302,40 @@ export class DiagramEditor
         }
         this.moving = false;
         this.resizing = false;
+    }
+
+    gridSvg()
+    //=======
+    {
+        if (this.grid === null) {
+            return null;
+        }
+        else {
+            const gridId = `${this.diagram.id}_grid`;
+            const gridStrokeWidth = Math.min(this.grid[0], this.grid[1])/50;
+            const gridStrokeDash = `${10*gridStrokeWidth} ${10*gridStrokeWidth}`;
+            const grid = `<g id="diagram-grid-group_">
+  <defs>
+    <pattern id="${gridId}" patternUnits="userSpaceOnUse"
+             width="${this.grid[0]}" height="${this.grid[1]}"
+             x="-0.5" y="-0.5">
+      <path stroke="${GRID_COLOUR}" stroke-opacity="${GRID_OPACITY}"
+            stroke-width="${gridStrokeWidth}" stroke-dasharray="${gridStrokeDash}"
+            d="M0,0 L0,${this.grid[1]}"/>
+      <path stroke="${GRID_COLOUR}" stroke-opacity="${GRID_OPACITY}"
+            stroke-width="${gridStrokeWidth}" stroke-dasharray="${gridStrokeDash}"
+            d="M0,0 L${this.grid[0]},0"/>
+    </pattern>
+  </defs>
+  <rect fill="url(#${gridId})"
+      stroke="${GRID_COLOUR}" stroke-opacity="${GRID_OPACITY}"
+      stroke-width="${gridStrokeWidth/2}" stroke-dasharray="${gridStrokeDash}"
+      width="${this.diagram.width}" height="${this.diagram.height}"/>
+</g>`;
+            const parser = new DOMParser();
+            const svgNode = parser.parseFromString(grid, "application/xml");
+            return svgNode.documentElement;
+        }
     }
 }
 

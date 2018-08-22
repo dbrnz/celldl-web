@@ -71,7 +71,13 @@ export function displayDiagram(cellDlEditor, svgContainerNode, palette)
                     const svgNode = svgContainerNode.children[0];
 
                     const diagramEditor = new DiagramEditor(cellDiagram, palette);
+
+                    const grid = diagramEditor.gridSvg();
+                    if (grid !== null) {
+                        svgNode.insertAdjacentHTML('beforeend', grid.outerHTML);
+                     }
                     diagramEditor.svgLoaded(svgNode);
+
                     return cellDiagram;
                 });
             });
