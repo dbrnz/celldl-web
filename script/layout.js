@@ -230,8 +230,8 @@ export class Position
 
         // Assign default position no position specified
 
-        if (this.lengths === null && this.dependencies.size = 0) {
-            this.lengths = DEFAULT_POSITION;
+        if (this.lengths === null && this.dependencies.size === 0) {
+            this.setLengths(DEFAULT_POSITION);
         }
     }
 
