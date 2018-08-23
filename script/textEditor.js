@@ -121,12 +121,22 @@ export class TextEditor
     exportSvg()
     //=========
     {
-        const svg = this.svgContainerNode.innerHTML;
-        // after ensuring there are no selected elements...
-        const blob = new Blob([svg], { type: "image/svg+xml" });
-        const svgFileName = `${this.loadedFile.split('.')[0]}.svg`
+        // Render the diagram without selected elements and grid
 
-        saveAs(blob, svgFileName);
+        this.diagram.svgFactory.resetPromises();
+
+        const svgDiagram = this.diagram.generateSvg();
+
+        // Wait until all MathJax text has been rendered
+
+        Promise.all(this.diagram.svgFactory.promises()).then(() => {
+            const svg = svgDiagram.outerHTML;
+
+            const blob = new Blob([svg], { type: "image/svg+xml" });
+            const svgFileName = `${this.loadedFile.split('.')[0]}.svg`
+
+            saveAs(blob, svgFileName);
+        });
     }
 }
 

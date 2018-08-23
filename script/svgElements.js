@@ -469,6 +469,12 @@ export class SvgFactory
         return this._promises;
     }
 
+    resetPromises()
+    //=============
+    {
+        this._promises = [];
+    }
+
     typeset(latex, x, y, rotation=0, colour="#000000")
     //================================================
     {
