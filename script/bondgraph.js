@@ -57,18 +57,18 @@ export class BondGraph extends ContainerElement
     {
         // NB. Ace editor search and replace appears to be broken so
         //     we simply use Javascript string methods
-        const text = this.diagram.cellDlEditor.getValue();
+        const text = this.diagram.textEditor.getValue();
         const bondGraphEndRegExp = new RegExp(`(\\n?)([ \\t]*)(</bond-graph>)`);
 
         if (text.search(bondGraphEndRegExp) >= 0) {
-            this.diagram.cellDlEditor.setValue(text.replace(bondGraphEndRegExp,
+            this.diagram.textEditor.setValue(text.replace(bondGraphEndRegExp,
                 `$1$2    ${element.toXml()}\n$2$3`));
         } else {
             const cellDiagramEndRegExp = new RegExp(`(\\n?)([ \\t]*)(</cell-diagram>)`);
-            this.diagram.cellDlEditor.setValue(text.replace(cellDiagramEndRegExp,
+            this.diagram.textEditor.setValue(text.replace(cellDiagramEndRegExp,
                 `$1$2    <bond-graph>\n$2        ${element.toXml()}\n$2    </bond-graph>\n$2$3`));
         }
-        this.diagram.cellDlEditor.clearSelection();
+        this.diagram.textEditor.clearSelection();
 
         // Add element to the bondgraph's container
         this.addElement(element);

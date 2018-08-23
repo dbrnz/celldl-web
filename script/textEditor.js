@@ -52,6 +52,24 @@ export class TextEditor
         this.palette = new Palette(document.getElementById('palette'));
     }
 
+    clearSelection()
+    //==============
+    {
+        this.editor.clearSelection();
+    }
+
+    getValue()
+    //========
+    {
+        return this.editor.getValue();
+    }
+
+    setValue(text, pos)
+    //=================
+    {
+        this.editor.setValue(text, pos);
+    }
+
     upLoadedFileAsText(file)
     //======================
     {

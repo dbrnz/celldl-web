@@ -35,11 +35,11 @@ import {SvgFactory, SVG_NS, SVG_VERSION} from './svgElements.js';
 //==============================================================================
 
 export class CellDiagram {
-    constructor(id, stylesheet, cellDlEditor=null)
+    constructor(id, stylesheet, textEditor=null)
     {
         this.id = id;
         this.stylesheet = stylesheet;
-        this.cellDlEditor = cellDlEditor;
+        this.textEditor = textEditor;
         this._elements = [];
         this._elementsById = {};
         this._connections = [];
@@ -270,7 +270,7 @@ export class CellDiagram {
     updateManualAdjustments()
     //=======================
     {
-        if (this.cellDlEditor !== null) {
+        if (this.textEditor !== null) {
             const positions = ['<style id="manual_adjustments">'];
             for (let id of this._manualPositions) {
                 const e = this.findElement(id);
@@ -296,15 +296,15 @@ export class CellDiagram {
 
             // NB. Ace editor search and replace appears to be broken so
             //     we simply use Javascript string methods
-            const text = this.cellDlEditor.getValue();
+            const text = this.textEditor.getValue();
             if (text.search(stylePositionRegExp) >= 0) {
-                this.cellDlEditor.setValue(text.replace(stylePositionRegExp, positions.join("\n    ")));
+                this.textEditor.setValue(text.replace(stylePositionRegExp, positions.join("\n    ")));
             } else {
                 const cellDiagramEndRegExp = new RegExp(`(\\n?)([ \\t]*)(</cell-diagram>)`);
-                this.cellDlEditor.setValue(text.replace(cellDiagramEndRegExp,
+                this.textEditor.setValue(text.replace(cellDiagramEndRegExp,
                     `$1    ${positions.join("\n    ")}\n$2$3`));
             }
-            this.cellDlEditor.clearSelection();
+            this.textEditor.clearSelection();
         }
     }
 

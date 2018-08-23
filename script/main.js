@@ -29,9 +29,9 @@ import {StyleSheet} from './stylesheet.js';
 
 //==============================================================================
 
-export function displayDiagram(cellDlEditor, svgContainerNode, palette)
+export function displayDiagram(textEditor, svgContainerNode, palette)
 {
-    const cellDlText = cellDlEditor.getValue();
+    const cellDlText = textEditor.getValue();
     if (cellDlText === '') {
         return null;
     }
@@ -42,7 +42,8 @@ export function displayDiagram(cellDlEditor, svgContainerNode, palette)
 
     try {
         const stylesheet = new StyleSheet();
-        const cellDiagram = new CellDiagram('diagram', stylesheet, cellDlEditor);
+        const cellDiagram = new CellDiagram('diagram', stylesheet, textEditor);
+
         const parser = new Parser(cellDiagram);
 
         parser.parseDocument(xmlDocument)
