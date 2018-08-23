@@ -563,7 +563,6 @@ export class RectangularMixin
         // Set the position of our label
 
         if (this.textPosition !== this.position) {
-            this.textPosition.clearCoordinates();
             this.assignTextCoordinates();
         }
 

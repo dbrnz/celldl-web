@@ -82,8 +82,8 @@ export class Position
         this.dependencies = new Set();
     }
 
-    clearCoordinates()
-    //================
+    invalidateCoordinates()
+    //=====================
     {
         this.coordinates = null;
     }
