@@ -47,15 +47,15 @@ export const ELEMENT_RADIUS = 15;
 
 export const STROKE_WIDTH = new Length(2.5, 'px');
 
-export const FLOW_OFFSET = {value: 60, unit: 'vw'};
+export const FLOW_OFFSET = new Length(6, '%w');
 
-export const QUANTITY_OFFSET = {value: 60, unit: 'vw'};
+export const QUANTITY_OFFSET = new Length(6, '%w');;
 export const QUANTITY_WIDTH = 50;
 export const QUANTITY_HEIGHT = 33;
 
 export const TRANSPORTER_RADIUS = 20;
-export const TRANSPORTER_EXTRA = {value: 25, unit: 'vw'};
-export const TRANSPORTER_WIDTH = {value: 10, unit: 'vw'};
+export const TRANSPORTER_EXTRA = new Length(2.5, '%');
+export const TRANSPORTER_WIDTH = new Length(5, '%');
 
 export const HORIZONTAL_RELATIONS = new List(['left', 'right']);
 export const VERTICAL_RELATIONS = new List(['above', 'below']);
