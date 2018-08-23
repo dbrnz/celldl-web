@@ -66,6 +66,8 @@ export const VERTICAL_BOUNDARIES = new List(['left', 'right']);
 export const CORNER_BOUNDARIES = new List(['top-left', 'top-right', 'bottom-left', 'bottom-right']);
 export const COMPARTMENT_BOUNDARIES = new List().extend(HORIZONTAL_BOUNDARIES).extend(VERTICAL_BOUNDARIES);
 
+export const DEFAULT_POSITION = [ new Length(0, '%'), new Length(0, '%')];
+
 //==============================================================================
 
 export class Position
@@ -78,12 +80,6 @@ export class Position
         this.relationships = [];
         this.coordinates = null;         // Resolved position in pixels
         this.dependencies = new Set();
-    }
-
-    get specified()
-    //=============
-    {
-        return (this.dependencies.size > 0 || this.lengths !== null);
     }
 
     clearCoordinates()
@@ -230,6 +226,12 @@ export class Position
             }
         } else {
             this.parseComponent(tokens, null, defaultOffset, defaultDependency);
+        }
+
+        // Assign default position no position specified
+
+        if (this.lengths === null && this.dependencies.size = 0) {
+            this.lengths = DEFAULT_POSITION;
         }
     }
 

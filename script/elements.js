@@ -222,12 +222,6 @@ export class DiagramElement {
         return this.position.hasCoordinates;
     }
 
-    get hasPositionSpecified()
-    //========================
-    {
-        return this.position.specified;
-    }
-
     parsePosition(defaultOffset=null, defaultDependency=null)
     //=======================================================
     {
