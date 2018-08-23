@@ -31,64 +31,67 @@ import {StyleSheet} from './stylesheet.js';
 
 export function displayDiagram(textEditor, svgContainerNode, palette)
 {
-    const cellDlText = textEditor.getValue();
-    if (cellDlText === '') {
-        return null;
-    }
+    return new Promise((resolve, reject) => {
 
-    const domParser = new DOMParser();
-    const xmlDocument = domParser.parseFromString(cellDlText, "application/xml");
-    document.body.style.cursor = 'wait';
+        const cellDlText = textEditor.getValue();
+        if (cellDlText === '') {
+            reject();
+        }
 
-    try {
-        const stylesheet = new StyleSheet();
-        const cellDiagram = new CellDiagram('diagram', stylesheet, textEditor);
+        const domParser = new DOMParser();
+        const xmlDocument = domParser.parseFromString(cellDlText, "application/xml");
+        document.body.style.cursor = 'wait';
 
-        const parser = new Parser(cellDiagram);
+        try {
+            const stylesheet = new StyleSheet();
+            const cellDiagram = new CellDiagram('diagram', stylesheet, textEditor);
 
-        parser.parseDocument(xmlDocument)
-            .then(() => {
-                cellDiagram.layout();  // Pass width/height to use as defaults...
+            const parser = new Parser(cellDiagram);
 
-                const svgDiagram = cellDiagram.generateSvg();
+            parser.parseDocument(xmlDocument)
+                .then(() => {
+                    cellDiagram.layout();  // Pass width/height to use as defaults...
 
-                // Wait until all MathJax text has been rendered
+                    const svgDiagram = cellDiagram.generateSvg();
 
-                Promise.all(cellDiagram.svgFactory.promises()).then(() => {
-                    // Remove any existing content from our SVG container
+                    // Wait until all MathJax text has been rendered
 
-                    for (let child of svgContainerNode.children) {
-                        child.remove();
-                    }
+                    Promise.all(cellDiagram.svgFactory.promises()).then(() => {
+                        // Remove any existing content from our SVG container
 
-                    // Show the SVG diagram
-                    // Note: If we use `appendChild` then `url()` links in the SVG
-                    //       document are not resolved
-                    svgContainerNode.insertAdjacentHTML('afterbegin', svgDiagram.outerHTML);
+                        for (let child of svgContainerNode.children) {
+                            child.remove();
+                        }
 
-                    // Reset busy wheel
-                    document.body.style.cursor = 'default';
+                        // Show the SVG diagram
+                        // Note: If we use `appendChild` then `url()` links in the SVG
+                        //       document are not resolved
+                        svgContainerNode.insertAdjacentHTML('afterbegin', svgDiagram.outerHTML);
 
-                    const svgNode = svgContainerNode.children[0];
+                        // Reset busy wheel
+                        document.body.style.cursor = 'default';
 
-                    const diagramEditor = new DiagramEditor(cellDiagram, palette);
+                        const svgNode = svgContainerNode.children[0];
 
-                    const grid = diagramEditor.gridSvg();
-                    if (grid !== null) {
-                        svgNode.insertAdjacentHTML('beforeend', grid.outerHTML);
-                     }
-                    diagramEditor.svgLoaded(svgNode);
+                        const diagramEditor = new DiagramEditor(cellDiagram, palette);
 
-                    return cellDiagram;
+                        const grid = diagramEditor.gridSvg();
+                        if (grid !== null) {
+                            svgNode.insertAdjacentHTML('beforeend', grid.outerHTML);
+                         }
+
+                        diagramEditor.svgLoaded(svgNode);
+
+                        resolve(cellDiagram);
+                    });
                 });
-            });
-    } catch (error) {
-        document.body.style.cursor = 'default';
-        console.trace(error);
-        alert(error);
-    }
-
-    return null;
+        } catch (error) {
+            document.body.style.cursor = 'default';
+            console.trace(error);
+            alert(error);
+            reject();
+        }
+    });
 }
 
 //==============================================================================

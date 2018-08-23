@@ -113,7 +113,9 @@ export class TextEditor
     previewSvg()
     //==========
     {
-        this.diagram = displayDiagram(this.editor, this.svgContainerNode, this.palette);
+        displayDiagram(this, this.svgContainerNode, this.palette).then(
+            (diagram) => { this.diagram = diagram; },
+            () => { this.diagram = null; });
     }
 
     exportSvg()
