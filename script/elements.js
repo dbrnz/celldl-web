@@ -209,11 +209,11 @@ export class DiagramElement {
         }
     }
 
-    clearCoordinates()
-    //================
+    invalidateCoordinates()
+    //=====================
     {
-        this.position.clearCoordinates();
-        this.textPosition.clearCoordinates();
+        this.position.invalidateCoordinates();
+        this.textPosition.invalidateCoordinates();
     }
 
     get hasCoordinates()
@@ -431,11 +431,12 @@ export class ContainerElement extends DiagramElement
         this.elements.push(element);
     }
 
-    clearElementCoordinates()
-    //=======================
+    invalidateCoordinates()
+    //=====================
     {
+        super.invalidateCoordinates();
         for (let element of this.elements) {
-            element.clearCoordinates();
+            element.invalidateCoordinates();
         }
     }
 

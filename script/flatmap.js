@@ -224,9 +224,9 @@ export class Group extends aggregation(elements.ContainerElement, elements.Recta
         const movedOffset = super.resize(offset, edge, grid, false);
         if (movedOffset[0] !== 0 || movedOffset[1] !== 0) {
             // Child elements may depend on our size and so need
-            // their positions reassigned
+            // their positions and geometry reassigned
 
-            this.clearElementCoordinates();
+            this.invalidateCoordinates();
             this.layoutElements();
 
             // Draw connections using new sizes and positions
