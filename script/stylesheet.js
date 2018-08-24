@@ -137,6 +137,42 @@ export class StyleSheet
 
 //==============================================================================
 
+export function tokensToString(tokens)
+{
+    if (!tokens) {
+        return '';
+    } else if (tokens instanceof Array) {
+        let text = [];
+        for (let t of tokens) {
+            text.push(tokensToString(t));
+        }
+        return text.join(', ');
+    } else if (tokens.type === 'SEQUENCE') {
+        let text = [];
+        for (let t of tokens.value) {
+            text.push(tokensToString(t));
+        }
+        return text.join(' ');
+    } else if (tokens.type === 'FUNCTION') {
+        return `${tokens.name.value}(TODO...)`;
+    } else if (['DIMENSION', 'PERCENTAGE'].indexOf(tokens.type) >= 0) {
+        return `${tokens.value}${tokens.unit}`;
+    } else {
+        return tokens.value;
+    }
+}
+
+//==============================================================================
+
+export function styleAsString(styling, name, defaultValue='')
+{
+    const text = tokensToString(styling[name]);
+
+    return text ? text : defaultValue;
+}
+
+//==============================================================================
+
 export function parseNumber(tokens)
 {
     if (tokens.type !== "NUMBER") {
@@ -276,21 +312,6 @@ export function parseColourValue(tokens)
         return tokens.value;
     }
     throw new exception.StyleError(tokens, "Colour expected");
-}
-
-//==============================================================================
-
-export function styleAsString(styling, name, defaultValue='')
-{
-    if (name in styling) {
-        const tokens = styling[name];
-        if (['ID', 'HASH', 'NUMBER'].indexOf(tokens.type) >= 0) {
-            return tokens.value;
-        } else if (['DIMENSION', 'PERCENTAGE'].indexOf(tokens.type) >= 0) {
-            return `${tokens.value}${tokens.unit}`;
-        }
-    }
-    return defaultValue;
 }
 
 //==============================================================================
