@@ -74,7 +74,7 @@ export class DiagramElement {
         this.classes.push(this.tagName);
         this.label = ('label' in this.attributes) ? this.attributes.label.textContent : this.name;
         this.style = diagram.stylesheet.style(domElement);
-        this.position = new layout.Position(diagram, this);
+        this.position = new layout.Position(diagram, this, this.style.position);
         this.textPosition = this.position;
         this.colour = ('color' in this.style) ? stylesheet.parseColour(this.diagram, this.style.color)
                                               : '#808080'; // TODO: specify defaults in one place
@@ -229,14 +229,12 @@ export class DiagramElement {
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
         */
-        if ('position' in this.style) {
-            this.position.parse(this.style.position, defaultOffset, defaultDependency);
-        }
+        this.position.parse(defaultOffset, defaultDependency);
         if ('text-position' in this.style) {
             if (this.textPosition === this.position) {
-                this.textPosition = new layout.Position(this.diagram, this);
+                this.textPosition = new layout.Position(this.diagram, this, this.style['text-position']);
             }
-            this.textPosition.parse(this.style['text-position'], null, defaultDependency);
+            this.textPosition.parse(null, defaultDependency);
         } else if (this.textPosition !== this.position) {
             this.textPosition = this.position;
         }

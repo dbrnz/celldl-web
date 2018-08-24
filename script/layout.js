@@ -72,10 +72,11 @@ export const DEFAULT_POSITION = [ new Length(0, '%'), new Length(0, '%')];
 
 export class Position
 {
-    constructor(diagram, element)
+    constructor(diagram, element, positionTokens)
     {
         this.diagram = diagram;
         this.element = element;
+        this.tokens = positionTokens || null;
         this.lengths = null;             // Position as a pair of Offsets
         this.relationships = [];
         this.coordinates = null;         // Resolved position in pixels
@@ -205,14 +206,18 @@ export class Position
         return HORIZONTAL_RELATIONS.contains(reln) ? 'H' : 'V';
     }
 
-    parse(tokens, defaultOffset=null, defaultDependency=null)
-    //=======================================================
+    parse(defaultOffset=null, defaultDependency=null)
+    //===============================================
     {
         /*
         * Position as coords: absolute or % of container -- `100, 300` or `10%, 30%`
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
         */
+        if (this.tokens == null) {
+            return;
+        }
 
+        const tokens = this.tokens;
         if (tokens instanceof Array) {
             if (tokens.length === 2) {
                 if (['ID', 'SEQUENCE'].indexOf(tokens[0].type) < 0) {
@@ -233,6 +238,12 @@ export class Position
         if (this.lengths === null && this.dependencies.size === 0) {
             this.setLengths(DEFAULT_POSITION);
         }
+    }
+
+    tokensToString()
+    //==============
+    {
+        return stylesheet.tokensToString(this.tokens);
     }
 
     getCoordinates(container, offset, reln, dependencies)
