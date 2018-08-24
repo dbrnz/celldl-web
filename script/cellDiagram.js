@@ -73,7 +73,7 @@ export class CellDiagram {
     lengthToPixels(length, index)
     //===========================
     {
-        if (!length.unit || length.unit === 'px') {
+        if (!length.units || length.units === 'px') {
             return length.length;
         } else {
             return utils.lengthToPixels(length, index, this.width, this.height);
@@ -83,16 +83,16 @@ export class CellDiagram {
     strokeWidthToPixels(length)
     //=========================
     {
-        if (!length.unit || length.unit === 'px') {
+        if (!length.units || length.units === 'px') {
             return length.length;
         }
-        else if (length.unit === 'vh') {
+        else if (length.units === 'vh') {
             return length.length*this.height/100;
         }
-        else if (length.unit === 'vw') {
+        else if (length.units === 'vw') {
             return length.length*this.width/100;
         }
-        else if (length.unit === '%') {
+        else if (length.units === '%') {
             return length.length*this.diagonal/100;
         } else {
             return length.length;

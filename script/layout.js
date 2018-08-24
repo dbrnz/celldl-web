@@ -35,9 +35,9 @@ import {List} from './utils.js';
 //==============================================================================
 
 export class Length {
-    constructor(length=0, unit='') {
+    constructor(length=0, units='') {
         this.length = length;
-        this.unit = unit;
+        this.units = units;
     }
 }
 
@@ -405,9 +405,9 @@ export class LinePath
                 }
                 reln = token.value;
                 if (HORIZONTAL_RELATIONS.indexOf(reln) >= 0) {
-                    offsets[0] = new Length(((reln === 'right') ? offset.length : -offset.length), offset.unit);
+                    offsets[0] = new Length(((reln === 'right') ? offset.length : -offset.length), offset.units);
                 } else {
-                    offsets[1] = new Length(((reln === 'below') ? offset.length : -offset.length), offset.unit);
+                    offsets[1] = new Length(((reln === 'below') ? offset.length : -offset.length), offset.units);
                 }
                 state = 4;
                 break;

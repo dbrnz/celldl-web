@@ -82,9 +82,9 @@ export function setAttributes(domNode, ...attributeObjects)
 
 export function lengthToPixels(length, index, width, height)
 {
-    if        (length.unit.indexOf('w') >= 0) {
+    if        (length.units.indexOf('w') >= 0) {
         return length.length*width/100;
-    } else if (length.unit.indexOf('h') >= 0) {
+    } else if (length.units.indexOf('h') >= 0) {
         return length.length*height/100;
     } else if (index === 0) {
         return length.length*width/100;

@@ -162,17 +162,17 @@ export function parsePercentageOffset(tokens, defaultValue=null)
         }
     }
     const percentage = tokens.value;
-    const unit = tokens.unit;
-    const modifier = unit.substring(1);
+    const units = tokens.unit;
+    const modifier = units.substring(1);
     if (["", "w", "h"].indexOf(modifier) < 0) {
         throw new exception.StyleError(tokens, "Modifier (${modifier}) must be 'w' or 'h'");
     }
-    return new layout.Length(percentage, unit);
+    return new layout.Length(percentage, units);
 }
 
 //==============================================================================
 
-export function parseLength(tokens, defaultValue=null)
+export function parseLength(tokens, defaultValue=null, defaultUnits='%')
 {
     /*
     :param tokens: `StyleTokens` of tokens
@@ -189,11 +189,11 @@ export function parseLength(tokens, defaultValue=null)
             throw new exception.StyleError(tokens, "Length expected.");
         }
     }
-    const unit = (tokens.type === "DIMENSION") ? tokens.unit : "";
-    if (["vw", "vh", "px"].indexOf(unit) < 0) {
-        throw new exception.StyleError(tokens, "Units must be 'vw' or 'vh'");
+    const units = (tokens.type === "DIMENSION") ? tokens.unit : defaultUnit;
+    if (["vw", "vh", "px", defaultUnits].indexOf(units) < 0) {
+        throw new exception.StyleError(tokens, "Unknown units for length");
     }
-    return new layout.Length(tokens.value, unit);
+    return new layout.Length(tokens.value, units);
 }
 
 //==============================================================================

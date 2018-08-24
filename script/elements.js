@@ -245,7 +245,7 @@ export class DiagramElement {
     lengthToPixels(length, index, addOffset=false)
     //============================================
     {
-        if (length.unit.indexOf('%') >= 0) {
+        if (length.units.indexOf('%') >= 0) {
             let pixels = utils.lengthToPixels(length, index, this.pixelWidth, this.pixelHeight);
             if (addOffset) {
                 if (index === 0) {
