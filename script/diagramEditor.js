@@ -29,7 +29,7 @@ import * as geo from './geometry.js';
 const GRID_X_SPACING = new geo.Length(1, 'vw');
 const GRID_Y_SPACING = new geo.Length(1, 'vh');
 
-const GRID_OPACITY   = 0.2;
+const GRID_OPACITY   = 0.4;
 const GRID_COLOUR    = "blue";
 
 //==============================================================================
