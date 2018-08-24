@@ -24,12 +24,10 @@ limitations under the License.
 
 import * as geo from './geometry.js';
 
-import {Length} from './layout.js';
-
 //==============================================================================
 
-const GRID_X_SPACING = new Length(1, 'vw');
-const GRID_Y_SPACING = new Length(1, 'vh');
+const GRID_X_SPACING = new geo.Length(1, 'vw');
+const GRID_Y_SPACING = new geo.Length(1, 'vh');
 
 const GRID_OPACITY   = 0.2;
 const GRID_COLOUR    = "blue";

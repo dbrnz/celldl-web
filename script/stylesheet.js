@@ -22,8 +22,9 @@ limitations under the License.
 
 //==============================================================================
 
-import * as layout from './layout.js';
 import * as exception from './exception.js';
+
+import {Length} from './geometry.js';
 
 //==============================================================================
 
@@ -203,7 +204,7 @@ export function parsePercentageOffset(tokens, defaultValue=null)
     if (["", "w", "h"].indexOf(modifier) < 0) {
         throw new exception.StyleError(tokens, "Modifier (${modifier}) must be 'w' or 'h'");
     }
-    return new layout.Length(percentage, units);
+    return new Length(percentage, units);
 }
 
 //==============================================================================
@@ -229,7 +230,7 @@ export function parseLength(tokens, defaultValue=null, defaultUnits='%')
     if (["vw", "vh", "px", defaultUnits].indexOf(units) < 0) {
         throw new exception.StyleError(tokens, "Unknown units for length");
     }
-    return new layout.Length(tokens.value, units);
+    return new Length(tokens.value, units);
 }
 
 //==============================================================================

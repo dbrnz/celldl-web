@@ -34,6 +34,15 @@ const EPISILON = 1.0e-6;
 
 //==============================================================================
 
+export class Length {
+    constructor(length=0, units='') {
+        this.length = length;
+        this.units = units;
+    }
+}
+
+//==============================================================================
+
 class GeoObject
 {
     location(coords)
