@@ -258,6 +258,24 @@ export class DiagramElement {
         }
     }
 
+    pixelsToLength(pixels, units, index, addOffset=false)
+    //===================================================
+    {
+        if (units.indexOf('%') >= 0) {
+            if (addOffset) {
+                if (index === 0) {
+                    pixels -= (this.coordinates.x - this.pixelWidth/2);
+                } else {
+                    pixels -= (this.coordinates.y - this.pixelHeight/2);
+                }
+            }
+            return utils.pixelsToLength(pixels, units, index, this.pixelWidth, this.pixelHeight);
+        } else {
+            return this.diagram.pixelsToLength(pixels, units, index);
+        }
+
+    }
+
     get sizeAsPixels()
     //================
     {

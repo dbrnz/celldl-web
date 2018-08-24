@@ -24,6 +24,8 @@ limitations under the License.
 
 import * as exception from './exception.js';
 
+import {Length} from './geometry.js';
+
 //==============================================================================
 
 export class List extends Array {
@@ -98,10 +100,36 @@ export function lengthToPixels(length, index, width, height)
 //==============================================================================
 
 export function offsetToPixels(container, size, addOffset=false)
-//==============================================================
 {
     return [container.lengthToPixels(size[0], 0, addOffset),
             container.lengthToPixels(size[1], 1, addOffset)];
+}
+
+//==============================================================================
+
+export function pixelsToLength(pixels, units, index, width, height)
+{
+    let length = pixels;
+
+    if        (units.indexOf('w') >= 0) {
+        length = 100*pixels/width;
+    } else if (units.indexOf('h') >= 0) {
+        length = 100*pixels/height;
+    } else if (index === 0) {
+        length = 100*pixels/width;
+    } else if (index === 1) {
+        length = 100*pixels/height;
+    }
+
+    return new Length(length, units);
+}
+
+//==============================================================================
+
+export function pixelsToOffset(offset, container, size, addOffset=false)
+{
+    return [container.pixelsToLength(offset[0], size[0].units, 0, addOffset),
+            container.pixelsToLength(offset[1], size[1].units, 1, addOffset)];
 }
 
 //==============================================================================

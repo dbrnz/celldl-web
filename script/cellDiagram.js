@@ -80,6 +80,16 @@ export class CellDiagram {
         }
     }
 
+    pixelsToLength(pixels, units, index)
+    //==================================
+    {
+        if (!units || units === 'px') {
+            return new geo.Length(pixels, units);
+        } else {
+            return utils.pixelsToLength(pixels, units, index, this.width, this.height);
+        }
+    }
+
     strokeWidthToPixels(length)
     //=========================
     {
