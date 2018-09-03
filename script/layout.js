@@ -58,6 +58,48 @@ export const CORNER_BOUNDARIES = new List(['top-left', 'top-right', 'bottom-left
 export const COMPARTMENT_BOUNDARIES = new List().extend(HORIZONTAL_BOUNDARIES).extend(VERTICAL_BOUNDARIES);
 
 export const DEFAULT_POSITION = [ new geo.Length(0, '%'), new geo.Length(0, '%')];
+export const DEFAULT_SIZE     = [ new geo.Length(), new geo.Length()];
+
+//==============================================================================
+
+export class Size
+{
+    constructor(sizeTokens)
+    {
+        this._size = sizeTokens ? stylesheet.parseSize(sizeTokens) : DEFAULT_SIZE;
+        this._pixelSize = [0, 0];
+    }
+
+    get asPixels()
+    //============
+    {
+        return this._pixelSize;
+    }
+
+    get pixelWidth()
+    //==============
+    {
+        return this._pixelSize[0];
+    }
+
+    get pixelHeight()
+    //===============
+    {
+        return this._pixelSize[1];
+    }
+
+    get units()
+    //=========
+    {
+        return [this._size[0].units, this._size[1].units]
+    }
+
+    assignSize(container)
+    //===================
+    {
+        this._pixelSize = utils.offsetToPixels(container, this._size);
+    }
+}
 
 //==============================================================================
 

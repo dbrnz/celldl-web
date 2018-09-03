@@ -84,7 +84,7 @@ export class DiagramElement {
                                                     : 18; // TODO: specify defaults in one place
         this.fontStyle = this.getStyleAsString('font-style', '');
         this.fontWeight = this.getStyleAsString('font-weight', '');
-        this.size = ('size' in this.style) ? stylesheet.parseSize(this.style['size']) : null;
+        this.size = new layout.Size(this, this.style.size);
         this.stroke = this.getStyleAsString('stroke', 'none');
         this._strokeWidth = ('stroke-width' in this.style) ? stylesheet.parseLength(this.style['stroke-width'])
                                                            : layout.STROKE_WIDTH;
@@ -195,10 +195,8 @@ export class DiagramElement {
     assignCoordinates(container)
     //==========================
     {
-        if (this.size !== null) {
-            this.setSizeAsPixels(utils.offsetToPixels(container, this.size));
-        }
         this.position.assignCoordinates(container);
+        this.size.assignSize(this.container);
     }
 
     assignTextCoordinates()
@@ -276,16 +274,45 @@ export class DiagramElement {
 
     }
 
+    //================
+    {
+    }
+
+    sizeToString()
+    //============
+    {
+        const size = utils.pixelsToOffset(this.size.asPixels, this.container, this.size.units);
+        return `${size[0].toString()}, ${size[1].toString()}`;
+    }
+
+    get hasSize()
+    //===========
+    {
+        return this.size.pixelWidth > 0 && this.size.pixelHeight > 0;
+    }
+
+    get pixelWidth()
+    //==============
+    {
+        return this.size.pixelWidth;
+    }
+
+    get pixelHeight()
+    //===============
+    {
+        return this.size.pixelHeight;
+    }
+
     get sizeAsPixels()
     //================
     {
-        return (this.pixelWidth !== null) ? [this.pixelWidth, this.pixelHeight] : null;
+        return this.size.asPixels;
     }
 
     setSizeAsPixels(pixelSize)
     //========================
     {
-        [this.pixelWidth, this.pixelHeight] = pixelSize;
+        this.size.setPixelSize(pixelSize);
     }
 
     assignGeometry(radius=layout.ELEMENT_RADIUS)
