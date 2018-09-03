@@ -339,8 +339,8 @@ export class DiagramElement {
         if (grid !== null) {
             const [x, y] = this.position.coordinates.toOffset();
 // but don't want to move in opposite direction to offset
-            offset = [utils.gridSnap(x + offset[0], grid, 0) - x,
-                      utils.gridSnap(y + offset[1], grid, 1) - y];
+            offset = [utils.gridSnap(x + offset[0], grid[0]) - x,
+                      utils.gridSnap(y + offset[1], grid[1]) - y];
         }
 
         this.position.addOffset(offset);
@@ -571,23 +571,23 @@ export class RectangularMixin
         let [newWidth, newHeight] = [width, height];
         let [dx, dy] = [0, 0];
 
-        const gridSnap = (value, grid, index) => {
-            const gridValue = utils.gridSnap(value, grid, index);
+        const gridSnap = (value, step) => {
+            const gridValue = utils.gridSnap(value, step);
             return (gridValue <= 0) ? 1 : gridValue;
         }
 
         if (edge.indexOf('left') >= 0) {
-            newWidth = gridSnap(width - offset[0], grid, 0);
+            newWidth = gridSnap(width - offset[0], grid[0]);
             dx = width - newWidth;
         } else if (edge.indexOf('right') >= 0) {
-            newWidth = gridSnap(width + offset[0], grid, 0);
+            newWidth = gridSnap(width + offset[0], grid[0]);
             dx = newWidth - width;
         }
         if (edge.indexOf('top') >= 0) {
-            newHeight = gridSnap(height - offset[1], grid, 1);
+            newHeight = gridSnap(height - offset[1], grid[1]);
             dy = height - newHeight;
         } else if (edge.indexOf('bottom') >= 0) {
-            newHeight = gridSnap(height + offset[1], grid, 1);
+            newHeight = gridSnap(height + offset[1], grid[1]);
             dy = newHeight - height;
         }
 

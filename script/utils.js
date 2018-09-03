@@ -136,9 +136,9 @@ export function pixelsToOffset(offset, container, units, addOffset=false)
 
 // Return value on ``grid[index]``
 
-export function gridSnap(value, grid, index)
+export function gridSnap(value, step)
 {
-    return (grid !== null) ? grid[index]*Math.round(value/grid[index]) : value;
+    return (step) ? step*Math.round(value/step) : value;
 }
 
 //==============================================================================
