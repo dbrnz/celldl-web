@@ -126,10 +126,10 @@ export function pixelsToLength(pixels, units, index, width, height)
 
 //==============================================================================
 
-export function pixelsToOffset(offset, container, size, addOffset=false)
+export function pixelsToOffset(offset, container, units, addOffset=false)
 {
-    return [container.pixelsToLength(offset[0], size[0].units, 0, addOffset),
-            container.pixelsToLength(offset[1], size[1].units, 1, addOffset)];
+    return [container.pixelsToLength(offset[0], units[0], 0, addOffset),
+            container.pixelsToLength(offset[1], units[1], 1, addOffset)];
 }
 
 //==============================================================================
