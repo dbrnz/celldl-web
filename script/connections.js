@@ -100,7 +100,7 @@ export class Connection
     //=========
     {
         this.line = new layout.LinePath(this.diagram, this.style, 'line-path');
-        this.line.parse();
+        this.line.parseLine();
     }
 
     lineAsPath(fromElement, toElement)

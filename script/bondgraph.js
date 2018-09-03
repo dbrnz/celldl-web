@@ -188,7 +188,7 @@ export class FlowEdge extends Connection
     //=========
     {
         this.line = new layout.LinePath(this.diagram, this.style, `${this.direction}-line-path`);
-        this.line.parse();
+        this.line.parseLine();
     }
 
 }

@@ -239,8 +239,8 @@ export class Position
         return HORIZONTAL_RELATIONS.contains(reln) ? 'H' : 'V';
     }
 
-    parse(defaultOffset=null, defaultDependency=null)
-    //===============================================
+    parsePosition(defaultOffset=null, defaultDependency=null)
+    //=======================================================
     {
         /*
         * Position as coords: absolute or % of container -- `100, 300` or `10%, 30%`
@@ -359,8 +359,8 @@ export class LinePath
         this.lengths = null;
     }
 
-    parseConstraint(tokens)
-    //=====================
+    _parseConstraint(tokens)
+    //======================
     {
         let angle = null;
         let limit = null;
@@ -466,8 +466,8 @@ export class LinePath
         this.constraints.push({angle, limit, offsets, dependencies, lineOffset});
     }
 
-    parsePath(tokens)
-    //===============
+    _parse(tokens)
+    //============
     {
         /*
         <line-point> ::= <coord-pair> | <line-angle> <limit>
@@ -486,23 +486,23 @@ export class LinePath
                 }
             } else {
                 for (let token of tokens) {
-                    this.parseConstraint(token);
+                    this._parseConstraint(token);
                 }
             }
         } else {
-            this.parseConstraint(tokens);
+            this._parseConstraint(tokens);
         }
     }
 
-    parse()
-    //=====
-    {   // TODO: all token parssing needs to be in `stylesheet.js`
+    parseLine()
+    //=========
+    {   // TODO: all token parsing needs to be in `stylesheet.js`
         if (this.tokens !== null) {
             if (this.tokens.type !== 'FUNCTION' || ['begin', 'end'].indexOf(this.tokens.name.value) < 0) {
                 throw new exception.StyleError(this.tokens, 'Invalid path specification');
             }
             this.reversePath = (this.tokens.name.value === 'end');
-            this.parsePath(this.tokens.parameters);
+            this._parse(this.tokens.parameters);
         }
     }
 

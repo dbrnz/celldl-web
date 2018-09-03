@@ -227,12 +227,12 @@ export class DiagramElement {
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
         */
-        this.position.parse(defaultOffset, defaultDependency);
+        this.position.parsePosition(defaultOffset, defaultDependency);
         if ('text-position' in this.style) {
             if (this.textPosition === this.position) {
                 this.textPosition = new layout.Position(this.diagram, this, this.style['text-position']);
             }
-            this.textPosition.parse(null, defaultDependency);
+            this.textPosition.parsePosition(null, defaultDependency);
         } else if (this.textPosition !== this.position) {
             this.textPosition = this.position;
         }
