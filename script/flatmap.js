@@ -40,13 +40,13 @@ import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
 
-import * as elements from './elements.js';
+import {DiagramElement, RectangularMixin} from './elements.js';
 import {Connection} from './connections.js';
 import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
 
-export class FlatMap extends elements.ContainerElement
+export class FlatMap extends DiagramElement
 {
     constructor(diagram, domElement)
     {
@@ -86,8 +86,8 @@ export class FlatMap extends elements.ContainerElement
     //======
     {
         this.position.coordinates = new geo.Point(this.diagram.width/2, this.diagram.height/2);
-        this.setSizeAsPixels([this.diagram.width, this.diagram.height]);
-        this.layoutElements();
+        this.size.setPixelSize([this.diagram.width, this.diagram.height]);
+        super.layout();
     }
 
     generateSvg()
@@ -110,7 +110,7 @@ export class FlatMap extends elements.ContainerElement
 
 //==============================================================================
 
-export class Component extends aggregation(elements.DiagramElement, elements.RectangularMixin)
+export class Component extends aggregation(DiagramElement, RectangularMixin)
 {
     constructor(diagram, domElement)
     {
@@ -130,20 +130,19 @@ export class Component extends aggregation(elements.DiagramElement, elements.Rec
         this.position.addDependency(group);
     }
 
-    assignCoordinates(container)
-    //==========================
+    assignDimensions()
+    //================
     {
         // Set our position and size in terms of our container
 
-        super.assignCoordinates(container);
+        super.assignDimensions();
 
         // Just in case no size has been specified
 
-        if (this.sizeAsPixels === null) {
-            this.setSizeAsPixels([100, 50]);  // TODO: Get default size from layout constants
+        if (!this.hasSize) {
+            this.size.setPixelSize([200, 100]);  // TODO: Get default size from layout constants
         }
     }
-
 }
 
 //==============================================================================
@@ -178,7 +177,7 @@ export class ComponentConnection extends Connection
 
 //==============================================================================
 
-export class Group extends aggregation(elements.ContainerElement, elements.RectangularMixin)
+export class Group extends aggregation(DiagramElement, RectangularMixin)
 {
     constructor(diagram, domElement)
     {
@@ -203,18 +202,15 @@ export class Group extends aggregation(elements.ContainerElement, elements.Recta
         group.group = this;
     }
 
-    assignCoordinates(container)
-    //==========================
+    assignDimensions()
+    //================
     {
         // Set our position and size in terms of our container
 
-        super.assignCoordinates(container);
+        super.assignDimensions();
 
         // Just in case no size has been specified
 
-        if (this.sizeAsPixels === null) {
-            this.setSizeAsPixels([300, 200]);  // TODO: Get default size from layout constants
-        }
 
     }
 
@@ -234,6 +230,8 @@ export class Group extends aggregation(elements.ContainerElement, elements.Recta
             if (drawConnections) {
                 this.redrawConnections();
             }
+        if (!this.hasSize) {
+            this.size.setPixelSize([300, 200]);  // TODO: Get default size from layout constants
         }
         return movedOffset;
     }
