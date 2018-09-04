@@ -56,6 +56,14 @@ const HIGHLIGHT_OPACITY = 0.8;
 
 //==============================================================================
 
+/**
+ *  A very general diagram element with size and position.
+ *
+ *  * An element may be contained in another element.
+ *  * An element may contain other elements.
+ *  * An element may be connected to any other element, including itself.
+**/
+
 export class DiagramElement {
     constructor(diagram, domElement, requireId=true)
     {
@@ -93,7 +101,14 @@ export class DiagramElement {
         this.pixelWidth = null;
         this.pixelHeight = null;
         this.geometry = null;
+
+        // Any element may be connected to any other element, including itself
         this.connections = [];
+
+        // Any element may be contained in another and/or may contain elements
+        this.container = null;
+        this.elements = [];
+
         diagram.addElement(this);
     }
 
@@ -129,12 +144,6 @@ export class DiagramElement {
             throw new exception.KeyError(`Can't find ${classNames} with id '${elementId}'`);
         }
         return null;
-    }
-
-    resolveReferences()
-    //=================
-    {
-        // Sub-classes will override this method
     }
 
     toString()
@@ -184,6 +193,13 @@ export class DiagramElement {
         if (this.id !== null) result.id = this.diagramId;
         if (this.classes.length > 0) result.class = this.classes.join(" ");
         return result;
+    }
+
+    addElement(element)
+    //=================
+    {
+        this.elements.push(element);
+        element.container = this;
     }
 
     get coordinates()
@@ -330,6 +346,29 @@ export class DiagramElement {
         return this.geometry.location(point, delta);
     }
 
+    layoutDependentElements()
+    //=======================
+    {
+        const dependents = this.position.dependents();
+        for (let element of this.position.dependencyGraph(dependents)) {
+            element.layoutDependentElements();
+            if (!element.hasCoordinates) {
+                element.assignCoordinates();
+                element.assignGeometry();
+                element.assignTextCoordinates();
+            }
+        }
+    }
+
+    /**
+     * Move the element.
+     *
+     * @param {float[2]} offset - The distance, in pixels, to move.
+     * @param {float[2]} grid - Spacing of a ``snap-to`` grid.
+     * @param {boolean} drawConnections - Draw connections from/to the element after move.
+     *
+     * @return {float[2]} The offset actually moved.
+    **/
     move(offset, grid=null, drawConnections=true)
     //===========================================
     {
@@ -367,6 +406,9 @@ export class DiagramElement {
         for (let connection of this.connections) {
             connection.invalidatePath();
         }
+        for (let element of this.position.dependents()) {
+            element.invalidateConnections();
+        }
     }
 
     redrawConnections()
@@ -377,6 +419,9 @@ export class DiagramElement {
                 connection.assignPath();
                 connection.updateSvg();
             }
+        }
+        for (let element of this.elements) {
+            element.redrawConnections();
         }
     }
 
@@ -461,92 +506,6 @@ export class DiagramElement {
 
 //==============================================================================
 
-export class ContainerElement extends DiagramElement
-{
-    constructor(diagram, domElement, requireId=true)
-    {
-        super(diagram, domElement, requireId);
-        this.elements = [];
-    }
-
-    addElement(element)
-    //=================
-    {
-        this.elements.push(element);
-    }
-
-    invalidateCoordinates()
-    //=====================
-    {
-        super.invalidateCoordinates();
-        for (let element of this.elements) {
-            element.invalidateCoordinates();
-        }
-    }
-
-    move(offset, grid=null, drawConnections=true)
-    //===========================================
-    {
-        offset = super.move(offset, grid, false);
-        for (let element of this.elements) {
-            element.move(offset, null, false);
-        }
-        if (drawConnections) {
-            this.redrawConnections();
-        }
-        return offset;
-    }
-
-    layoutElements()
-    //==============
-    {
-        /*
-        - Hierarchical positioning
-        - An element's position can depend on those of its siblings and any element
-          at a higher level in the diagram. In the following, ``cm2`` may depend on
-          ``gr1``, ``cm1``, ``gr2`` and ``gr0``, while ``gr3`` may depend on ``gr4``,
-          ``cm3``, ``gr1``, ``cm1``, ``gr2`` and ``gr0``.
-        - This means we need to position the container's elements before laying out
-          any sub-containers.
-        */
-
-        // Need to ensure dependencies are amongst or above our elements
-
-        for (let element of layout.dependencyGraph(this.elements)) {
-            if (!element.hasCoordinates) {
-                element.assignCoordinates(this);
-                element.assignGeometry();
-                element.assignTextCoordinates();
-            }
-        }
-
-        for (let container of this.elements.filter((e) => e instanceof ContainerElement)) {
-            container.layoutElements();
-        }
-    }
-
-    redrawConnections()
-    //=================
-    {
-        super.redrawConnections();
-        for (let element of this.elements) {
-            element.redrawConnections();
-        }
-    }
-
-    generateSvg(highlight=false)
-    //==========================
-    {
-        const svgNode = super.generateSvg(highlight);
-
-        for (let element of this.elements) {
-            svgNode.appendChild(element.generateSvg());
-        }
-        return svgNode;
-    }
-}
-
-//==============================================================================
 
 export class RectangularMixin
 {
