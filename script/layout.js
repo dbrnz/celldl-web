@@ -145,12 +145,6 @@ export class Position
         this._dependents = new Set();
     }
 
-    invalidateCoordinates()
-    //=====================
-    {
-        this.coordinates = null;
-    }
-
     get hasCoordinates()
     //==================
     {

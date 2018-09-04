@@ -188,7 +188,6 @@ export class CellDiagram {
         // for all elements
 
         for (let element of this._elements) {
-            element.resolveReferences();
             element.parsePosition();
         }
 

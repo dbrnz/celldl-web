@@ -221,13 +221,6 @@ export class DiagramElement {
         }
     }
 
-    invalidateCoordinates()
-    //=====================
-    {
-        this.position.invalidateCoordinates();
-        this._textPosition.invalidateCoordinates();
-    }
-
     get hasCoordinates()
     //==================
     {
