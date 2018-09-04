@@ -358,9 +358,9 @@ export class Position
             this._parseComponent(tokens, null, defaultOffset, defaultDependency);
         }
 
-        // Assign default position no position specified
+        // Assign default position if no position relationships specified
 
-        if (this._offset === null && this._dependents.size === 0) {
+        if (this._offset === null && this._relationships.size === 0) {
             this._offset = DEFAULT_POSITION;
         }
     }
