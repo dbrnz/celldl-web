@@ -338,8 +338,8 @@ export class DiagramElement {
         return this.geometry.location(point, delta);
     }
 
-    layout()
-    //======
+    layout(updateSvg=false)
+    //=====================
     {
         /*
         - Hierarchical positioning
@@ -355,10 +355,13 @@ export class DiagramElement {
 
         const dependents = this.position.dependents();
         for (let element of this.position.dependencyGraph(dependents)) {
-            if (!element.hasCoordinates) {
-                element.assignDimensions();
-                element.assignGeometry();
-                element._assignTextCoordinates();
+// Cache dependency graph as used in various places when nothing has changed...
+            element.assignDimensions();
+            element.assignGeometry();
+            element._assignTextCoordinates();
+            if (updateSvg) {
+                element.updateSvg(false);
+                element.redrawConnections();
             }
         }
     }
@@ -391,6 +394,14 @@ export class DiagramElement {
             this._textPosition.addOffset(offset);
         }
         this.assignGeometry();
+
+        // Moving us impacts all elements whose position depends on us
+        // so recalculate the positions of our dependents and then
+        // draw them in their new position.
+        //
+        // NB. This set is not necessarily our sub-elements
+        this.layout(true);
+
         if (drawConnections) {
             this.redrawConnections();
         }
