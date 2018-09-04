@@ -285,19 +285,13 @@ export class CellDiagram {
             for (let id of this._manualPositions) {
                 const e = this.findElement(id);
                 if (e !== null) {
-                    // % needs to be local using unitconverter...
-                    let w = 100*e.coordinates.x/this.width;
-                    let h = 100*e.coordinates.y/this.height;
-                    positions.push(`    ${e.id} { position: ${w.toFixed(2)}vw, ${h.toFixed(2)}vh; }`);
+                    positions.push(`    ${e.id} { position: ${e.positionToString()}; }`);
                 }
             }
             for (let id of this._manualSizes) {
                 const e = this.findElement(id);
                 if (e !== null) {
-                    // % needs to be local using unitconverter...
-                    let w = 100*e.pixelWidth/this.width;
-                    let h = 100*e.pixelHeight/this.height;
-                    positions.push(`    ${e.id} { size: ${w.toFixed(2)}vw, ${h.toFixed(2)}vh; }`);
+                    positions.push(`    ${e.id} { size: ${e.sizeToString()}; }`);
                 }
             }
             positions.push('</style>');
