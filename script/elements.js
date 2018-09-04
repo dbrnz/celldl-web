@@ -371,32 +371,35 @@ export class DiagramElement {
     move(offset, grid=null, drawConnections=true)
     //===========================================
     {
-        this.invalidateConnections();
-
-        // Want offset so that new position is on the grid
-
         if (grid !== null) {
+            // Adjust offset so that new position snaps to the the grid
+
             const [x, y] = this.position.coordinates.toOffset();
-// but don't want to move in opposite direction to offset
+            // Don't want to move in opposite direction to offset
             offset = [utils.gridSnap(x + offset[0], grid[0]) - x,
                       utils.gridSnap(y + offset[1], grid[1]) - y];
         }
 
-        this.position.addOffset(offset);
-        if (this._textPosition !== this.position) {
-            this._textPosition.addOffset(offset);
-        }
-        this.assignGeometry();
+        if (offset[0] !== 0 || offset[1] !== 0) {
+            this.position.addOffset(offset);
+            if (this._textPosition !== this.position) {
+                this._textPosition.addOffset(offset);
+            }
 
-        // Moving us impacts all elements whose position depends on us
-        // so recalculate the positions of our dependents and then
-        // draw them in their new position.
-        //
-        // NB. This set is not necessarily our sub-elements
-        this.layout(true);
+            this.assignGeometry();
 
-        if (drawConnections) {
-            this.redrawConnections();
+            // Moving us impacts all elements whose position depends on us
+            // so recalculate the positions of our dependents and then
+            // draw them in their new position.
+            //
+            // NB. This set is not necessarily our sub-elements
+
+            this.layout(true);
+
+            this.invalidateConnections();
+            if (drawConnections) {
+                this.redrawConnections();
+            }
         }
         return offset;
     }
@@ -513,6 +516,7 @@ export class DiagramElement {
 
 //==============================================================================
 
+// A resizeable rectangular element
 
 export class RectangularMixin
 {
@@ -531,7 +535,7 @@ export class RectangularMixin
     //===================================================
     {
         if (offset[0] === 0 && offset[1] === 0) {
-            return offset;
+            return [0, 0];
         }
 
         const [width, height] = this.sizeAsPixels;
@@ -558,31 +562,15 @@ export class RectangularMixin
             dy = newHeight - height;
         }
 
-        const movedOffset = [dx, dy];
-
-        this.setSizeAsPixels([newWidth, newHeight]);
+        this.size.setPixelSize([newWidth, newHeight]);
 
         // Reposition element so the centre of the element stays fixed
 
-        this.move([dx/2, dy/2], null, false);
+        this.move([dx/2, dy/2], null, drawConnections);
 
-        // Set geometry to have new size and position
+        // Return the edge's actual displacement
 
-        this.assignGeometry();
-
-        // Set the position of our label
-
-        if (this._textPosition !== this.position) {
-            this._assignTextCoordinates();
-        }
-
-        // Draw connections using new sizes and positions
-
-        if (drawConnections) {
-            this.redrawConnections();
-        }
-
-        return movedOffset;
+        return [dx, dy];
     }
 
 }
