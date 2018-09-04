@@ -162,31 +162,10 @@ export class Group extends aggregation(DiagramElement, RectangularMixin)
 
         // Just in case no size has been specified
 
-
-    }
-
-    resize(offset, edge, grid=null, drawConnections=true)
-    //===================================================
-    {
-        const movedOffset = super.resize(offset, edge, grid, false);
-        if (movedOffset[0] !== 0 || movedOffset[1] !== 0) {
-            // Child elements may depend on our size and so need
-            // their positions and geometry reassigned
-
-            this.invalidateCoordinates();
-            this.layoutElements();
-
-            // Draw connections using new sizes and positions
-
-            if (drawConnections) {
-                this.redrawConnections();
-            }
         if (!this.hasSize) {
             this.size.setPixelSize([300, 200]);  // TODO: Get default size from layout constants
         }
-        return movedOffset;
     }
-
 }
 
 //==============================================================================

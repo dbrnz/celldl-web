@@ -507,9 +507,6 @@ export class DiagramElement {
     {
         const svgNode = this.generateSvg(highlight);
         const currentNode = document.getElementById(this.diagramId);
-//        const parentNode = currentNode.parentNode;
-//        parentNode.removeChild(currentNode);
-//        parentNode.appendChild(currentNode);  // Will be on top ??
         currentNode.outerHTML = svgNode.outerHTML;
     }
 }
