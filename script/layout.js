@@ -118,13 +118,15 @@ export class Size
     //=====================
     {
         this._pixelSize = pixelSize;
+        if (this._element.container) {
+            this._size = utils.pixelsToOffset(pixelSize, this._element.container, this.units);
+        }
     }
 
     toString()
     //========
     {
-        const size = utils.pixelsToOffset(this._pixelSize, this._element.container, this.units);
-        return `${size[0].toString()}, ${size[1].toString()}`;
+        return `${this._size[0].toString()}, ${this._size[1].toString()}`;
     }
 }
 
