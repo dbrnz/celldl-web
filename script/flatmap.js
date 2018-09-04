@@ -52,13 +52,12 @@ export class FlatMap extends DiagramElement
     {
         super(diagram, domElement, false);
         this.id = this.id || `${this.diagram.id}_flatmap`;
-        this.connections = [];
     }
 
     addConnection(connection)
     //=======================
     {
-        this.connections.push(connection);
+        super.addConnection(connection);
         this.diagram.addConnection(connection);
     }
 
@@ -150,8 +149,15 @@ export class ComponentConnection extends Connection
         if (overlappedSet.length < 2) {
             return super.lineAsPath(fromComponent, toComponent);
         } else {
-            return new geo.LineString([overlappedSet.lineSegments[0].middle(),
-                                       overlappedSet.lineSegments[1].middle()])
+            // The following spaces connections wider than the more
+            // simple spacing of `this.order/(this.count + 1)`.
+
+            const count = this.count;
+            const offset = (count === 1) ? 0.5
+                                         : (1 + (this.order - 1)*count/(count - 1))/(count + 2);
+
+            return new geo.LineString([overlappedSet.lineSegments[0].ratio(offset),
+                                       overlappedSet.lineSegments[1].ratio(offset)])
         }
     }
 }

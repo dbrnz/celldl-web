@@ -405,6 +405,32 @@ export class DiagramElement {
     addConnection(connection)
     //=======================
     {
+        // If the connection's elements have been assigned we
+        // check all existing connections to/from this element
+        // to find other coincident connections.
+
+        if (connection.otherElement !== null) {
+            const coincident = new Array();
+            const parent = connection.parentElement;
+            const other = connection.otherElement;
+            for (let c of this.connections) {
+                if (c.parentElement === parent && c.otherElement === other
+                 || c.parentElement === other && c.otherElement === parent) {
+                    coincident.push(c);
+                }
+            }
+            // Set the spacing/drawing order for all coincident connections
+
+            if (coincident.length > 0) {
+                coincident.push(connection);
+                const count = coincident.length;
+                let order = 1;
+                for (let c of coincident) {
+                    c.setOrder(order, count);
+                    order += 1;
+                }
+            }
+        }
         this.connections.push(connection);
     }
 

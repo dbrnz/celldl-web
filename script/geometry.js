@@ -269,10 +269,11 @@ export class LineSegment extends ProjectiveLine
         return validPoint ? point : null;
     }
 
-    middle()
-    //======
+    ratio(fraction)
+    //=============
     {
-        return new Point((this.start.x + this.end.x)/2, (this.start.y + this.end.y)/2)
+        return new Point((1 - fraction)*this.start.x + fraction*this.end.x,
+                         (1 - fraction)*this.start.y + fraction*this.end.y)
     }
 
     translate(offset)

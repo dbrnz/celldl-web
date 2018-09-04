@@ -49,6 +49,8 @@ export class Connection
         this.validPath = false;
         this.id = toParent ? `${fromId}-${parentElement.id.slice(1)}`
                            : `${parentElement.id.slice(1)}-${fromId}`;
+        this._order = 1;
+        this._count = 1;
     }
 
     static createFromAttributeValue(diagram, domElement, attributeName,
@@ -78,7 +80,7 @@ export class Connection
                                             ? this.diagram.findElement(this.styleElementId).domElement
                                             : this.domElement;
                 this.style = this.diagram.stylesheet.style(styleDomElement);
-                this.otherElement.addConnection(this);
+                this.otherElement.addConnection(this);  // Will set `order` and `count`
                 return;
             }
         }
@@ -88,6 +90,24 @@ export class Connection
         throw new exception.KeyError(`Can't find ${classNames} with id '${this.otherId}'`);
     }
 
+    setOrder(order, count)
+    //====================
+    {
+        this._order = order;
+        this._count = count;
+    }
+
+    get order()
+    //=========
+    {
+        return this._order;
+    }
+
+    get count()
+    //=========
+    {
+        return this._count;
+    }
 
     get lineColour()
     //==============
