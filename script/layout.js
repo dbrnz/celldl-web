@@ -101,6 +101,12 @@ export class Size
         this._pixelSize = utils.offsetToPixels(this._element.container, this._size);
     }
 
+    setPixelSize(pixelSize)
+    //=====================
+    {
+        this._pixelSize = pixelSize;
+    }
+
     toString()
     //========
     {
@@ -140,6 +146,12 @@ export class Position
     //===============
     {
         this.coordinates = this.coordinates.addOffset(offset);
+    }
+
+    _addDependency(dependency)
+    //========================
+    {
+        dependency.position._dependents.add(this._element);
     }
 
     _addDependencies(dependencies)
@@ -184,12 +196,6 @@ export class Position
     {
         let dependencyGraph = new jsnx.DiGraph();
 
-        // Direct dependents
-        dependencyGraph.addNode(this._element);
-        for (let dependent of this._dependents) {
-            dependencyGraph.addNode(dependent);
-            dependencyGraph.addEdge(this._element, dependent)
-        }
         // Sub-element dependencies
         for (let element of elements) {
             dependencyGraph.addNode(element);
@@ -319,7 +325,7 @@ export class Position
                     // Implicit dependency on our container if any '%' length
                     if (this._lengths[0].units.indexOf('%') >= 0
                      || this._lengths[1].units.indexOf('%') >= 0) {
-                        dependencies.append(this._element.container);
+                        this._addDependency(this._element.container);
                     }
                 } else {
                     const dirn = this.parseComponent(tokens[0], null);
@@ -334,7 +340,7 @@ export class Position
 
         // Assign default position no position specified
 
-        if (this._lengths === null && this.dependencies.size === 0) {
+        if (this._lengths === null && this._dependents.size === 0) {
             this.setLengths(DEFAULT_POSITION);
         }
     }

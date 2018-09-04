@@ -27,7 +27,7 @@ import * as geo from './geometry.js';
 import * as layout from './layout.js';
 
 import {Connection} from './connections.js';
-import {ContainerElement, DiagramElement} from './elements.js';
+import {DiagramElement} from './elements.js';
 import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
@@ -36,7 +36,7 @@ import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
 
-export class BondGraph extends ContainerElement
+export class BondGraph extends DiagramElement
 {
     constructor(diagram, domElement)
     {
@@ -101,8 +101,8 @@ export class BondGraph extends ContainerElement
     //======
     {
         this.position.coordinates = new geo.Point(this.diagram.width/2, this.diagram.height/2);
-        this.setSizeAsPixels([this.diagram.width, this.diagram.height]);
-        this.layoutElements();
+        this.size.setPixelSize([this.diagram.width, this.diagram.height]);
+        super.layout();
     }
 
     generateSvg()

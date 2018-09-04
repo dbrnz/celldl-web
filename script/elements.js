@@ -98,8 +98,6 @@ export class DiagramElement {
                                                            : layout.STROKE_WIDTH;
         this.textColour = ('text-color' in this.style) ? stylesheet.parseColour(this.diagram, this.style['text-color'])
                                                        : '#202020'; // TODO: specify defaults in one place
-        this.pixelWidth = null;
-        this.pixelHeight = null;
         this.geometry = null;
 
         // Any element may be connected to any other element, including itself
@@ -326,12 +324,6 @@ export class DiagramElement {
         return this.size.asPixels;
     }
 
-    setSizeAsPixels(pixelSize)
-    //========================
-    {
-        this.size.setPixelSize(pixelSize);
-    }
-
     assignGeometry(radius=layout.ELEMENT_RADIUS)
     //==========================================
     {
@@ -346,14 +338,26 @@ export class DiagramElement {
         return this.geometry.location(point, delta);
     }
 
-    layoutDependentElements()
-    //=======================
+    layout()
+    //======
     {
+        /*
+        - Hierarchical positioning
+        - An element's position can depend on those of its siblings and any element
+          at a higher level in the diagram. In the following, ``cm2`` may depend on
+          ``gr1``, ``cm1``, ``gr2`` and ``gr0``, while ``gr3`` may depend on ``gr4``,
+          ``cm3``, ``gr1``, ``cm1``, ``gr2`` and ``gr0``.
+        - This means we need to position the container's elements before laying out
+          any sub-containers.
+        */
+
+        // Need to ensure dependencies are amongst or above our elements
+
         const dependents = this.position.dependents();
         for (let element of this.position.dependencyGraph(dependents)) {
-            element.layoutDependentElements();
             if (!element.hasCoordinates) {
-                element.assignCoordinates();
+                element.layout();
+                element.assignDimensions();
                 element.assignGeometry();
                 element.assignTextCoordinates();
             }
