@@ -166,14 +166,14 @@ export class Position
     _addDependency(dependency)
     //========================
     {
-        dependency.position._dependents.add(this._element);
+        dependency.position.addDependent(this._element);
     }
 
     _addDependencies(dependencies)
     //============================
     {
         for (let dependency of dependencies) {
-            dependency.position._dependents.add(this._element);
+            dependency.position.addDependent(this._element);
         }
     }
 
