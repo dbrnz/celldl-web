@@ -192,11 +192,11 @@ export class DiagramElement {
         return this.position.coordinates;
     }
 
-    assignCoordinates(container)
-    //==========================
+    assignDimensions()
+    //================
     {
-        this.position.assignCoordinates(container);
-        this.size.assignSize(this.container);
+        this.size.assignSize();
+        this.position.assignCoordinates();
     }
 
     assignTextCoordinates()
@@ -274,15 +274,16 @@ export class DiagramElement {
 
     }
 
+    positionToString()
     //================
     {
+        return this.position.coordinatesToString();
     }
 
     sizeToString()
     //============
     {
-        const size = utils.pixelsToOffset(this.size.asPixels, this.container, this.size.units);
-        return `${size[0].toString()}, ${size[1].toString()}`;
+        return this.size.toString();
     }
 
     get hasSize()

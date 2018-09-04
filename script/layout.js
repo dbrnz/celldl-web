@@ -64,8 +64,9 @@ export const DEFAULT_SIZE     = [ new geo.Length(), new geo.Length()];
 
 export class Size
 {
-    constructor(sizeTokens)
+    constructor(element, sizeTokens)
     {
+        this._element = element;
         this._size = sizeTokens ? stylesheet.parseSize(sizeTokens) : DEFAULT_SIZE;
         this._pixelSize = [0, 0];
     }
@@ -94,10 +95,17 @@ export class Size
         return [this._size[0].units, this._size[1].units]
     }
 
-    assignSize(container)
-    //===================
+    assignSize()
+    //==========
     {
-        this._pixelSize = utils.offsetToPixels(container, this._size);
+        this._pixelSize = utils.offsetToPixels(this._element.container, this._size);
+    }
+
+    toString()
+    //========
+    {
+        const size = utils.pixelsToOffset(this._pixelSize, this._element.container, this.units);
+        return `${size[0].toString()}, ${size[1].toString()}`;
     }
 }
 
@@ -108,12 +116,12 @@ export class Position
     constructor(diagram, element, positionTokens)
     {
         this.diagram = diagram;
-        this.element = element;
-        this.tokens = positionTokens || null;
-        this.lengths = null;             // Position as a pair of Offsets
-        this.relationships = [];
+        this._element = element;
         this.coordinates = null;         // Resolved position in pixels
-        this.dependencies = new Set();
+        this._tokens = positionTokens || null;
+        this._lengths = null;             // Position as a pair of Offsets
+        this._relationships = [];
+        this._dependents = new Set();
     }
 
     invalidateCoordinates()
@@ -134,34 +142,83 @@ export class Position
         this.coordinates = this.coordinates.addOffset(offset);
     }
 
-    addDependency(dependency)
-    //=======================
-    {
-        this.dependencies.add(dependency);
-    }
-
-    addDependencies(dependencies)
-    //===========================
+    _addDependencies(dependencies)
+    //============================
     {
         for (let dependency of dependencies) {
-            this.dependencies.add(dependency);
+            dependency.position._dependents.add(this._element);
         }
     }
 
-    addRelationship(offset, relation, dependencies)
-    //=============================================
+    /**
+     * Set of all elements that dependon our position.
+     *
+     * @returns {Set}
+    **/
+    dependents()
+    //==========
     {
-        this.relationships.push({offset, relation, dependencies});
+        // Find closure of this._dependents
+        const dependents = new Set();
+        for (let dependent of this._dependents) {
+            dependents.add(dependent);
+            for (let d of dependent.position.dependents()) {
+                if (d === this._element) {
+                    throw exception.ValueError(`Element '${d.id}' is in a position dependency cycle`);
+                } else {
+                    dependents.add(d);
+                }
+            }
+        }
+        return dependents;
     }
 
-    setLengths(lengths)
-    //=================
+    /**
+     * Sort elements that are depend on our position into topological
+     * order.
+     *
+     * @returns {Array}
+    **/
+    dependencyGraph(elements)
+    //=======================
     {
-        this.lengths = lengths;
+        let dependencyGraph = new jsnx.DiGraph();
+
+        // Direct dependents
+        dependencyGraph.addNode(this._element);
+        for (let dependent of this._dependents) {
+            dependencyGraph.addNode(dependent);
+            dependencyGraph.addEdge(this._element, dependent)
+        }
+        // Sub-element dependencies
+        for (let element of elements) {
+            dependencyGraph.addNode(element);
+            for (let dependent of element.position._dependents) {
+                dependencyGraph.addNode(dependent);
+                dependencyGraph.addEdge(element, dependent)
+            }
+        }
+
+        try {
+            return Array.from(jsnx.topologicalSort(dependencyGraph));
+        } catch (e) {
+            if (e instanceof jsnx.NetworkXUnfeasible) {
+                throw exception.ValueError(`Position dependency graph of '${this._element.id}' contains a cycle...`);
+            } else {
+                console.log(e);
+            }
+            return [];
+        }
     }
 
-    static centroid(dependencies)
-    //===========================
+    _addRelationship(offset, relation, dependencies)
+    //==============================================
+    {
+        this._relationships.push({offset, relation, dependencies});
+    }
+
+    static _centroid(dependencies)
+    //============================
     {
         let coordinates = new geo.Point(0, 0);
         for (let dependency of dependencies) {
@@ -174,8 +231,8 @@ export class Position
                              coordinates.y/dependencies.length);
     }
 
-    parseComponent(tokens, previousDirn, defaultOffset=null, defaultDependency=null)
-    //==============================================================================
+    _parseComponent(tokens, previousDirn, defaultOffset=null, defaultDependency=null)
+    //===============================================================================
     {
         let offset = null;
         let usingDefaultOffset = false;
@@ -187,6 +244,10 @@ export class Position
               case 0:
                 if (token.type !== 'ID') {
                     offset = stylesheet.parseLength(token, defaultOffset);
+                    // Implicit dependency on our container if '%' offset
+                    if (offset.units.indexOf('%') >= 0) {
+                        dependencies.append(this._element.container);
+                    }
                     state = 1;
                     break;
                 } else {
@@ -233,8 +294,8 @@ export class Position
             offset = null;
         }
 
-        this.addRelationship(offset, reln, dependencies);
-        this.addDependencies(dependencies);
+        this._addRelationship(offset, reln, dependencies);
+        this._addDependencies(dependencies);
 
         return HORIZONTAL_RELATIONS.contains(reln) ? 'H' : 'V';
     }
@@ -246,15 +307,20 @@ export class Position
         * Position as coords: absolute or % of container -- `100, 300` or `10%, 30%`
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
         */
-        if (this.tokens == null) {
+        if (this._tokens == null) {
             return;
         }
 
-        const tokens = this.tokens;
+        const tokens = this._tokens;
         if (tokens instanceof Array) {
             if (tokens.length === 2) {
                 if (['ID', 'SEQUENCE'].indexOf(tokens[0].type) < 0) {
-                    this.setLengths(stylesheet.parseOffsetPair(tokens));
+                    this._lengths = stylesheet.parseOffsetPair(tokens);
+                    // Implicit dependency on our container if any '%' length
+                    if (this._lengths[0].units.indexOf('%') >= 0
+                     || this._lengths[1].units.indexOf('%') >= 0) {
+                        dependencies.append(this._element.container);
+                    }
                 } else {
                     const dirn = this.parseComponent(tokens[0], null);
                     this.parseComponent(tokens[1], dirn, defaultOffset, defaultDependency);
@@ -268,7 +334,7 @@ export class Position
 
         // Assign default position no position specified
 
-        if (this.lengths === null && this.dependencies.size === 0) {
+        if (this._lengths === null && this.dependencies.size === 0) {
             this.setLengths(DEFAULT_POSITION);
         }
     }
@@ -276,69 +342,101 @@ export class Position
     tokensToString()
     //==============
     {
-        return stylesheet.tokensToString(this.tokens);
+        return stylesheet.tokensToString(this._tokens);
     }
 
-    getCoordinates(container, offset, reln, dependencies)
-    //===================================================
+    _getCoordinates(container, offset, reln, dependencies)
+    //====================================================
     {
         /*
-        :return: tuple(tuple(x, y), index) where index == 0 means
-                 horizontal and 1 means vertical.
+        OFFSET RELN DEPENDENCIES
+        10% left #element1             // our right edge is left of element1's edge
+        10% left #element1 #element2   // our right edge is left of middle of element1 and element2
+
+        @return {Array} A two-long array with the first element
+                        the coordinates as a ``Point`` and the second
+                        element indicating which of the coordinates
+                        was set by the ``reln`` constraint (0 means
+                        ``x``;  1 means ``y``).
         */
         let coordinates = Position.centroid(dependencies);
         let index = Position.orientation[reln];
         if (index >= 0) {
             const adjust = (offset !== null) ? container.lengthToPixels(offset, index, false) : 0;
+            // The coordinate we are adjusting
             let value = coordinates.valueAt(index);
             if (["left", "above"].indexOf(reln) >= 0) {
                 value -= adjust;
             } else {
                 value += adjust;
             }
-            if (dependencies.length === 1 && dependencies[0].sizeAsPixels !== null) {
-                if      (reln === "left")  value -= dependencies[0].pixelWidth/2;
-                else if (reln === "right") value += dependencies[0].pixelWidth/2;
-                else if (reln === "above") value -= dependencies[0].pixelHeight/2;
-                else if (reln === "below") value += dependencies[0].pixelHeight/2;
+            // Offset is from the edge for a single dependency
+            if (dependencies.length === 1) {
+                if (index === 0) {
+                    const delta = dependencies[0].size.pixelWidth/2;
+                    if (reln === "left")  value -= delta;
+                    else                  value += delta;
+                } else {
+                    const delta = dependencies[0].size.pixelHeight/2;
+                    if (reln === "above") value -= delta;
+                    else                  value += delta;
+                }
             }
-            if (this.element.sizeAsPixels !== null) {
-                if      (reln === "left")  value -= this.element.pixelWidth/2;
-                else if (reln === "right") value += this.element.pixelWidth/2;
-                else if (reln === "above") value -= this.element.pixelHeight/2;
-                else if (reln === "below") value += this.element.pixelHeight/2;
+            // Adjust to get our center
+            if (index === 0) {
+                const delta = this._element.size.pixelWidth/2;
+                if (reln === "left")  value -= delta;
+                else                  value += delta;
+            } else {
+                const delta = this._element.size.pixelHeight/2;
+                if (reln === "above") value -= delta;
+                else                  value += delta;
             }
             coordinates.setValueAt(index, value);
         }
         return [coordinates, index];
     }
 
-    assignCoordinates(container)
-    //==========================
+    assignCoordinates()
+    //=================
     {
-        if (this.lengths !== null) {
-            this.coordinates = new geo.Point(...utils.offsetToPixels(container, this.lengths, true));
+        const container = this._element.container;
+        if (this._lengths) {
+            this.coordinates = new geo.Point(...utils.offsetToPixels(container, this._lengths, true));
         } else {
-            if (this.relationships.length === 1) {
-                const offset = this.relationships[0].offset;
-                const reln = this.relationships[0].relation;
-                const dependencies = this.relationships[0].dependencies;
-                this.coordinates = this.getCoordinates(container, offset, reln, dependencies)[0];
+            if (this._relationships.length === 1) {
+                const offset = this._relationships[0].offset;
+                const reln = this._relationships[0].relation;
+                const dependencies = this._relationships[0].dependencies;
+                this.coordinates = this._getCoordinates(container, offset, reln, dependencies)[0];
             } else {
                 this.coordinates = new geo.Point(0, 0);
-                for (let relationship of this.relationships) {
+                for (let relationship of this._relationships) {
                     // May not have an offset
                     // OK since more than one reln
                     const offset = relationship.offset;
                     const reln = relationship.relation;
                     const dependencies = relationship.dependencies;
-                    let [coordinates, index] = this.getCoordinates(container, offset, reln, dependencies);
+                    let [coordinates, index] = this._getCoordinates(container, offset, reln, dependencies);
                     if (offset === null) {
                         index = 1 - index;
                     }
                     this.coordinates.setValueAt(index, coordinates.valueAt(index));
                 }
             }
+        }
+    }
+
+    coordinatesToString()
+    //===================
+    {
+        const container = this._element.container;
+        if (this._lengths) {
+            const units = [this._lengths[0].units, this._lengths[1].units];
+            const lengths = utils.pixelsToOffset(this.coordinates.toOffset(), container, units, true);
+            return `${lengths[0].toString()}, ${lengths[1].toString()}`;
+        } else {
+            const text = [];
         }
     }
 }
@@ -352,11 +450,11 @@ export class LinePath
     constructor(diagram, style, pathAttribute)
     {
         this.diagram = diagram;
-        // TODO: all token parssing needs to be in `stylesheet.js`
-        this.tokens = (pathAttribute in style) ? style[pathAttribute] : null;
-        this.reversePath = false;
-        this.constraints = [];
-        this.lengths = null;
+        // TODO: all token parsing needs to be in `stylesheet.js`
+        this._tokens = (pathAttribute in style) ? style[pathAttribute] : null;
+        this._reversePath = false;
+        this._constraints = [];
+        this._lengths = null;
     }
 
     _parseConstraint(tokens)
@@ -463,7 +561,7 @@ export class LinePath
         if (dependencies.length === 0) {
             throw new exception.StyleError(tokens, 'Identifier(s) expected');
         }
-        this.constraints.push({angle, limit, offsets, dependencies, lineOffset});
+        this._constraints.push({angle, limit, offsets, dependencies, lineOffset});
     }
 
     _parse(tokens)
@@ -480,7 +578,7 @@ export class LinePath
         if (tokens instanceof Array) {
             if (tokens[0].type !== 'SEQUENCE') {
                 if (tokens.length === 2) {
-                    this.lengths = stylesheet.parseOffsetPair(tokens);
+                    this._lengths = stylesheet.parseOffsetPair(tokens);
                 } else {
                     throw new exception.StyleError(tokens, "Invalid path segment");
                 }
@@ -497,12 +595,12 @@ export class LinePath
     parseLine()
     //=========
     {   // TODO: all token parsing needs to be in `stylesheet.js`
-        if (this.tokens !== null) {
-            if (this.tokens.type !== 'FUNCTION' || ['begin', 'end'].indexOf(this.tokens.name.value) < 0) {
-                throw new exception.StyleError(this.tokens, 'Invalid path specification');
+        if (this._tokens !== null) {
+            if (this._tokens.type !== 'FUNCTION' || ['begin', 'end'].indexOf(this._tokens.name.value) < 0) {
+                throw new exception.StyleError(this._tokens, 'Invalid path specification');
             }
-            this.reversePath = (this.tokens.name.value === 'end');
-            this._parse(this.tokens.parameters);
+            this._reversePath = (this._tokens.name.value === 'end');
+            this._parse(this._tokens.parameters);
         }
     }
 
@@ -511,13 +609,13 @@ export class LinePath
     {
         // If coords are the same we will return an empty path
 
-        const lineStart = this.reversePath ? endCoordinates : startCoordinates;
-        const lineEnd = this.reversePath ? startCoordinates : endCoordinates;
+        const lineStart = this._reversePath ? endCoordinates : startCoordinates;
+        const lineEnd = this._reversePath ? startCoordinates : endCoordinates;
 
         let currentPoint = lineStart;
         const points = [currentPoint.toOffset()];
 
-        for (let constraint of this.constraints) {
+        for (let constraint of this._constraints) {
             const angle = constraint.angle;
             const offset = utils.offsetToPixels(this.diagram, constraint.offsets);
             const targetPoint = Position.centroid(constraint.dependencies);
@@ -548,33 +646,9 @@ export class LinePath
         }
 */
         points.push(lineEnd.toOffset());
-        if (this.reversePath) points.reverse();
+        if (this._reversePath) points.reverse();
 
         return new geo.LineString(points);
-    }
-}
-
-//==============================================================================
-
-export function dependencyGraph(elements)
-{
-    let dependencyGraph = new jsnx.DiGraph();
-    for (let element of elements) {
-        dependencyGraph.addNode(element);
-    }
-    for (let element of dependencyGraph) {
-        for (let dependency of element.position.dependencies) {
-            dependencyGraph.addEdge(dependency, element);
-        }
-    }
-    try {
-        return Array.from(jsnx.topologicalSort(dependencyGraph));
-    } catch (e) {
-        if (e instanceof jsnx.NetworkXUnfeasible) {
-            return []; // We have a cycle  TODO: Generate an error message
-        } else {
-            console.log(e);
-        }
     }
 }
 

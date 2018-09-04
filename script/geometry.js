@@ -39,6 +39,12 @@ export class Length {
         this.length = length;
         this.units = units;
     }
+
+    toString()
+    //========
+    {
+        return `${this.length}${this.units}`;
+    }
 }
 
 //==============================================================================
