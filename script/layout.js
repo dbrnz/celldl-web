@@ -385,7 +385,7 @@ export class Position
                         was set by the ``reln`` constraint (0 means
                         ``x``;  1 means ``y``).
         */
-        let coordinates = Position.centroid(dependencies);
+        let coordinates = Position._centroid(dependencies);
         let index = Position.orientation[reln];
         if (index >= 0) {
             const adjust = (offset !== null) ? container.lengthToPixels(offset, index, false) : 0;
@@ -644,7 +644,7 @@ export class LinePath
         for (let constraint of this._constraints) {
             const angle = constraint.angle;
             const offset = utils.offsetToPixels(this.diagram, constraint.offsets);
-            const targetPoint = Position.centroid(constraint.dependencies);
+            const targetPoint = Position._centroid(constraint.dependencies);
             let x, y;
             if (constraint.limit === -1) {              // until-x
                 x = targetPoint.x + offset[0];
