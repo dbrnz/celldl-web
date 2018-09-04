@@ -356,7 +356,6 @@ export class DiagramElement {
         const dependents = this.position.dependents();
         for (let element of this.position.dependencyGraph(dependents)) {
             if (!element.hasCoordinates) {
-                element.layout();
                 element.assignDimensions();
                 element.assignGeometry();
                 element._assignTextCoordinates();
