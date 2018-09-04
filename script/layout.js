@@ -69,6 +69,19 @@ export class Size
         this._element = element;
         this._size = sizeTokens ? stylesheet.parseSize(sizeTokens) : DEFAULT_SIZE;
         this._pixelSize = [0, 0];
+        this._dependents = new Set();  // Set of elements that depend on this size
+    }
+
+    addDependent(element)
+    //===================
+    {
+        this._dependents.add(element);
+    }
+
+    get dependents()
+    //==============
+    {
+        return this._dependents;
     }
 
     get asPixels()
@@ -163,16 +176,23 @@ export class Position
     }
 
     /**
-     * Set of all elements that dependon our position.
+     * Set of all elements that depend on our element's position or size.
      *
      * @returns {Set}
     **/
     dependents()
     //==========
     {
-        // Find closure of this._dependents
-        const dependents = new Set();
+        const directDependents = new Set();
+        for (let dependent of this._element.size.dependents) {
+            directDependents.add(dependent);
+        }
         for (let dependent of this._dependents) {
+            directDependents.add(dependent);
+        }
+        // Find closure of directDependents
+        const dependents = new Set();
+        for (let dependent of directDependents) {
             dependents.add(dependent);
             for (let d of dependent.position.dependents()) {
                 if (d === this._element) {
@@ -250,9 +270,9 @@ export class Position
               case 0:
                 if (token.type !== 'ID') {
                     offset = stylesheet.parseLength(token, defaultOffset);
-                    // Implicit dependency on our container if '%' offset
+                    // Implicit dependency on our container's size if '%' offset
                     if (offset.units.indexOf('%') >= 0) {
-                        dependencies.append(this._element.container);
+                        this._element.container.size.addDependent(this._element);
                     }
                     state = 1;
                     break;
@@ -322,10 +342,10 @@ export class Position
             if (tokens.length === 2) {
                 if (['ID', 'SEQUENCE'].indexOf(tokens[0].type) < 0) {
                     this._offset = stylesheet.parseOffsetPair(tokens);
-                    // Implicit dependency on our container if any '%' length
+                    // Implicit dependency on our container's size if any '%' offset
                     if (this._offset[0].units.indexOf('%') >= 0
                      || this._offset[1].units.indexOf('%') >= 0) {
-                        this._addDependency(this._element.container);
+                        this._element.container.size.addDependent(this._element);
                     }
                 } else {
                     const dirn = this._parseComponent(tokens[0], null);
