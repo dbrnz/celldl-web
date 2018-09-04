@@ -456,6 +456,12 @@ export class Position
     coordinatesToString()
     //===================
     {
+
+        // TODO: Find relative position as a string (new `OFFSET from IDS` relationship??)
+        if (!this._offset) {
+            this._offset = DEFAULT_POSITION;
+        }
+
         const container = this._element.container;
         if (this._offset) {
             const units = [this._offset[0].units, this._offset[1].units];
