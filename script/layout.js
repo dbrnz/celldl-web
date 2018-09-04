@@ -157,6 +157,12 @@ export class Position
         this.coordinates = this.coordinates.addOffset(offset);
     }
 
+    addDependent(element)
+    //===================
+    {
+        this._dependents.add(element);
+    }
+
     _addDependency(dependency)
     //========================
     {

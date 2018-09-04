@@ -62,6 +62,13 @@ export class FlatMap extends DiagramElement
         this.diagram.addConnection(connection);
     }
 
+    addElement(element)
+    //=================
+    {
+        super.addElement(element);
+        this.position.addDependent(element);
+    }
+
     layout()
     //======
     {

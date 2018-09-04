@@ -103,7 +103,10 @@ export class Parser
         const component = new flatmap.Component(this.diagram, element);
         for (let e of element.children) {
             if (e.nodeName === "component") {
-                component.addElement(this.parseComponent(e));
+                const c = this.parseComponent(e);
+                this.diagram.flatMap.addElement(c);
+                // NB. Element must be added to component **after** adding it to flatmap
+                component.addElement(c);
             } else {
                 throw new exception.SyntaxError(e, "Invalid element for <component>");
             }
@@ -123,9 +126,15 @@ export class Parser
         const group = new flatmap.Group(this.diagram, element);
         for (let e of element.children) {
             if        (e.nodeName === "component") {
-                group.addElement(this.parseComponent(e));
+                const c = this.parseComponent(e);
+                this.diagram.flatMap.addElement(c);
+                // NB. Element must be added to group **after** adding it to flatmap
+                group.addElement(c);
             } else if (e.nodeName === "group") {
-                group.addElement(this.parseGroup(e));
+                const g = this.parseGroup(e);
+                this.diagram.flatMap.addElement(g);
+                // NB. Element must be added to group **after** adding it to flatmap
+                group.addElement(g);
             } else {
                 throw new exception.SyntaxError(e, "Invalid element for <group>");
             }
