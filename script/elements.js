@@ -24,10 +24,8 @@ limitations under the License.
       - position, size, geometry, connections
       - draggable
       - geometry is a Circle
-
-      ContainerElement extends DiagramElement
-        - contains DiagramElement objects, ``this.elements``
-        - ``layoutElements``
+      - can contain other DiagramElements
+      - layout
 
       RectangularElement mixin
         - resizable

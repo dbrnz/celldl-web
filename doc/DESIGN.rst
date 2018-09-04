@@ -1,15 +1,29 @@
 Structure
 =========
 
-- Relationships, connections
 - Diagram
-    - Components
+    - Made up of different types of ``Elements``.
+    - Relationships and connections between elements.
+    - Flatmap
         - Group
             - Component
             - Group
         - Component
     - Bond graph
+      - Nodes and edges.
     - Cell diagram
+
+Sets of elements
+----------------
+
+* A Diagram knows of all its constituent elements -- used for lookup by ``id``,
+layout/positioning, and generating SVG.
+
+Container elements
+------------------
+
+* An element may be a ``container`` element, meaning that other elements (including other container elements) may be contained by the element.
+* All of a flatmap's ``Components`` may be containers (this means that the concept of a ``Groups`` is no longer required).
 
 
 Styling
@@ -32,9 +46,9 @@ Positions
 
     LENGTH_PAIR ::= LENGTH, LENGTH
 
-    LENGTH ::= NUMBER[UNIT]
+    LENGTH ::= NUMBER[UNITS]  // No UNITS ==> '%'
 
-    UNIT ::= 'px' | %' | '%v' | '%w' | 'vw' | 'vh'
+    UNITS ::= 'px' | '%' | '%v' | '%w' | 'vw' | 'vh'
 
     RELATIVE_POSITION ::= LENGTH DIRECTION ID_LIST [, LENGTH DIRECTION ID_LIST]
 
@@ -62,7 +76,7 @@ Positions
       ``cm3``, ``gr1``, ``cm1``, ``gr2`` and ``gr0``.
     - This means that ``Group.layout()`` needs to position the group's children before
       laying out any sub-groups.
-
+    - **This is being replaced by general position dependencies**
 
 ::
 
@@ -85,6 +99,17 @@ Sizes
 ::
 
   SIZE ::= ::= LENGTH, LENGTH
+
+
+Position and size dependencies
+++++++++++++++++++++++++++++++
+
+Lengths, sizes and positions may depend either implicitely or explicitly on the sizes and
+positions of other elements and/or the diagram's dimensions:
+
+* Viewport units (`vw` and `vh`) are in terms of the diagram's size.
+* Percentage units (`%`, `%w`, `%h`) are in terms of the size of the element's container.
+* A relatively positioned element explicitly specifies those elements it depends on.
 
 
 Diagram layout
@@ -121,6 +146,17 @@ Diagram layout
 - Stroke-width units (element boundaries and connecting lines):
     - absolute (no units or ``px``)
     - wrt. diagram viewport's diagonal (``%``)
+
+
+Rendering SVG
+=============
+
+1. Draw all containers in XML order.
+2. Draw all connections.
+3. Draw all non-container elements (in XML order).
+
+Should we draw connections last??
+
 
 Connections
 ===========
@@ -168,6 +204,13 @@ Saving moved/resized state
    moved/resized element.
 - ``Position`` objects have ``toText()`` and ``adjust(offset)`` methods that respectively return
   a textual representation of the current position rule and adjust the current rule by an offset.
+
+
+Context menu
+------------
+
+- Based on https://github.com/callmenick/Custom-Context-Menu
+
 
 Diagram class hierarchy
 =======================
