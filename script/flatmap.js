@@ -20,11 +20,11 @@ limitations under the License.
 
 /******************************************************************************
 
-    Group == ContainerElement + RectangularElement mixin
+    Group == DiagramElement + RectangularElement mixin
 
     Component == DiagramElement + RectangularElement mixin
 
-    ComponentGroups == ContainerElement but **not** draggable and no connections.
+    FlatMap == DiagramElement but **not** draggable and no connections.
 
 ******************************************************************************/
 
@@ -51,20 +51,8 @@ export class FlatMap extends DiagramElement
     constructor(diagram, domElement)
     {
         super(diagram, domElement, false);
-        if (this.id === '') {
-            this.id = `${this.diagram.id}_flatmap`;
-        }
-        this.components = [];
+        this.id = this.id || `${this.diagram.id}_flatmap`;
         this.connections = [];
-        this.groups = [];
-    }
-
-    addComponent(component)
-    //=====================
-    {
-        super.addElement(component);
-        this.components.push(component);
-        component.group = this;
     }
 
     addConnection(connection)
@@ -72,14 +60,6 @@ export class FlatMap extends DiagramElement
     {
         this.connections.push(connection);
         this.diagram.addConnection(connection);
-    }
-
-    addGroup(group)
-    //=============
-    {
-        super.addElement(group);
-        this.groups.push(group);
-        group.group = this;
     }
 
     layout()
@@ -95,14 +75,17 @@ export class FlatMap extends DiagramElement
     {
         const svgNode = document.createElementNS(SVG_NS, 'g');
         svgNode.id = this.id;
-        for (let group of this.groups) {
-            svgNode.appendChild(group.generateSvg());
+
+
+        const dependents = this.position.dependencyGraph(this.position.dependents());
+        for (let element of dependents.filter(d => d.elements.length > 0)) {
+            svgNode.appendChild(element.generateSvg());
         }
         for (let connection of this.connections) {
             svgNode.appendChild(connection.generateSvg());
         }
-        for (let component of this.components) {
-            svgNode.appendChild(component.generateSvg());
+        for (let element of dependents.filter(d => d.elements.length === 0)) {
+            svgNode.appendChild(element.generateSvg());
         }
         return svgNode;
     }
@@ -119,15 +102,6 @@ export class Component extends aggregation(DiagramElement, RectangularMixin)
         // Get `type` attribute; if `boundary` then constrain position to
         // boundary of group. `position` style attribute then has different
         // meaning??
-
-        this.group = null;
-    }
-
-    setGroup(group)
-    //=============
-    {
-        this.group = group;
-        this.position.addDependency(group);
     }
 
     assignDimensions()
@@ -179,29 +153,6 @@ export class ComponentConnection extends Connection
 
 export class Group extends aggregation(DiagramElement, RectangularMixin)
 {
-    constructor(diagram, domElement)
-    {
-        super(diagram, domElement);
-        this.groups = [];
-        this.group = null;
-    }
-
-    addComponent(component)
-    //=====================
-    {
-        super.addElement(component);
-        component.setGroup(this);
-    }
-
-    addGroup(group)
-    //=============
-    {
-        super.addElement(group);
-        this.groups.push(group);
-        //group.position.addDependency(this);
-        group.group = this;
-    }
-
     assignDimensions()
     //================
     {

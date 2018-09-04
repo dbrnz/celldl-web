@@ -343,9 +343,11 @@ export class Position
                 if (['ID', 'SEQUENCE'].indexOf(tokens[0].type) < 0) {
                     this._offset = stylesheet.parseOffsetPair(tokens);
                     // Implicit dependency on our container's size if any '%' offset
+                    // and on our container's position
                     if (this._offset[0].units.indexOf('%') >= 0
                      || this._offset[1].units.indexOf('%') >= 0) {
                         this._element.container.size.addDependent(this._element);
+                        this._addDependency(this._element.container);
                     }
                 } else {
                     const dirn = this._parseComponent(tokens[0], null);

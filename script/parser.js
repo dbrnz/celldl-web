@@ -86,11 +86,11 @@ export class Parser
         this.diagram.flatMap = new flatmap.FlatMap(this.diagram, element);
         for (let e of element.children) {
             if        (e.nodeName === "component") {
-                this.diagram.flatMap.addComponent(this.parseComponent(e));
+                this.diagram.flatMap.addElement(this.parseComponent(e));
             } else if (e.nodeName === "connection") {
                 this.diagram.flatMap.addConnection(this.parseConnection(e));
             } else if (e.nodeName === "group") {
-                this.diagram.flatMap.addGroup(this.parseGroup(e));
+                this.diagram.flatMap.addElement(this.parseGroup(e));
             } else {
                 throw new exception.SyntaxError(e, "Invalid element for <flat-map>");
             }
@@ -100,7 +100,15 @@ export class Parser
     parseComponent(element)
     //=====================
     {
-        return new flatmap.Component(this.diagram, element);
+        const component = new flatmap.Component(this.diagram, element);
+        for (let e of element.children) {
+            if (e.nodeName === "component") {
+                component.addElement(this.parseComponent(e));
+            } else {
+                throw new exception.SyntaxError(e, "Invalid element for <component>");
+            }
+        }
+        return component;
     }
 
     parseConnection(element)
@@ -115,9 +123,9 @@ export class Parser
         const group = new flatmap.Group(this.diagram, element);
         for (let e of element.children) {
             if        (e.nodeName === "component") {
-                group.addComponent(this.parseComponent(e));
+                group.addElement(this.parseComponent(e));
             } else if (e.nodeName === "group") {
-                group.addGroup(this.parseGroup(e));
+                group.addElement(this.parseGroup(e));
             } else {
                 throw new exception.SyntaxError(e, "Invalid element for <group>");
             }
