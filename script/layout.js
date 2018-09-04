@@ -421,10 +421,11 @@ export class Position
         return [coordinates, index];
     }
 
-    assignCoordinates()
-    //=================
+    assignCoordinates(container=null)
+    //===============================
     {
-        const container = this._element.container;
+        container = container || this._element.container;
+
         if (this._offset) {
             this.coordinates = new geo.Point(...utils.offsetToPixels(container, this._offset, true));
         } else {
