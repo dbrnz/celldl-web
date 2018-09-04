@@ -125,7 +125,7 @@ export class Position
         this._element = element;
         this.coordinates = null;         // Resolved position in pixels
         this._tokens = positionTokens || null;
-        this._lengths = null;             // Position as a pair of Offsets
+        this._offset = null;             // Position as a pair of Offsets
         this._relationships = [];
         this._dependents = new Set();
     }
@@ -321,27 +321,27 @@ export class Position
         if (tokens instanceof Array) {
             if (tokens.length === 2) {
                 if (['ID', 'SEQUENCE'].indexOf(tokens[0].type) < 0) {
-                    this._lengths = stylesheet.parseOffsetPair(tokens);
+                    this._offset = stylesheet.parseOffsetPair(tokens);
                     // Implicit dependency on our container if any '%' length
-                    if (this._lengths[0].units.indexOf('%') >= 0
-                     || this._lengths[1].units.indexOf('%') >= 0) {
+                    if (this._offset[0].units.indexOf('%') >= 0
+                     || this._offset[1].units.indexOf('%') >= 0) {
                         this._addDependency(this._element.container);
                     }
                 } else {
-                    const dirn = this.parseComponent(tokens[0], null);
-                    this.parseComponent(tokens[1], dirn, defaultOffset, defaultDependency);
+                    const dirn = this._parseComponent(tokens[0], null);
+                    this._parseComponent(tokens[1], dirn, defaultOffset, defaultDependency);
                 }
             } else {
                 throw new exception.StyleError(tokens, "Position can't have more than two components");
             }
         } else {
-            this.parseComponent(tokens, null, defaultOffset, defaultDependency);
+            this._parseComponent(tokens, null, defaultOffset, defaultDependency);
         }
 
         // Assign default position no position specified
 
-        if (this._lengths === null && this._dependents.size === 0) {
-            this.setLengths(DEFAULT_POSITION);
+        if (this._offset === null && this._dependents.size === 0) {
+            this._offset = DEFAULT_POSITION;
         }
     }
 
@@ -407,8 +407,8 @@ export class Position
     //=================
     {
         const container = this._element.container;
-        if (this._lengths) {
-            this.coordinates = new geo.Point(...utils.offsetToPixels(container, this._lengths, true));
+        if (this._offset) {
+            this.coordinates = new geo.Point(...utils.offsetToPixels(container, this._offset, true));
         } else {
             if (this._relationships.length === 1) {
                 const offset = this._relationships[0].offset;
@@ -437,10 +437,10 @@ export class Position
     //===================
     {
         const container = this._element.container;
-        if (this._lengths) {
-            const units = [this._lengths[0].units, this._lengths[1].units];
-            const lengths = utils.pixelsToOffset(this.coordinates.toOffset(), container, units, true);
-            return `${lengths[0].toString()}, ${lengths[1].toString()}`;
+        if (this._offset) {
+            const units = [this._offset[0].units, this._offset[1].units];
+            const offset = utils.pixelsToOffset(this.coordinates.toOffset(), container, units, true);
+            return `${offset[0].toString()}, ${offset[1].toString()}`;
         } else {
             const text = [];
         }
