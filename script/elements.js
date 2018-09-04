@@ -83,7 +83,7 @@ export class DiagramElement {
         this.label = ('label' in this.attributes) ? this.attributes.label.textContent : this.name;
         this.style = diagram.stylesheet.style(domElement);
         this.position = new layout.Position(diagram, this, this.style.position);
-        this.textPosition = this.position;
+        this._textPosition = this.position;
         this.colour = ('color' in this.style) ? stylesheet.parseColour(this.diagram, this.style.color)
                                               : '#808080'; // TODO: specify defaults in one place
         this.display = ('display' in this.style) ? this.getStyleAsString("display")
@@ -213,11 +213,11 @@ export class DiagramElement {
         this.position.assignCoordinates();
     }
 
-    assignTextCoordinates()
-    //=====================
+    _assignTextCoordinates()
+    //======================
     {
-        if (this.textPosition !== this.position) {
-            this.textPosition.assignCoordinates(this);
+        if (this._textPosition !== this.position) {
+            this._textPosition.assignCoordinates(this);
         }
     }
 
@@ -225,7 +225,7 @@ export class DiagramElement {
     //=====================
     {
         this.position.invalidateCoordinates();
-        this.textPosition.invalidateCoordinates();
+        this._textPosition.invalidateCoordinates();
     }
 
     get hasCoordinates()
@@ -243,12 +243,12 @@ export class DiagramElement {
         */
         this.position.parsePosition(defaultOffset, defaultDependency);
         if ('text-position' in this.style) {
-            if (this.textPosition === this.position) {
-                this.textPosition = new layout.Position(this.diagram, this, this.style['text-position']);
+            if (this._textPosition === this.position) {
+                this._textPosition = new layout.Position(this.diagram, this, this.style['text-position']);
             }
-            this.textPosition.parsePosition(null, defaultDependency);
-        } else if (this.textPosition !== this.position) {
-            this.textPosition = this.position;
+            this._textPosition.parsePosition(null, defaultDependency);
+        } else if (this._textPosition !== this.position) {
+            this._textPosition = this.position;
         }
     }
 
@@ -359,7 +359,7 @@ export class DiagramElement {
                 element.layout();
                 element.assignDimensions();
                 element.assignGeometry();
-                element.assignTextCoordinates();
+                element._assignTextCoordinates();
             }
         }
     }
@@ -388,8 +388,8 @@ export class DiagramElement {
         }
 
         this.position.addOffset(offset);
-        if (this.textPosition !== this.position) {
-            this.textPosition.addOffset(offset);
+        if (this._textPosition !== this.position) {
+            this._textPosition.addOffset(offset);
         }
         this.assignGeometry();
         if (drawConnections) {
@@ -438,7 +438,7 @@ export class DiagramElement {
     appendLabelAsSvg(parentNode)
     //==========================
     {
-        let [x, y] = this.textPosition.coordinates.toOffset();
+        let [x, y] = this._textPosition.coordinates.toOffset();
         if (this.label.startsWith('$')) {
             // Pass this.textcolour to MathJax...
             // see https://groups.google.com/forum/#!msg/mathjax-users/fo93aucG5Bo/7dH3s8szbNYJ
@@ -569,8 +569,8 @@ export class RectangularMixin
 
         // Set the position of our label
 
-        if (this.textPosition !== this.position) {
-            this.assignTextCoordinates();
+        if (this._textPosition !== this.position) {
+            this._assignTextCoordinates();
         }
 
         // Draw connections using new sizes and positions
