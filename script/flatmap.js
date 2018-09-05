@@ -71,7 +71,7 @@ export class FlatMap extends DiagramElement
     layout()
     //======
     {
-        this.position.coordinates = new geo.Point(this.diagram.width/2, this.diagram.height/2);
+        this.position.setCoordinates(new geo.Point(this.diagram.width/2, this.diagram.height/2));
         this.size.setPixelSize([this.diagram.width, this.diagram.height]);
         super.layout();
     }

@@ -138,17 +138,29 @@ export class Position
     {
         this.diagram = diagram;
         this._element = element;
-        this.coordinates = null;         // Resolved position in pixels
         this._tokens = positionTokens || null;
         this._offset = null;             // Position as a pair of Offsets
         this._relationships = [];
         this._dependents = new Set();
+        this._coordinates = null;            // Resolved position in pixels
     }
 
     get hasCoordinates()
     //==================
     {
-        return (this.coordinates !== null);
+        return (this._coordinates !== null);
+    }
+
+    get coordinates()
+    //===============
+    {
+        return this._coordinates;
+    }
+
+    setCoordinates(coordinates)
+    //=========================
+    {
+        this._coordinates = coordinates;
     }
 
     addOffset(offset)
@@ -433,15 +445,15 @@ export class Position
         container = container || this._element.container;
 
         if (this._offset) {
-            this.coordinates = new geo.Point(...utils.offsetToPixels(container, this._offset, true));
+            this._coordinates = new geo.Point(...utils.offsetToPixels(container, this._offset, true));
         } else {
             if (this._relationships.length === 1) {
                 const offset = this._relationships[0].offset;
                 const reln = this._relationships[0].relation;
                 const dependencies = this._relationships[0].dependencies;
-                this.coordinates = this._getCoordinates(container, offset, reln, dependencies)[0];
+                this._coordinates = this._getCoordinates(container, offset, reln, dependencies)[0];
             } else {
-                this.coordinates = new geo.Point(0, 0);
+                this._coordinates = new geo.Point(0, 0);
                 for (let relationship of this._relationships) {
                     // May not have an offset
                     // OK since more than one reln
