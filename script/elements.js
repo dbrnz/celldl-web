@@ -60,6 +60,7 @@ const HIGHLIGHT_OPACITY = 0.8;
  *  * An element may be contained in another element.
  *  * An element may contain other elements.
  *  * An element may be connected to any other element, including itself.
+ *  * An element is on a ``Layer`` of the diagram
 **/
 
 export class DiagramElement {
@@ -352,6 +353,10 @@ export class DiagramElement {
             element._assignTextCoordinates();
             if (updateSvg) {
                 element.updateSvg(false);
+            }
+        }
+        if (updateSvg) {
+            for (let element of dependents) {
                 element.redrawConnections();
             }
         }
