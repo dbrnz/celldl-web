@@ -150,9 +150,13 @@ export class ComponentConnection extends Connection
             return super.lineAsPath(fromComponent, toComponent);
         } else {
             // The following spaces connections wider than the more
-            // simple spacing of `this.order/(this.count + 1)`.
+            // simple spacing of `this.order/(this.adjacent + 1)`.
 
-            const count = this.count;
+            // We equally space the end points of `count` adjacent lines over
+            // the interval [1/(count+2), (count+1)/(count+2)], with the first
+            // and last line end points at the respective interval boundary.
+
+            const count = this.adjacent;
             const offset = (count === 1) ? 0.5
                                          : (1 + (this.order - 1)*count/(count - 1))/(count + 2);
 

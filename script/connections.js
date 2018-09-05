@@ -50,7 +50,7 @@ export class Connection
         this.id = toParent ? `${fromId}-${parentElement.id.slice(1)}`
                            : `${parentElement.id.slice(1)}-${fromId}`;
         this._order = 1;
-        this._count = 1;
+        this._adjacent = 1;
     }
 
     static createFromAttributeValue(diagram, domElement, attributeName,
@@ -80,7 +80,7 @@ export class Connection
                                             ? this.diagram.findElement(this.styleElementId).domElement
                                             : this.domElement;
                 this.style = this.diagram.stylesheet.style(styleDomElement);
-                this.otherElement.addConnection(this);  // Will set `order` and `count`
+                this.otherElement.addConnection(this);  // Will set `order` and `adjacent`
                 return;
             }
         }
@@ -90,11 +90,11 @@ export class Connection
         throw new exception.KeyError(`Can't find ${classNames} with id '${this.otherId}'`);
     }
 
-    setOrder(order, count)
-    //====================
+    setOrder(order, adjacent)
+    //=======================
     {
         this._order = order;
-        this._count = count;
+        this._adjacent = adjacent;
     }
 
     get order()
@@ -103,10 +103,10 @@ export class Connection
         return this._order;
     }
 
-    get count()
-    //=========
+    get adjacent()
+    //============
     {
-        return this._count;
+        return this._adjacent;
     }
 
     get lineColour()
