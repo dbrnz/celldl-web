@@ -139,10 +139,10 @@ export class Position
         this.diagram = diagram;
         this._element = element;
         this._tokens = positionTokens || null;
-        this._offset = null;             // Position as a pair of Offsets
-        this._relationships = [];
         this._dependents = new Set();
         this._coordinates = null;            // Resolved position in pixels
+        this._offset = null;                 // Position as a pair of Offsets
+        this._relationships = [];            // Position in relation to other elements
     }
 
     get hasCoordinates()
@@ -163,10 +163,39 @@ export class Position
         this._coordinates = coordinates;
     }
 
-    addOffset(offset)
-    //===============
+    moveByOffset(offset)
+    //==================
     {
-        this.coordinates = this.coordinates.addOffset(offset);
+        this._coordinates = this._coordinates.addOffset(offset);
+
+        // TODO: Find relative position as a string (new `OFFSET from IDS` relationship??)
+        const tempOffset = this._offset || DEFAULT_POSITION;   // **TEMP**
+
+        const container = this._element.container;
+        if (tempOffset) {
+            const units = [tempOffset[0].units, tempOffset[1].units];
+            this._offset = utils.pixelsToOffset(this._coordinates.toOffset(), container, units, true);
+        } else {
+            // TODO: Find relative position as a string (new `OFFSET from IDS` relationship??)
+        }
+    }
+
+    coordinatesToString()
+    //===================
+    {
+        if (this._offset) {
+            return `${this._offset[0].toString()}, ${this._offset[1].toString()}`;
+        } else {
+            const relns = [];
+            for (let relationship of this._relationships) {
+                const ids = [];
+                for (let dependency of relationship.dependencies) {
+                    ids.push(dependency.id);
+                }
+                relns.push(`${relationship.offset.toString()} ${relationship.relation} ${ids.join(' ')}`);
+            }
+            return relns.join(', ');
+        }
     }
 
     addDependent(element)
@@ -470,24 +499,6 @@ export class Position
         }
     }
 
-    coordinatesToString()
-    //===================
-    {
-
-        // TODO: Find relative position as a string (new `OFFSET from IDS` relationship??)
-        if (!this._offset) {
-            this._offset = DEFAULT_POSITION;
-        }
-
-        const container = this._element.container;
-        if (this._offset) {
-            const units = [this._offset[0].units, this._offset[1].units];
-            const offset = utils.pixelsToOffset(this.coordinates.toOffset(), container, units, true);
-            return `${offset[0].toString()}, ${offset[1].toString()}`;
-        } else {
-            const text = [];
-        }
-    }
 }
 
 Position.orientation = {centre: -1, center: -1, left: 0, right: 0, above: 1, below: 1};

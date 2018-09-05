@@ -379,7 +379,7 @@ export class DiagramElement {
         }
 
         if (offset[0] !== 0 || offset[1] !== 0) {
-            this.position.addOffset(offset);
+            this.position.moveByOffset(offset);
             if (this._textPosition !== this.position) {
                 this._textPosition.addOffset(offset);
             }
