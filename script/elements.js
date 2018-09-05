@@ -345,8 +345,8 @@ export class DiagramElement {
         // Need to ensure dependencies are amongst or above our elements
 
         const dependents = this.position.dependents();
-        for (let element of this.position.dependencyGraph(dependents)) {
-// Cache dependency graph as used in various places when nothing has changed...
+
+        for (let element of dependents) {
             element.assignDimensions();
             element.assignGeometry();
             element._assignTextCoordinates();

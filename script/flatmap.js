@@ -83,7 +83,7 @@ export class FlatMap extends DiagramElement
         svgNode.id = this.id;
 
 
-        const dependents = this.position.dependencyGraph(this.position.dependents());
+        const dependents = this.position.dependents();
         for (let element of dependents.filter(d => d.elements.length > 0)) {
             svgNode.appendChild(element.generateSvg());
         }

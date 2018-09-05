@@ -139,10 +139,11 @@ export class Position
         this.diagram = diagram;
         this._element = element;
         this._tokens = positionTokens || null;
-        this._dependents = new Set();
         this._coordinates = null;            // Resolved position in pixels
         this._offset = null;                 // Position as a pair of Offsets
         this._relationships = [];            // Position in relation to other elements
+        this._directDependents = new Set();  // Elements whose position directly depends on this position
+        this._dependentsCache = null;
     }
 
     get hasCoordinates()
@@ -201,7 +202,7 @@ export class Position
     addDependent(element)
     //===================
     {
-        this._dependents.add(element);
+        this._directDependents.add(element);
     }
 
     _addDependency(dependency)
@@ -219,18 +220,25 @@ export class Position
     }
 
     /**
-     * Set of all elements that depend on our element's position or size.
+     * All elements that depend on our element's position or size, sorted in
+     * topological order.
      *
-     * @returns {Set}
+     * @returns {Array}
     **/
     dependents()
     //==========
     {
+        // We cache the resulting dependency graph
+
+        if (this._dependentsCache !== null) {
+            return this._dependentsCache;
+        }
+
         const directDependents = new Set();
         for (let dependent of this._element.size.dependents) {
             directDependents.add(dependent);
         }
-        for (let dependent of this._dependents) {
+        for (let dependent of this._directDependents) {
             directDependents.add(dependent);
         }
         // Find closure of directDependents
@@ -245,39 +253,31 @@ export class Position
                 }
             }
         }
-        return dependents;
-    }
 
-    /**
-     * Sort elements that are depend on our position into topological
-     * order.
-     *
-     * @returns {Array}
-    **/
-    dependencyGraph(elements)
-    //=======================
-    {
+        // Now sort our dependents by creating a directed graph of dependencies
+        // and sorting it into topological order
+
         let dependencyGraph = new jsnx.DiGraph();
 
-        // Sub-element dependencies
-        for (let element of elements) {
+        for (let element of dependents) {
             dependencyGraph.addNode(element);
-            for (let dependent of element.position._dependents) {
+            for (let dependent of element.position._directDependents) {
                 dependencyGraph.addNode(dependent);
                 dependencyGraph.addEdge(element, dependent)
             }
         }
 
         try {
-            return Array.from(jsnx.topologicalSort(dependencyGraph));
+            this._dependentsCache = Array.from(jsnx.topologicalSort(dependencyGraph));
         } catch (e) {
             if (e instanceof jsnx.NetworkXUnfeasible) {
                 throw exception.ValueError(`Position dependency graph of '${this._element.id}' contains a cycle...`);
             } else {
                 console.log(e);
             }
-            return [];
+            this._dependentsCache = [];
         }
+        return this._dependentsCache;
     }
 
     _addRelationship(offset, relation, dependencies)
