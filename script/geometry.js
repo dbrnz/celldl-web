@@ -167,9 +167,6 @@ export class ProjectiveLine extends GeoObject
 {
     constructor(A, B, C)
     {
-        if ((A === 0) && (B === 0)) {
-            throw new exception.ValueError("Invalid projective line coordinates");
-        }
         super();
         this.A = A;
         this.B = B;
@@ -177,39 +174,59 @@ export class ProjectiveLine extends GeoObject
         this.normSquared = Math.pow(this.A, 2) + Math.pow(this.B, 2);
     }
 
+    get valid()
+    //=========
+    {
+        return (this.A !== 0 || this.B !== 0);
+    }
+
+    checkValid()
+    //==========
+    {
+        if (!this.valid) {
+            throw new exception.ValueError("Invalid Projective Line");
+        }
+    }
+
     toString()
     //========
     {
+        this.checkValid();
         return `Line (${this.A}, ${this.B}, ${this.C})`;
     }
 
     outside(point)
     //============
     {
+        this.checkValid();
         return Math.abs(this.A*point.x + this.B*point.y + this.C) >= EPISILON;
     }
 
     parallelLine(offset)
     //==================
-     {
+    {
+        this.checkValid();
         return new ProjectiveLine(this.A, this.B, this.C + offset*Math.sqrt(this.normSquared));
     }
 
     distanceFrom(point)
     //=================
     {
+        this.checkValid();
         return Math.abs(point.x*this.A + point.y*this.B + this.C)/Math.sqrt(this.normSquared);
     }
 
     translate(offset)
     //===============
     {
+        this.checkValid();
         return new ProjectiveLine(this.A, this.B, this.C - (offset[0]*this.A + offset[1]*this.B));
     }
 
     intersection(other)
     //=================
     {
+        this.checkValid();
         let c = this.A*other.B - other.A*this.B;
         return (c === 0.0) ? null
                            : new Point((this.B*other.C - other.B*this.C)/c,
@@ -219,6 +236,7 @@ export class ProjectiveLine extends GeoObject
     svgNode()
     //=======
     {
+        this.checkValid();
         const svgNode = document.createElementNS(SVG_NS, 'path');
         // check that A and B are both non-zero
         const start = new Point(0, -this.C/this.B);
@@ -249,24 +267,43 @@ export class LineSegment extends ProjectiveLine
     outside(point)
     //============
     {
-        return super.outside(point)
-            || (this.start.distance(point) > this.length)
-            || (this.end.distance(point) > this.length);
+        if (this.length === 0) {
+            return !this.start.equal(point);
+        } else {
+            return super.outside(point)
+                || (this.start.distance(point) > this.length)
+                || (this.end.distance(point) > this.length);
+        }
     }
 
     intersection(other)
     //=================
     {
-        let point = super.intersection(other);
-        let validPoint = point !== null
-                      && this.start.distance(point) <= this.length
-                      && this.end.distance(point) <= this.length;
-        if (other instanceof LineSegment) {
-            validPoint = validPoint
-                      && other.start.distance(point) <= other.length
-                      && other.end.distance(point) <= other.length;
+        if (this.length === 0) {
+            // We are a point
+            if (other.length === 0) {
+                // And so is `other`
+                return this.start.equal(other.start) ? this.start : null;
+            } else {
+                // Otherwise are we on `other`?
+                return other.outside(this.start) ? null : this.start;
+            }
+        } else if (other.length === 0) {
+            // `other` is a point, is it on us?
+            return this.outside(other.start) ? null : other.start;
+        } else {
+            // Find intersection of two lines
+            let point = super.intersection(other);
+            let validPoint = point !== null
+                          && this.start.distance(point) <= this.length
+                          && this.end.distance(point) <= this.length;
+            if (other instanceof LineSegment) {
+                validPoint = validPoint
+                          && other.start.distance(point) <= other.length
+                          && other.end.distance(point) <= other.length;
+            }
+            return validPoint ? point : null;
         }
-        return validPoint ? point : null;
     }
 
     ratio(fraction)
@@ -347,28 +384,23 @@ export class LineString extends GeoObject
         super();
         this.lineSegments = [];
         this.coordinates = [];
-        try {
-            if (points.length > 1) {
-                for (let n = 0; n < (points.length - 1); n += 1) {
-                    const segment = new LineSegment(points[n], points[n + 1]);
+        if (points.length > 1) {
+            for (let n = 0; n < (points.length - 1); n += 1) {
+                const segment = new LineSegment(points[n], points[n + 1]);
+                if (segment.length > 0) {
                     this.lineSegments.push(segment);
                     this.coordinates.push(segment.start);
                 }
-                if (closed) {
-                    const segment = new LineSegment(points.slice(-1)[0], points[0]);
-                    this.lineSegments.push(segment);
-                    this.coordinates.push(segment.start);
-                }
-                this.coordinates.push(this.lineSegments.slice(-1)[0].end);
             }
-        }
-        catch (error) {
-            // We may have two identical consecutive points
-            if (error instanceof exception.ValueError) {
-                this.lineSegments = [];
-                this.coordinates = [];
-            } else {
-                throw error;
+            if (closed) {
+                const segment = new LineSegment(points.slice(-1)[0], points[0]);
+                if (segment.length > 0) {
+                    this.lineSegments.push(segment);
+                    this.coordinates.push(segment.start);
+                }
+            }
+            if (this.lineSegments.length > 0) {
+                this.coordinates.push(this.lineSegments.slice(-1)[0].end);
             }
         }
     }
