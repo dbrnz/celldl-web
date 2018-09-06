@@ -40,7 +40,7 @@ export function displayDiagram(textEditor, svgContainerNode, palette)
 
         const cellDlText = textEditor.getValue();
         if (cellDlText === '') {
-            reject();
+            reject("No CellDL to display");
         }
 
         const domParser = new DOMParser();
@@ -87,8 +87,7 @@ export function displayDiagram(textEditor, svgContainerNode, palette)
         } catch (error) {
             document.body.style.cursor = 'default';
             console.trace(error);
-            alert(error);
-            reject();
+            reject(error);
         }
     });
 }

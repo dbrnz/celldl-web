@@ -115,7 +115,7 @@ export class TextEditor
     {
         displayDiagram(this, this.svgContainerNode, this.palette).then(
             (diagram) => { this.diagram = diagram; },
-            () => { this.diagram = null; });
+            (error) => { alert(error); this.diagram = null; });
     }
 
     exportSvg()
