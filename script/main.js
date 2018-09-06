@@ -32,6 +32,11 @@ import {StyleSheet} from './stylesheet.js';
 export function displayDiagram(textEditor, svgContainerNode, palette)
 {
     return new Promise((resolve, reject) => {
+        // Remove any existing content from our SVG container
+
+        for (let child of svgContainerNode.children) {
+            child.remove();
+        }
 
         const cellDlText = textEditor.getValue();
         if (cellDlText === '') {
@@ -57,12 +62,6 @@ export function displayDiagram(textEditor, svgContainerNode, palette)
                     // Wait until all MathJax text has been rendered
 
                     Promise.all(cellDiagram.svgFactory.promises()).then(() => {
-                        // Remove any existing content from our SVG container
-
-                        for (let child of svgContainerNode.children) {
-                            child.remove();
-                        }
-
                         // Show the SVG diagram
                         // Note: If we use `appendChild` then `url()` links in the SVG
                         //       document are not resolved
