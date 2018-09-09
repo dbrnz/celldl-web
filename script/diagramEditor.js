@@ -257,7 +257,7 @@ export class DiagramEditor
             if (newElement) {
                 const coords = this.getMousePosition(event);
                 // We are able to create a new element in the diagram
-                newElement.position.coordinates = new geo.Point(coords.x, coords.y);
+                newElement.position.setCoordinates(new geo.Point(coords.x, coords.y));
                 newElement.assignGeometry();
 
                 // Note: If we use `appendChild` then `url()` links in the SVG
