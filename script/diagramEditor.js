@@ -23,6 +23,7 @@ limitations under the License.
 //==============================================================================
 
 import * as geo from './geometry.js';
+import * as utils from './utils.js';
 
 //==============================================================================
 
@@ -147,15 +148,21 @@ export class DiagramEditor
         this.undoStack.reset();
     }
 
-    getMousePosition(event)
-    //=====================
+    getMousePosition(event, gridSnap=false)
+    //=====================================
     {
         const CTM = this.svgNode.getScreenCTM();
         if (event.touches) {
             event = event.touches[0];
         }
-        return new geo.Point((event.clientX - CTM.e)/CTM.a,
-                             (event.clientY - CTM.f)/CTM.d);
+        const coords = [(event.clientX - CTM.e)/CTM.a,
+                        (event.clientY - CTM.f)/CTM.d];
+        if (gridSnap) {
+            return new geo.Point(utils.gridSnap(coords[0], this.grid[0]),
+                                 utils.gridSnap(coords[1], this.grid[1]));
+        } else {
+            return new geo.Point(...coords);
+        }
     }
 
     mouseMove(event)
@@ -255,29 +262,30 @@ export class DiagramEditor
 
             const newElement = this.palette.copySelectedElementTo(this.diagram);
             if (newElement) {
-                const coords = this.getMousePosition(event);
-                // We are able to create a new element in the diagram
+                // Insert node into CellDL source. Will create the <bond-graph>
+                // element if there's none
+                this.diagram.addBondGraphElement(newElement);
+
+                // Set its position on the grid
+                const coords = this.getMousePosition(event, true);
                 newElement.position.setCoordinates(new geo.Point(coords.x, coords.y));
                 newElement.assignGeometry();
+
+                // Add it to the set of manuually positioned elements
+                this.diagram.addManualPositionedElement(newElement);
 
                 // Note: If we use `appendChild` then `url()` links in the SVG
                 //       are not resolved
                 const elementSvg = newElement.generateSvg();
+                this.bondgraphNode.insertAdjacentHTML('beforeend', elementSvg.outerHTML);
 
                 // We could have new <defs> if say a new element type is
                 // not in the current diagram...
-
                 const definesSvg = this.diagram.svgFactory.defines(false);
                 this.bondgraphNode.insertAdjacentHTML('beforeend', definesSvg.outerHTML);
 
-                this.bondgraphNode.insertAdjacentHTML('beforeend', elementSvg.outerHTML);
-                //this.bondgraphNode.appendChild(elementSvg);
-
                 // New element is not selected, this.moving is false
 //                 this.movedElement = newElement;
-
-                // Need to insert node into diagram's bondgraph...
-                this.diagram.bondGraph.addXml(newElement);
             }
         }
         event.stopPropagation();

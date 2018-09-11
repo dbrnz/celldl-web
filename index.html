@@ -95,17 +95,6 @@
                 src="./thirdparty/jsnetworkx.js">
         </script>
         </script>
-        <script type="module">
-            import {TextEditor} from './script/textEditor.js';
-            const editor = new TextEditor();
-
-            // Expose editor's functions to HTML elements
-
-            window.loadCellDl = (files) => editor.loadCellDl(files);
-            window.saveCellDl = () => editor.saveCellDl();
-            window.previewSvg = () => editor.previewSvg();
-            window.exportSvg = () => editor.exportSvg();
-        </script>
     </head>
     <body>
         <div id="flex-rows">
@@ -128,7 +117,6 @@
             </section>
           </div>
         </div>
-
 
         <!-- Allow our editor windows to be resized -->
         <script>
@@ -161,5 +149,22 @@
      * https://developer.mozilla.org/en-US/docs/Web/API/File/Using_files_from_web_applications
        and trigger a download to save data.
 -->
+        <script type="module">
+            import {TextEditor} from './script/textEditor.js';
+            const editor = new TextEditor();
+
+            // Expose editor's functions to HTML elements
+
+            window.loadCellDl = (files) => editor.loadCellDl(files);
+            window.saveCellDl = () => editor.saveCellDl();
+            window.previewSvg = () => editor.previewSvg();
+            window.exportSvg = () => editor.exportSvg();
+
+            // Start with an empty diagram
+            editor.setValue(`<cell-diagram>
+</cell-diagram>`);
+            editor.clearSelection();
+            editor.previewSvg();
+        </script>
     </body>
 </html>

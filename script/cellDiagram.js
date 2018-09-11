@@ -175,8 +175,15 @@ export class CellDiagram {
     }
 */
 
-    layout(width=0, height=0)
-    //=======================
+    addBondGraphElement(element)
+    //==========================
+    {
+        // Create bondGraph if none exists
+        this.bondGraph.addXml(element);
+    }
+
+    layout(width=layout.DIAGRAM_WIDTH, height=layout.DIAGRAM_HEIGHT)
+    //==============================================================
     {
         // Position and size all elements of the diagram.
 

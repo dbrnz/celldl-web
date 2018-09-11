@@ -34,6 +34,15 @@ import {List} from './utils.js';
 
 //==============================================================================
 
+/**
+ * Default diagram size (in SVG pixels)
+**/
+export const DIAGRAM_WIDTH = 500;
+export const DIAGRAM_HEIGHT = 500;
+
+/**
+ * Default radius of an element (in SVG pixels)
+**/
 export const ELEMENT_RADIUS = 15;
 
 export const STROKE_WIDTH = new geo.Length(2.5, 'px');
@@ -162,23 +171,24 @@ export class Position
     //=========================
     {
         this._coordinates = coordinates;
+
+        const container = this._element.container;
+        if (container) {
+            // TODO: Find relative position as a string (new `OFFSET from IDS` relationship??)
+            const tempOffset = this._offset || DEFAULT_POSITION;   // **TEMP**
+            if (tempOffset) {
+                const units = [tempOffset[0].units, tempOffset[1].units];
+                this._offset = utils.pixelsToOffset(this._coordinates.toOffset(), container, units, true);
+            } else {
+                // TODO: Find relative position as a string (new `OFFSET from IDS` relationship??)
+            }
+        }
     }
 
     moveByOffset(offset)
     //==================
     {
-        this._coordinates = this._coordinates.addOffset(offset);
-
-        // TODO: Find relative position as a string (new `OFFSET from IDS` relationship??)
-        const tempOffset = this._offset || DEFAULT_POSITION;   // **TEMP**
-
-        const container = this._element.container;
-        if (tempOffset) {
-            const units = [tempOffset[0].units, tempOffset[1].units];
-            this._offset = utils.pixelsToOffset(this._coordinates.toOffset(), container, units, true);
-        } else {
-            // TODO: Find relative position as a string (new `OFFSET from IDS` relationship??)
-        }
+        this.setCoordinates(this._coordinates.addOffset(offset));
     }
 
     coordinatesToString()

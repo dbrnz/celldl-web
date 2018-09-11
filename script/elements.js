@@ -407,6 +407,12 @@ export class DiagramElement {
         return offset;
     }
 
+    resize(offset, edge, grid=null, drawConnections=true)
+    //===================================================
+    {
+        // TODO: Implement general element resizing??
+    }
+
     addConnection(connection)
     //=======================
     {
