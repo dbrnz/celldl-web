@@ -162,6 +162,12 @@
 
             // Start with an empty diagram
             editor.setValue(`<cell-diagram>
+    <style>
+        cell-diagram {
+            width:  500;  /* SVG 'pixels' */
+            height: 500;  /* SVG 'pixels' */
+        }
+    </style>
 </cell-diagram>`);
             editor.clearSelection();
             editor.previewSvg();
