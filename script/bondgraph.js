@@ -207,7 +207,7 @@ export class Flow extends Node
     }
 
 
-    addComponent(domElement)
+    connectsWith(domElement)
     //======================
     {
         const flowConnectsTo = [Gyrator, Potential, Reaction];

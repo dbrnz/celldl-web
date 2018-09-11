@@ -21,14 +21,14 @@
         </reaction>
 
         <flow id="v1" label="$\nu_1$">
-            <component input="u1" output="I_Kp" class="potassium"/>
-            <component id="v1u3" input="u3"/>
-            <component input="u4"/>
+            <connection input="u1" output="I_Kp" class="potassium"/>
+            <connection id="v1u3" input="u3"/>
+            <connection input="u4"/>
         </flow>
 
         <flow id="v2" label="$\nu_2$">
-            <component input="I_Kp" output="u2" class="potassium"/>
-            <component output="u4"/>
+            <connection input="I_Kp" output="u2" class="potassium"/>
+            <connection output="u4"/>
         </flow>
 
     </bond-graph>
@@ -42,13 +42,13 @@
         #q4, #zF, #u_E { color: none; }
 
         #q4,
-        #v1 > component[input="u4"],
-        #v2 > component[output="u4"] {
+        #v1 > connection[input="u4"],
+        #v2 > connection[output="u4"] {
             line-color: #A32ADE;
         }
 
-        /* Either have an id on a component (e.g. "v1u3") and use this as the
-           selector or use a selector in the form `#v1 > component[input="u3"]`
+        /* Either have an id on a connection (e.g. "v1u3") and use this as the
+           selector or use a selector in the form `#v1 > connection[input="u3"]`
         */
 
         #zF *,

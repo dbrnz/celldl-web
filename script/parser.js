@@ -174,11 +174,11 @@ export class Parser
 
 //        let container = (flow.transporter !== null) ? flow.transporter.container : null;
         for (let e of element.children) {
-            if (e.nodeName === "component") {
+            if (e.nodeName === "connection") {
                 if (!("input" in e.attributes || "output" in e.attributes)) {
-                    throw new exception.SyntaxError(e, "A flow component requires an 'input' or 'output'");
+                    throw new exception.SyntaxError(e, "A flow connection requires an 'input' or 'output'");
                 }
-                flow.addComponent(e);
+                flow.connectsWith(e);
             } else {
                 throw new exception.SyntaxError(e, `Unexpected <flow> element`);
             }
