@@ -122,12 +122,6 @@ export class BondGraph extends DiagramElement
 
 //==============================================================================
 
-export class Node extends DiagramElement
-{
-}
-
-//==============================================================================
-
 /*
 const componentPoints = new List(this.lines["start"].points(this.fromPotential.coordinates, {"flow": this.flow}));
 
@@ -194,7 +188,7 @@ export class FlowEdge extends Connection
 
 //==============================================================================
 
-export class Flow extends Node
+export class Flow extends DiagramElement
 {
     constructor(diagram, element)
     {
@@ -320,7 +314,7 @@ export class Gyrator extends DiagramElement
 
 //==============================================================================
 
-export class Potential extends Node
+export class Potential extends DiagramElement
 {
     constructor(diagram, domElement)
     {

@@ -51,6 +51,8 @@ export class Connection
                            : `${parentElement.id.slice(1)}-${fromId}`;
         this._order = 1;
         this._adjacent = 1;
+        // Track who the parent is connected to
+        parentElement.connectedTo(fromId);
     }
 
     static createFromAttributeValue(diagram, domElement, attributeName,

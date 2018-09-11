@@ -101,6 +101,7 @@ export class DiagramElement {
 
         // Any element may be connected to any other element, including itself
         this.connections = [];
+        this._connectedTo = [];
 
         // Any element may be contained in another and/or may contain elements
         this.container = null;
@@ -411,6 +412,12 @@ export class DiagramElement {
     //===================================================
     {
         // TODO: Implement general element resizing??
+    }
+
+    connectTo(elementId)
+    //==================
+    {
+        this._connectedTo.push(elementId);
     }
 
     addConnection(connection)
