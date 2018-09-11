@@ -43,7 +43,6 @@ export class BondGraph extends DiagramElement
         super(diagram, domElement, false);
         this.diagram = diagram;
         this.id = `${this.diagram.id}_bondgraph`;
-        this.edges = [];
     }
 
     documentElement()
@@ -77,14 +76,14 @@ export class BondGraph extends DiagramElement
     addEdge(edge)
     //===========
     {
-        this.edges.push(edge);
+        super.addConnection(edge);
         this.diagram.addConnection(edge);
     }
 
     drawEdges(svgNode)
     //================
     {
-        for (let edge of this.edges) {
+        for (let edge of this.connections) {
             svgNode.appendChild(edge.generateSvg());
         }
     }
