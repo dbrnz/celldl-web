@@ -1,0 +1,37 @@
+﻿<cell-diagram>
+    <style>
+        cell-diagram {
+            width:  500;  /* SVG 'pixels' */
+            height: 500;  /* SVG 'pixels' */
+        }
+    </style>
+    <bond-graph>
+        <potential id="u1"/>
+        <potential id="u2"/>
+        <potential id="u3"/>
+        <potential id="u4"/>
+        <flow id="v1">
+            <connection input="u1" output="u3"/>
+        </flow>
+        <flow id="v2">
+            <connection input="u2" output="u3"/>
+        </flow>
+        <flow id="v3">
+            <connection input="u3" output="u4"/>
+        </flow>
+        <flow id="v4">
+            <connection input="u4" output="u2"/>
+        </flow>
+    </bond-graph>
+    <style>
+        #u1 { position: 30%, 20%; }
+        #u2 { position: 70%, 20%; }
+        #u3 { position: 20% below #u1 #u2}
+        #u4 { position: 30% below #u3; }
+        #v1 { position: 0% left #u1 #u3; }
+        #v2 { position: 0% left #u2 #u3; }
+        #v3 { position: 0% left #u3 #u4; }
+        #v4 { position: 0% left #u4 #u2; }
+        connection { line-color: red; }
+    </style>
+ </cell-diagram>
