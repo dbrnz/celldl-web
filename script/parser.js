@@ -39,6 +39,7 @@ export class Parser
         this.bondGraphElement = null;
         this.flatMapElement = null;
         this.diagramElement = null;
+        this.backgroundElement = null;
     }
 
     //==========================================================================
@@ -77,6 +78,16 @@ export class Parser
 //        const transporter = this.newDiagramElement(element, dia.Transporter, compartment);
 //        this.diagram.addTransporter(transporter);
 //    }
+
+    //==========================================================================
+
+    parseBackground(element)
+    //======================
+    {
+        if ('href' in element.attributes) {
+            this.diagram.background = element.attributes['href'].textContent;
+        }
+    }
 
     //==========================================================================
 
@@ -291,7 +302,13 @@ export class Parser
         stylePromises.push(stylesheet.loadDefaultStylesheet());
 
         for (let element of xmlRoot.children) {
-            if (element.nodeName === 'bond-graph') {
+            if (element.nodeName === 'background') {
+                if (this.backgroundElement === null) {
+                    this.backgroundElement = element;
+                } else {
+                    throw new exception.SyntaxError(element, "Can only declare a single <background>");
+                }
+            } else if (element.nodeName === 'bond-graph') {
                 if (this.bondGraphElement === null) {
                     this.bondGraphElement = element;
                 } else {
@@ -339,6 +356,10 @@ export class Parser
 //                            } else {
 //                                this.diagram = new dia.Diagram();
 //                            }
+
+                            if (this.backgroundElement !== null) {
+                                this.parseBackground(this.backgroundElement);
+                            }
 
                             this.parseBondGraph(this.bondGraphElement);
 

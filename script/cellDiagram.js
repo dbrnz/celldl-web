@@ -46,6 +46,7 @@ export class CellDiagram {
         this.width = 0;
         this.height = 0;
         this.diagonal = 0;
+        this.background = null;
         this.flatMap = null;
         this.bondGraph = null;
         this.svgFactory = new SvgFactory(id);
@@ -246,6 +247,14 @@ export class CellDiagram {
 //        for (let c of this.compartments) {
 //            svg.extend(c.svg());
 //        }
+
+        if (this.background) {
+            const background = document.createElementNS(SVG_NS, 'image');
+            background.setAttribute('xlink:href', this.background);
+            background.setAttribute('width', `${this.width}`);
+            background.setAttribute('height', `${this.height}`);
+            svgNode.appendChild(background);
+        }
 
         if (this.flatMap !== null) {
             svgNode.appendChild(this.flatMap.generateSvg());
