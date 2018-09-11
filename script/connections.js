@@ -52,7 +52,7 @@ export class Connection
         this._order = 1;
         this._adjacent = 1;
         // Track who the parent is connected to
-        parentElement.connectedTo(fromId);
+        parentElement.connectTo(fromId);
     }
 
     static createFromAttributeValue(diagram, domElement, attributeName,
