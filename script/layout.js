@@ -66,7 +66,7 @@ export const VERTICAL_BOUNDARIES = new List(['left', 'right']);
 export const CORNER_BOUNDARIES = new List(['top-left', 'top-right', 'bottom-left', 'bottom-right']);
 export const COMPARTMENT_BOUNDARIES = new List().extend(HORIZONTAL_BOUNDARIES).extend(VERTICAL_BOUNDARIES);
 
-export const DEFAULT_POSITION = [ new geo.Length(0, '%'), new geo.Length(0, '%')];
+export const DEFAULT_POSITION = [ new geo.Length(50, '%'), new geo.Length(10, '%')];
 export const DEFAULT_SIZE     = [ new geo.Length(), new geo.Length()];
 
 //==============================================================================
@@ -379,18 +379,15 @@ export class Position
         return HORIZONTAL_RELATIONS.contains(reln) ? 'H' : 'V';
     }
 
+    /*
+     * Position as coords: absolute or % of container -- `100, 300` or `10%, 30%`
+     * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
+    **/
     parsePosition(defaultOffset=null, defaultDependency=null)
     //=======================================================
     {
-        /*
-        * Position as coords: absolute or % of container -- `100, 300` or `10%, 30%`
-        * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
-        */
-        if (this._tokens == null) {
-            return;
-        }
-
         const tokens = this._tokens;
+        const container = this._element.container;
         if (tokens instanceof Array) {
             if (tokens.length === 2) {
                 if (['ID', 'SEQUENCE'].indexOf(tokens[0].type) < 0) {
@@ -399,8 +396,8 @@ export class Position
                     // and on our container's position
                     if (this._offset[0].units.indexOf('%') >= 0
                      || this._offset[1].units.indexOf('%') >= 0) {
-                        this._element.container.size.addDependent(this._element);
-                        this._addDependency(this._element.container);
+                        container.size.addDependent(this._element);
+                        this._addDependency(container);
                     }
                 } else {
                     const dirn = this._parseComponent(tokens[0], null);
@@ -409,14 +406,14 @@ export class Position
             } else {
                 throw new exception.StyleError(tokens, "Position can't have more than two components");
             }
-        } else {
+        } else if (tokens !== null) {
             this._parseComponent(tokens, null, defaultOffset, defaultDependency);
-        }
-
-        // Assign default position if no position relationships specified
-
-        if (this._offset === null && this._relationships.size === 0) {
+        } else if (this._coordinates === null) {
+            // Assign default position if none specified
             this._offset = DEFAULT_POSITION;
+            if (container !== null) {
+                this._addDependency(container);
+            }
         }
     }
 
