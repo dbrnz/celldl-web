@@ -43,6 +43,32 @@ export class BondGraph extends DiagramElement
         super(diagram, domElement, false);
         this.diagram = diagram;
         this.id = `${this.diagram.id}_bondgraph`;
+        for (let element of domElement.children) {
+            this.parseDomElement(element);
+        }
+    }
+
+    parseDomElement(domElement)
+    //=========================
+    {
+        const element = (domElement.nodeName === "flow") ?
+                            new Flow(this.diagram, this, domElement)
+                      : (domElement.nodeName === "gyrator") ?
+                            new Gyrator(this.diagram, this, domElement)
+                      : (domElement.nodeName === "potential") ?
+                            new Potential(this.diagram, this, domElement)
+                      : (domElement.nodeName === "quantity") ?
+                            new Quantity(this.diagram, this, domElement)
+                      : (domElement.nodeName === "reaction") ?
+                            new Reaction(this.diagram, this, domElement)
+                      : (domElement.nodeName === "transformer") ?
+                            new Transformer(this.diagram, this, domElement)
+                      : null;
+        if (element === null) {
+            throw new exception.SyntaxError(domElement, "Invalid element for <bond-graph>");
+        }
+        this.addElement(element);
+        return element;
     }
 
     documentElement()
@@ -190,29 +216,32 @@ export class FlowEdge extends Connection
 
 export class Flow extends DiagramElement
 {
-    constructor(diagram, element)
+    constructor(diagram, bondGraph, domElement)
     {
-        super(diagram, element);
-        this.bondGraph = diagram.bondGraph;
+        super(diagram, domElement);
 //        this.componentOffsets = [];
 //        const transporterId = ('transporter' in element.attributes) ? element.attributes.transporter : null;
 //        this.transporter = this.fromAttribute('transporter', [diagramTransporter])
-    }
-
-
-    connectsWith(domElement)
-    //======================
-    {
         const flowConnectsTo = [Gyrator, Potential, Reaction];
-        if ('input' in domElement.attributes) {
-            this.bondGraph.addEdge(FlowEdge.createFromAttributeValue(this.diagram, domElement, 'input',
-                                                                     true, this, flowConnectsTo));
+        for (let element of domElement.children) {
+            if (element.nodeName === "connection") {
+                if (!("input" in element.attributes || "output" in element.attributes)) {
+                    throw new exception.SyntaxError(element, "A flow connection requires an 'input' or 'output'");
+                }
+                if ('input' in element.attributes) {
+                    bondGraph.addEdge(FlowEdge.createFromAttributeValue(diagram, element, 'input',
+                                                                        true, this, flowConnectsTo));
+                    }
+                if ('output' in element.attributes) {
+                    bondGraph.addEdge(FlowEdge.createFromAttributeValue(diagram, element, 'output',
+                                                                        false, this, flowConnectsTo));
+                }
+            } else {
+                throw new exception.SyntaxError(element, `Unexpected <flow> element`);
             }
-        if ('output' in domElement.attributes) {
-            this.bondGraph.addEdge(FlowEdge.createFromAttributeValue(this.diagram, domElement, 'output',
-                                                                     false, this, flowConnectsTo));
         }
     }
+
 
 /*
     componentOffset(component)
@@ -290,25 +319,21 @@ export class Flow extends DiagramElement
 
 export class Gyrator extends DiagramElement
 {
-    constructor(diagram, domElement)
+    constructor(diagram, bondgraph, domElement)
     {
         super(diagram, domElement);
-        this.bondGraph = diagram.bondGraph;
         if (!this.label.startsWith('$')) this.label = `GY:${this.label}`;
-    }
-
-    addInput(domElement)
-    //==================
-    {
-        this.bondGraph.addEdge(Connection.createFromAttributeValue(this.diagram, domElement,
-                                                             'flow', true, this, [Flow]));
-    }
-
-    addOutput(domElement)
-    //===================
-    {
-        this.bondGraph.addEdge(Connection.createFromAttributeValue(this.diagram, domElement,
-                                                             'flow', false, this, [Flow]));
+        for (let element of domElement.children) {
+            if        (element.nodeName === 'input') {
+                bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element,
+                                                                     'flow', true, this, [Flow]));
+            } else if (element.nodeName === 'output') {
+                bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element,
+                                                                      'flow', false, this, [Flow]));
+            } else {
+                throw new exception.SyntaxError(element, `Unexpected <gyrator> element`);
+            }
+        }
     }
 }
 
@@ -316,16 +341,14 @@ export class Gyrator extends DiagramElement
 
 export class Potential extends DiagramElement
 {
-    constructor(diagram, domElement)
+    constructor(diagram, bondGraph, domElement)
     {
         super(diagram, domElement);
-        this.bondGraph = diagram.bondGraph;
-
         if ('quantity' in domElement.attributes) {
             this.quantityId = domElement.attributes.quantity.textContent;
             const edge = new Connection(diagram, domElement, this.quantityId, false,
                                   this, [Quantity], `#${this.quantityId}`);
-            this.bondGraph.addEdge(edge);
+            bondGraph.addEdge(edge);
             this.addConnection(edge);
         } else {
             this.quantityId = null;
@@ -354,9 +377,8 @@ export class Potential extends DiagramElement
 
 export class Quantity extends DiagramElement
 {
-    constructor(diagram, domElement) {
+    constructor(diagram, bondGraph, domElement) {
         super(diagram, domElement);
-        this.bondGraph = diagram.bondGraph;
         this.potential = null;
     }
 
@@ -383,32 +405,24 @@ export class Quantity extends DiagramElement
 
 export class Reaction extends DiagramElement
 {
-    constructor(diagram, domElement)
+    constructor(diagram, bondGraph, domElement)
     {
         super(diagram, domElement);
-        this.bondGraph = diagram.bondGraph;
         if (!this.label.startsWith('$')) this.label = `RE:${this.label}`;
-    }
-
-    addInput(domElement)
-    //==================
-    {
-        this.bondGraph.addEdge(Connection.createFromAttributeValue(this.diagram, domElement, 'flow',
-                                                             true, this, [Flow]));
-    }
-
-    addOutput(domElement)
-    //===================
-    {
-        this.bondGraph.addEdge(Connection.createFromAttributeValue(this.diagram, domElement, 'flow',
-                                                             false, this, [Flow]));
-    }
-
-    addModulator(domElement)
-    //======================
-    {
-        this.bondGraph.addEdge(Connection.createFromAttributeValue(this.diagram, domElement, 'potential',
-                                                             true, this, [Potential]));
+        for (let element of domElement.children) {
+            if (element.nodeName === 'input') {
+                bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element, 'flow',
+                                                                      true, this, [Flow]));
+            } else if (element.nodeName === 'output') {
+                bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element, 'flow',
+                                                                      false, this, [Flow]));
+            } else if (element.nodeName === 'modulator') {
+                bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element, 'potential',
+                                                                      true, this, [Potential]));
+            } else {
+                throw new exception.SyntaxError(element, `Unexpected <reaction> element`);
+            }
+        }
     }
 
     assignGeometry(radius=layout.TRANSPORTER_RADIUS)
@@ -422,25 +436,21 @@ export class Reaction extends DiagramElement
 
 export class Transformer extends DiagramElement
 {
-    constructor(diagram, domElement)
+    constructor(diagram, bondGraph, domElement)
     {
         super(diagram, domElement);
-        this.bondGraph = diagram.bondGraph;
         if (!this.label.startsWith('$')) this.label = `TF:${this.label}`;
-    }
-
-    addInput(domElement)
-    //==================
-    {
-        this.bondGraph.addEdge(Connection.createFromAttributeValue(this.diagram, domElement, 'potential',
-                                                             true, this, [Potential]));
-    }
-
-    addOutput(domElement)
-    //===================
-    {
-        this.bondGraph.addEdge(Connection.createFromAttributeValue(this.diagram, domElement, 'potential',
-                                                             false, this, [Potential]));
+        for (let element of domElement.children) {
+            if (element.nodeName === 'input') {
+                bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element, 'potential',
+                                                                      true, this, [Potential]));
+            } else if (element.nodeName === 'output') {
+                bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element, 'potential',
+                                                                      false, this, [Potential]));
+            } else {
+                throw new exception.SyntaxError(element, `Unexpected <transformer> element`);
+            }
+        }
     }
 }
 

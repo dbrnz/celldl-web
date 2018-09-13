@@ -24,7 +24,6 @@ limitations under the License.
 
 import {CellDiagram} from './cellDiagram.js';
 import {DiagramEditor} from './diagramEditor.js';
-import {Parser} from './parser.js';
 import {StyleSheet} from './stylesheet.js';
 
 //==============================================================================
@@ -48,12 +47,8 @@ export function displayDiagram(textEditor, svgContainerNode, palette)
         document.body.style.cursor = 'wait';
 
         try {
-            const stylesheet = new StyleSheet();
-            const cellDiagram = new CellDiagram('diagram', stylesheet, textEditor);
-
-            const parser = new Parser(cellDiagram);
-
-            parser.parseDocument(xmlDocument)
+            const cellDiagram = new CellDiagram('diagram', textEditor);
+            cellDiagram.parseDocument(xmlDocument)
                 .then(() => {
                     cellDiagram.layout();  // Pass width/height to use as defaults...
 

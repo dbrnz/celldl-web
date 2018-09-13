@@ -48,6 +48,10 @@ import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
 
+export const CELLDL_NAMESPACE = "http://www.cellml.org/celldl/1.0#";
+
+//==============================================================================
+
 const HIGHLIGHT_BORDER = 9;   // in layout.js ??
 const HIGHLIGHT_COLOUR = "#004A9C";
 const HIGHLIGHT_OPACITY = 0.8;
@@ -70,10 +74,10 @@ export class DiagramElement {
             throw new exception.KeyError("A diagram element must have an 'id'");
         }
         this.diagram = diagram;
-        this.domElement = domElement;
+        this._domElement = domElement;
         this.attributes = domElement.attributes;
         this.tagName = domElement.tagName;
-        this.id = ('id' in this.attributes) ? `#${this.attributes.id.textContent}` : '';
+        this.id = (domElement.id != '') ? `#${domElement.id}` : '';
         this.name = ('name' in this.attributes) ? this.attributes.name.textContent : this.id.substr(1);
         this.classes = ('class' in this.attributes) ? this.attributes.class.textContent.split(/\s+/) : [];
         // _name, _label, _classes and getters??
@@ -108,19 +112,6 @@ export class DiagramElement {
         this.elements = [];
 
         diagram.addElement(this);
-    }
-
-    copyToNewDiagram(diagram)
-    //=======================
-    {
-        const domElement = this.domElement.cloneNode(true);
-        domElement.id = this.id.slice(1);
-        try {
-            return new this.constructor(diagram, domElement);
-        } catch (error) {
-            alert(error);
-            return null;
-        }
     }
 
     fromAttribute(attributeName, elementClasses=[DiagramElement])
@@ -158,6 +149,20 @@ export class DiagramElement {
     //=====
     {
         return `<${this.tagName} id="${this.id.slice(1)}"/>`;
+    }
+
+    get domElement()
+    //==============
+    {
+        return this._domElement;
+    }
+
+    asNewDomElement()
+    //===============
+    {
+        const element = document.createElementNS(CELLDL_NAMESPACE, this.tagName);
+        element.id = this.id.slice(1);
+        return element;
     }
 
     get strokeWidth()

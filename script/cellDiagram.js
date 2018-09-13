@@ -24,21 +24,22 @@ limitations under the License.
 
 import * as bondgraph from './bondgraph.js';
 import * as exception from './exception.js';
+import * as flatmap from './flatmap.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
 import * as stylesheet from './stylesheet.js';
 import * as utils from './utils.js';
 
-import {DiagramElement} from './elements.js';
+import {CELLDL_NAMESPACE, DiagramElement} from './elements.js';
 import {SvgFactory, SVG_NS, SVG_VERSION} from './svgElements.js';
 
 //==============================================================================
 
 export class CellDiagram {
-    constructor(id, stylesheet, textEditor=null)
+    constructor(id, textEditor=null)
     {
         this.id = id;
-        this.stylesheet = stylesheet;
+        this.stylesheet = new stylesheet.StyleSheet();
         this.textEditor = textEditor;
         this._elements = [];
         this._elementsById = {};
@@ -54,15 +55,105 @@ export class CellDiagram {
         this._manualSizes = [];
     }
 
-    initialise(style)
-    //===============
+
+    parseDocument(xmlDocument)
+    //========================
     {
-        if ('width' in style) {
-            this.width = stylesheet.parseNumber(style.width);
+        if (xmlDocument === null || xmlDocument.children.length != 1) {
+            throw new exception.SyntaxError(xmlDocument, "Invalid XML document");
         }
-        if ('height' in style) {
-            this.height = stylesheet.parseNumber(style.height);
+
+        const xmlRoot = xmlDocument.children[0];
+
+        if ('xmlns' in xmlRoot.attributes
+         && xmlRoot.attributes.xmlns.textContent !== CELLDL_NAMESPACE) {
+            throw new exception.SyntaxError(xmlRoot, "Not a CellDL document");
+        } else if (xmlRoot.nodeName !== 'cell-diagram') {
+            throw new exception.SyntaxError(xmlRoot, "Root tag must be <cell-diagram>");
         }
+
+        let stylePromises = [];
+        stylePromises.push(this.stylesheet.loadDefaultStylesheet());
+
+        // Scan for top level elements, make sure there are no more than one
+        // of each, but don't create diagram elements until all stylesheets
+        // have been loaded
+
+        let backgroundElement = null;
+        let bondGraphElement = null;
+        let flatMapElement = null;
+        let diagramElement = null;
+
+        for (let domElement of xmlRoot.children) {
+            if (domElement.nodeName === 'background') {
+                if (backgroundElement === null) {
+                    backgroundElement = domElement;
+                } else {
+                    throw new exception.SyntaxError(domElement, "Can only declare a single <background>");
+                }
+            } else if (domElement.nodeName === 'bond-graph') {
+                if (bondGraphElement === null) {
+                    bondGraphElement = domElement;
+                } else {
+                    throw new exception.SyntaxError(domElement, "Can only declare a single <bond-graph>");
+                }
+            } else if (domElement.nodeName === 'flat-map') {
+                if (flatMapElement === null) {
+                    flatMapElement = domElement;
+                } else {
+                    throw new exception.SyntaxError(domElement, "Can only declare a single <flat-map>");
+                }
+            } else if (domElement.nodeName === 'diagram') {
+                if ((diagramElement === null)) {
+                     diagramElement = domElement;
+                } else {
+                    throw new exception.SyntaxError(domElement, "Can only declare a single <diagram>");
+                }
+            } else if (domElement.nodeName === 'style') {
+                if ('src' in domElement.attributes) {
+                    stylePromises.push(this.stylesheet.fetchStyles(domElement.attributes.src.textContent));
+                } else {
+                    this.stylesheet.addStyles(domElement.textContent);
+                    if (domElement.id === 'manual_adjustments') {
+                        this.setManualAdjustedElements(domElement.textContent);
+                    }
+                }
+            } else {
+                throw new exception.SyntaxError(domElement, "Unknown CellDL element");
+            }
+        }
+
+        // The graphical editor requires a <bond-graph> node on which to addXML()
+        // But what if an empty/new document...
+
+        if (bondGraphElement === null) {
+            bondGraphElement = document.createElementNS(CELLDL_NAMESPACE, 'bond-graph');
+            // and then parseBondGraph creates diagram.bondGraph
+        }
+
+        // Only parse top level XML elements after all stylesheets have been loaded
+        return Promise.all(stylePromises)
+                      .then(() => {
+                            const style = this.stylesheet.style(xmlRoot);
+                            if ('width' in style) {
+                                this.width = stylesheet.parseNumber(style.width);
+                            }
+                            if ('height' in style) {
+                                this.height = stylesheet.parseNumber(style.height);
+                            }
+                            if (backgroundElement !== null) {
+                                if ('href' in backgroundElement.attributes) {
+                                    this.background = backgroundElement.attributes['href'].textContent;
+                                    // FUTURE: check for style rules
+                                }
+                            }
+                            if (bondGraphElement !== null) {
+                                this.bondGraph = new bondgraph.BondGraph(this, bondGraphElement);
+                            }
+                            if (flatMapElement !== null) {
+                                this.flatMap = new flatmap.FlatMap(this, flatMapElement);
+                            }
+                        });
     }
 
     get size()

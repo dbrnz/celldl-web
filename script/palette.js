@@ -23,8 +23,6 @@ limitations under the License.
 //==============================================================================
 
 import {CellDiagram} from './cellDiagram.js';
-import {Parser} from './parser.js';
-import {StyleSheet} from './stylesheet.js';
 
 //==============================================================================
 
@@ -58,11 +56,8 @@ export class Palette
         const domParser = new DOMParser();
         const xmlDocument = domParser.parseFromString(PALETTE_XML, "application/xml");
         try {
-            const stylesheet = new StyleSheet();
-            this.diagram = new CellDiagram('palette', stylesheet);
-            const parser = new Parser(this.diagram);
-
-            parser.parseDocument(xmlDocument)
+            this.diagram = new CellDiagram('palette');
+            this.diagram.parseDocument(xmlDocument)
                 .then(() => {
                     this.diagram.layout(WIDTH, HEIGHT);   // Pass width/height to use as defaults...
 
@@ -146,7 +141,7 @@ export class Palette
         this.diagramElement = null;
         if (selected !== null) {
             selected.updateSvg(false);
-            return selected.copyToNewDiagram(diagram);
+            return diagram.bondGraph.parseDomElement(selected.asNewDomElement());
         }
         return null;
     }
