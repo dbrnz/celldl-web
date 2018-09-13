@@ -52,6 +52,21 @@ export class FlatMap extends DiagramElement
     {
         super(diagram, domElement, false);
         this.id = this.id || `${this.diagram.id}_flatmap`;
+        for (let element of domElement.children) {
+            this.parseDomElement(element);
+        }
+    }
+
+    parseDomElement(domElement)
+    //=========================
+    {
+        if        (domElement.nodeName === "component") {
+            this.addElement(new Component(this.diagram, this, domElement));
+        } else if (domElement.nodeName === "connection") {
+            this.addConnection(new ComponentConnection(this.diagram, this, domElement));
+        } else {
+            throw new exception.SyntaxError(domElement, "Invalid element for <flat-map>");
+        }
     }
 
     addConnection(connection)
@@ -101,13 +116,24 @@ export class FlatMap extends DiagramElement
 
 export class Component extends aggregation(DiagramElement, RectangularMixin)
 {
-    constructor(diagram, domElement)
+    constructor(diagram, flatMap, domElement)
     {
         super(diagram, domElement);
 
         // Get `type` attribute; if `boundary` then constrain position to
         // boundary of group. `position` style attribute then has different
         // meaning??
+
+        for (let element of domElement.children) {
+            if (element.nodeName === "component") {
+                const component = new Component(diagram, element);
+                flatMap.addElement(component);
+                // NB. Element must be added to component **after** adding it to flatmap
+                this.addElement(component);
+            } else {
+                throw new exception.SyntaxError(element, "Invalid element for <component>");
+            }
+        }
     }
 
     assignDimensions()
@@ -129,7 +155,7 @@ export class Component extends aggregation(DiagramElement, RectangularMixin)
 
 export class ComponentConnection extends Connection
 {
-    constructor(diagram, domElement)
+    constructor(diagram, flatMap, domElement)
     {
         if (!("from" in domElement.attributes)) {
             throw new exception.KeyError(`Expected 'from' attribute`);
