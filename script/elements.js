@@ -232,13 +232,15 @@ export class DiagramElement {
         return this.position.hasCoordinates;
     }
 
+    /**
+     * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
+     * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
+    **/
     parsePosition(defaultOffset=null, defaultDependency=null)
     //=======================================================
     {
-        /*
-        * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
-        * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
-        */
+        //  set position to mid-point of inputs and outputs...
+        //if (this.position._tokens === null) ???
         this.position.parsePosition(defaultOffset, defaultDependency);
         if ('text-position' in this.style) {
             if (this._textPosition === this.position) {
