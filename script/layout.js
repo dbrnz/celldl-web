@@ -500,7 +500,7 @@ export class Position
                     if (offset === null) {
                         index = 1 - index;
                     }
-                    this.coordinates.setValueAt(index, coordinates.valueAt(index));
+                    this._coordinates.setValueAt(index, coordinates.valueAt(index));
                 }
             }
         }
