@@ -1,5 +1,5 @@
 ﻿<cell-diagram>
-    <background image="http://celldl.org/editor/models/multi-neuron-background.svg">
+    <background image="./models/multi-neuron-background.svg">
         <region id="u1_pos" region="svg_region_1"/>
         <region id="u2_pos" region="svg_region_2"/>
         <region id="u3_pos" region="svg_region_3"/>
