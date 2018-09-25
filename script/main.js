@@ -56,7 +56,7 @@ export function displayDiagram(textEditor, svgContainerNode, palette)
 
                     // Wait until all MathJax text has been rendered
 
-                    Promise.all(cellDiagram.svgFactory.promises()).then(() => {
+                    cellDiagram.svgFactory.promises().then(() => {
                         // Show the SVG diagram
                         // Note: If we use `appendChild` then `url()` links in the SVG
                         //       document are not resolved

@@ -466,7 +466,7 @@ export class SvgFactory
     promises()
     //========
     {
-        return this._promises;
+        return Promise.all(this._promises);
     }
 
     resetPromises()
