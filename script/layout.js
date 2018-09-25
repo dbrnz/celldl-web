@@ -68,6 +68,12 @@ export class Size
         return this._dependents;
     }
 
+    setSize(size)
+    //===========
+    {
+        this._size = size;
+    }
+
     get asPixels()
     //============
     {
@@ -270,6 +276,39 @@ export class Position
         }
         return this._dependentsCache;
     }
+
+    layoutDependents(updateSvg=false)
+    //===============================
+    {
+        /*
+        - Hierarchical positioning
+        - An element's position can depend on those of its siblings and any element
+          at a higher level in the diagram. In the following, ``cm2`` may depend on
+          ``gr1``, ``cm1``, ``gr2`` and ``gr0``, while ``gr3`` may depend on ``gr4``,
+          ``cm3``, ``gr1``, ``cm1``, ``gr2`` and ``gr0``.
+        - This means we need to position the container's elements before laying out
+          any sub-containers.
+        */
+
+        // Need to ensure dependencies are amongst or above our elements
+
+        const dependents = this.dependents();
+
+        for (let element of dependents) {
+            element.assignDimensions();
+            element.assignGeometry();
+            element.assignTextCoordinates();
+            if (updateSvg) {
+                element.updateSvg(false);
+            }
+        }
+        if (updateSvg) {
+            for (let element of dependents) {
+                element.redrawConnections();
+            }
+        }
+    }
+
 
     _addRelationship(offset, relation, dependencies)
     //==============================================

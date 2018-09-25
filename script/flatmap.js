@@ -51,6 +51,9 @@ export class FlatMap extends DiagramElement
     {
         super(diagram, domElement, false);
         this.id = this.id || `${this.diagram.id}_flatmap`;
+        this.container = diagram;
+        this.size.setSize([new geo.Length(100, '%'), new geo.Length(100, '%')]);
+        this.position.setOffset([new geo.Length(50, '%'), new geo.Length(50, '%')]);
         for (let element of domElement.children) {
             this.parseDomElement(element);
         }
@@ -80,14 +83,6 @@ export class FlatMap extends DiagramElement
     {
         super.addElement(element);
         this.position.addDependent(element);
-    }
-
-    layout()
-    //======
-    {
-        this.position.setCoordinates(new geo.Point(this.diagram.width/2, this.diagram.height/2));
-        this.size.setPixelSize([this.diagram.width, this.diagram.height]);
-        super.layout();
     }
 
     generateSvg()

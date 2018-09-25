@@ -212,8 +212,8 @@ export class DiagramElement {
         this.position.assignCoordinates();
     }
 
-    _assignTextCoordinates()
-    //======================
+    assignTextCoordinates()
+    //=====================
     {
         if (this._textPosition !== this.position) {
             this._textPosition.assignCoordinates(this);
@@ -230,8 +230,8 @@ export class DiagramElement {
      * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
      * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
     **/
-    parsePosition(defaultOffset=null, defaultDependency=null)
-    //=======================================================
+    parsePosition(defaultOffset=config.DEFAULT.OFFSET, defaultDependency=null)
+    //========================================================================
     {
         //  set position to mid-point of inputs and outputs...
         //if (this.position._tokens === null) ???
@@ -335,33 +335,7 @@ export class DiagramElement {
     layout(updateSvg=false)
     //=====================
     {
-        /*
-        - Hierarchical positioning
-        - An element's position can depend on those of its siblings and any element
-          at a higher level in the diagram. In the following, ``cm2`` may depend on
-          ``gr1``, ``cm1``, ``gr2`` and ``gr0``, while ``gr3`` may depend on ``gr4``,
-          ``cm3``, ``gr1``, ``cm1``, ``gr2`` and ``gr0``.
-        - This means we need to position the container's elements before laying out
-          any sub-containers.
-        */
-
-        // Need to ensure dependencies are amongst or above our elements
-
-        const dependents = this.position.dependents();
-
-        for (let element of dependents) {
-            element.assignDimensions();
-            element.assignGeometry();
-            element._assignTextCoordinates();
-            if (updateSvg) {
-                element.updateSvg(false);
-            }
-        }
-        if (updateSvg) {
-            for (let element of dependents) {
-                element.redrawConnections();
-            }
-        }
+        this.position.layoutDependents(updateSvg);
     }
 
     /**

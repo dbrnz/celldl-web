@@ -28,6 +28,7 @@ import * as config from '../config.js';
 import * as exception from './exception.js';
 import * as flatmap from './flatmap.js';
 import * as geo from './geometry.js';
+import * as layout from './layout.js';
 import * as stylesheet from './stylesheet.js';
 import * as utils from './utils.js';
 
@@ -52,6 +53,8 @@ export class CellDiagram {
         this.flatMap = null;
         this.bondGraph = null;
         this.svgFactory = new SvgFactory(id);
+        this.position = new layout.Position(this, this, null);
+        this.size = new layout.Size(this, null);
         this._manualPositions = [];
         this._manualSizes = [];
     }
@@ -87,6 +90,7 @@ export class CellDiagram {
             if (domElement.nodeName === 'background') {
                 if (this.background === null) {
                     this.background = new background.Background(this, domElement);
+                    this.position.addDependent(this.background);
                     asyncFetchs.push(this.background.loadBackgroundImage());
                 } else {
                     throw new exception.SyntaxError(domElement, "Can only declare a single <background>");
@@ -143,17 +147,13 @@ export class CellDiagram {
                             }
                             if (bondGraphElement !== null) {
                                 this.bondGraph = new bondgraph.BondGraph(this, bondGraphElement);
+                                this.position.addDependent(this.bondGraph);
                             }
                             if (flatMapElement !== null) {
                                 this.flatMap = new flatmap.FlatMap(this, flatMapElement);
+                                this.position.addDependent(this.flatMap);
                             }
                         });
-    }
-
-    get size()
-    //========
-    {
-        return [this.width, this.height];
     }
 
     lengthToPixels(length, index)
@@ -271,11 +271,14 @@ export class CellDiagram {
     layout(width=config.DIAGRAM.WIDTH, height=config.DIAGRAM.HEIGHT)
     //==============================================================
     {
-        // Position and size all elements of the diagram.
-
         if (this.width === 0) this.width = width;
         if (this.height === 0) this.height = height;
         this.diagonal = Math.sqrt(this.width*this.width + this.height*this.height);
+
+        // Set our position and size
+
+        this.position.setCoordinates(new geo.Point(this.width/2, this.height/2));
+        this.size.setPixelSize([this.width, this.height]);
 
         // Resolve ID references and parse position definitions
         // for all elements
@@ -292,23 +295,9 @@ export class CellDiagram {
             connection.parseLine();
         }
 
-        // Assign positions of regions
+        // Layout the diagram
 
-        if (this.background !== null) {
-            this.background.layout();
-        }
-
-        // Layout all groups and their elements
-
-        if (this.flatMap !== null) {
-            this.flatMap.layout();
-        }
-
-        // Layout bondgraph
-
-        if (this.bondGraph !== null) {
-            this.bondGraph.layout();
-        }
+         this.position.layoutDependents();
 
         // Assign paths to all connections
 

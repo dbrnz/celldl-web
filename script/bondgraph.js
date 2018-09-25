@@ -44,6 +44,9 @@ export class BondGraph extends DiagramElement
         super(diagram, domElement, false);
         this.diagram = diagram;
         this.id = `${this.diagram.id}_bondgraph`;
+        this.container = diagram;
+        this.size.setSize([new geo.Length(100, '%'), new geo.Length(100, '%')]);
+        this.position.setOffset([new geo.Length(50, '%'), new geo.Length(50, '%')]);
         for (let element of domElement.children) {
             this.parseDomElement(element);
         }
@@ -70,6 +73,13 @@ export class BondGraph extends DiagramElement
         }
         this.addElement(element);
         return element;
+    }
+
+    addElement(element)
+    //=================
+    {
+        super.addElement(element);
+        this.position.addDependent(element);
     }
 
     documentElement()
@@ -121,14 +131,6 @@ export class BondGraph extends DiagramElement
         for (let element of this.diagram.elements(elementClass)) {
             svgNode.appendChild(element.generateSvg());
         }
-    }
-
-    layout()
-    //======
-    {
-        this.position.setCoordinates(new geo.Point(this.diagram.width/2, this.diagram.height/2));
-        this.size.setPixelSize([this.diagram.width, this.diagram.height]);
-        super.layout();
     }
 
     generateSvg()

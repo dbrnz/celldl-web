@@ -40,20 +40,29 @@ export class Background extends DiagramElement
         this.diagram = diagram;
         this.id = `${this.diagram.id}_background`;
         this._image = domElement.getAttribute('image');
+        this.container = diagram;
+        this.size.setSize([new geo.Length(100, '%'), new geo.Length(100, '%')]);
+        this.position.setOffset([new geo.Length(50, '%'), new geo.Length(50, '%')]);
         this.svgDocument = null;
         if (this._image) {
             if (!this._image.endsWith('.svg')) {
                 throw new exception.SyntaxError(domElement, "Only SVG background images are currently supported");
             }
         }
-        this._regions = []
         for (let element of domElement.children) {
             if (element.nodeName === "region") {
-                this._regions.push(new Region(this.diagram, element, this));
+                this.addElement(new Region(this.diagram, element, this));
             } else {
                 throw new exception.SyntaxError(element, "Invalid element for <background>");
             }
         }
+    }
+
+    addElement(element)
+    //=================
+    {
+        super.addElement(element);
+        this.position.addDependent(element);
     }
 
     async loadBackgroundImage()
@@ -71,16 +80,8 @@ export class Background extends DiagramElement
     //=========================
     {
         this.svgDocument = new SvgDocument(svgText);
-        for (let region of this._regions) {
+        for (let region of this.elements) {
             region.setPositionOffset();
-        }
-    }
-
-    layout()
-    //======
-    {
-        for (let region of this._regions) {
-            region.layout();
         }
     }
 
