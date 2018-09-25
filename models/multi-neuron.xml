@@ -29,14 +29,14 @@
             width:  500;  /* SVG 'pixels' */
             height: 500;  /* SVG 'pixels' */
         }
-        #u1 { position: 0% left #u1_pos; }
-        #u2 { position: 0% left #u2_pos; }
-        #u3 { position: 0% left #u3_pos; }
-        #u4 { position: 0% left #u4_pos; }
-        #v1 { position: 0% left #u1 #u3; }
-        #v2 { position: 0% left #u2 #u3; }
-        #v3 { position: 0% left #u3 #u4; }
-        #v4 { position: 0% left #v4_pos; }
+        #u1 { position: #u1_pos; }
+        #u2 { position: #u2_pos; }
+        #u3 { position: #u3_pos; }
+        #u4 { position: #u4_pos; }
+        #v1 { position: #u1 #u3; }
+        #v2 { position: #u2 #u3; }
+        #v3 { position: #u3 #u4; }
+        #v4 { position: #v4_pos; }
         connection { line-color: red; }
     </style>
  </cell-diagram>

@@ -330,55 +330,65 @@ export class Position
                              coordinates.y/dependencies.length);
     }
 
-    _parseComponent(tokens, previousDirn, defaultOffset=null, defaultDependency=null)
-    //===============================================================================
+    _parseComponent(tokens, previousDirn, defaultOffset, defaultDependency)
+    //=====================================================================
     {
         let offset = null;
         let usingDefaultOffset = false;
         let reln = null;
         let dependencies = new List();
         let state = 0;
-        for (let token of tokens.value) {
-            switch (state) {
-              case 0:
-                if (token.type !== 'ID') {
-                    offset = stylesheet.parseLength(token, defaultOffset);
-                    // Implicit dependency on our container's size if '%' offset
-                    if (offset.units.indexOf('%') >= 0) {
-                        this._element.container.size.addDependent(this._element);
+        if (tokens.type === 'SEQUENCE') {
+            for (let token of tokens.value) {
+                switch (state) {
+                  case 0:
+                    if (token.type !== 'ID' && token.type !== 'HASH') {
+                        offset = stylesheet.parseLength(token, defaultOffset);
+                        // Implicit dependency on our container's size if '%' offset
+                        if (offset && offset.units.indexOf('%') >= 0) {
+                            this._element.container.size.addDependent(this._element);
+                        }
+                        state = 1;
+                        break;
+                    } else {
+                        offset = defaultOffset;
+                        usingDefaultOffset = true;
                     }
-                    state = 1;
-                    break;
-                } else {
-                    offset = defaultOffset;
-                    usingDefaultOffset = true;
                     // Fall through to parse relationship
-                }
-              case 1:
-                if (token.type !== "ID" || !POSITION_RELATIONS.contains(token.value.toLowerCase())) {
-                    throw new exception.StyleError(tokens, "Unknown relationship for position");
-                }
-                reln = token.value.toLowerCase();
-                state = 2;
-                break;
-              case 2:
-                if (token.type === 'HASH') {
-                    const dependency = this.diagram.findElement(token.value);
-                    if (dependency === null) {
-                        throw new exception.StyleError(tokens, `Unknown element ${token.value}`);
+                  case 1:
+                    if (token.type === "ID") {
+                        if (!POSITION_RELATIONS.contains(token.value.toLowerCase())) {
+                            throw new exception.StyleError(tokens, "Unknown relationship for position");
+                        }
+                        reln = token.value.toLowerCase();
+                        state = 2;
+                        break;
                     }
-                    dependencies.append(dependency);
-                } else {
-                    throw new exception.StyleError(tokens, "Element ID expected");
+                    // Fall through to parse dependency
+                  case 2:
+                    if (token.type === 'HASH') {
+                        const dependency = this.diagram.findElement(token.value);
+                        if (dependency === null) {
+                            throw new exception.StyleError(tokens, `Unknown element ${token.value}`);
+                        }
+                        dependencies.append(dependency);
+                    } else if (defaultDependency !== null) {
+                        dependencies.append(defaultDependency);
+                    } else {
+                        throw new exception.StyleError(tokens, "Element ID expected");
+                    }
                 }
             }
-        }
-        if (state === 2 && dependencies.length === 0) {
-            if (defaultDependency !== null) {
-                dependencies.append(defaultDependency);
-            } else {
-                throw new exception.StyleError(tokens, "Element IDs expected");
+        } else if (tokens.type === 'HASH') {
+            offset = defaultOffset;
+            usingDefaultOffset = true;
+            const dependency = this.diagram.findElement(tokens.value);
+            if (dependency === null) {
+                throw new exception.StyleError(tokens, `Unknown element ${tokens.value}`);
             }
+            dependencies.append(dependency);
+        } else {
+            throw new exception.StyleError(tokens, "Invalid position rule");
         }
 
         let constraints = 0;
@@ -403,8 +413,8 @@ export class Position
      * Position as coords: absolute or % of container -- `100, 300` or `10%, 30%`
      * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
     **/
-    parsePosition(defaultOffset=null, defaultDependency=null)
-    //=======================================================
+    parsePosition(defaultOffset, defaultDependency)
+    //=============================================
     {
         const tokens = this._tokens;
         const container = this._element.container;
@@ -420,7 +430,7 @@ export class Position
                         this._addDependency(container);
                     }
                 } else {
-                    const dirn = this._parseComponent(tokens[0], null);
+                    const dirn = this._parseComponent(tokens[0], null, defaultOffset, defaultDependency);
                     this._parseComponent(tokens[1], dirn, defaultOffset, defaultDependency);
                 }
             } else {
