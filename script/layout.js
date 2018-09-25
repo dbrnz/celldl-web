@@ -22,9 +22,6 @@ limitations under the License.
 
 //==============================================================================
 
-//import * as bg from './bondgraph.js';
-//import * as dia from './diagram.js';
-
 import * as config from '../config.js';
 import * as exception from './exception.js';
 import * as geo from './geometry.js';
