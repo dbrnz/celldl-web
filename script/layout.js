@@ -185,6 +185,12 @@ export class Position
         }
     }
 
+    setOffset(offset)
+    //===============
+    {
+        this._offset = offset;
+    }
+
     moveByOffset(offset)
     //==================
     {
@@ -408,7 +414,7 @@ export class Position
             }
         } else if (tokens !== null) {
             this._parseComponent(tokens, null, defaultOffset, defaultDependency);
-        } else if (this._coordinates === null) {
+        } else if (this._coordinates === null && this._offset === null) {
             // Assign default position if none specified
             this._offset = DEFAULT_POSITION;
             if (container !== null) {
