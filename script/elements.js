@@ -65,7 +65,7 @@ export const CELLDL_NAMESPACE = "http://www.cellml.org/celldl/1.0#";
 export class DiagramElement {
     constructor(diagram, domElement, requireId=true)
     {
-        if (requireId && !domElement.hasAttribute('id')) {
+        if (requireId && !(domElement && domElement.hasAttribute('id'))) {
             throw new exception.KeyError("A diagram element must have an 'id'");
         }
         this.diagram = diagram;
