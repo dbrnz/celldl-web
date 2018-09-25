@@ -34,8 +34,6 @@ import * as utils from './utils.js';
 import {CELLDL_NAMESPACE, DiagramElement} from './elements.js';
 import {SvgFactory, SVG_NS, SVG_VERSION} from './svgElements.js';
 
-import {SvgDocument} from './svgDocument.js';
-
 //==============================================================================
 
 export class CellDiagram {
