@@ -59,10 +59,10 @@ export class Connection
                                     toParent, parentElement, validClasses)
     //====================================================================
     {
-        if (!(attributeName in domElement.attributes)) {
+        if (!domElement.hasAttribute(attributeName)) {
             throw new exception.KeyError(`Expected '${attributeName}' attribute`);
         }
-        return new Connection(diagram, domElement, domElement.attributes[attributeName].textContent,
+        return new Connection(diagram, domElement, domElement.getAttribute(attributeName),
                               toParent, parentElement, validClasses);
     }
 

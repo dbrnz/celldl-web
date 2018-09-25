@@ -195,11 +195,11 @@ export class FlowEdge extends Connection
                                     toParent, parentElement, validClasses)
     //====================================================================
     {
-        if (!(direction in element.attributes)) {
+        if (!element.hasAttribute(direction)) {
             throw new exception.KeyError(`Expected ${direction} attribute`);
         }
-        const count = ('count' in element.attributes) ? Number(element.attributes.count.textContent) : 1;
-        return new FlowEdge(diagram, element, element.attributes[direction].textContent,
+        const count = element.hasAttribute('count') ? Number(element.getAttribute('count')) : 1;
+        return new FlowEdge(diagram, element, element.getAttribute(direction),
                             toParent, parentElement, validClasses, direction, count);
     }
 
@@ -220,19 +220,19 @@ export class Flow extends DiagramElement
     {
         super(diagram, domElement);
 //        this.componentOffsets = [];
-//        const transporterId = ('transporter' in element.attributes) ? element.attributes.transporter : null;
+//        const transporterId = element.getAttribute('transporter');
 //        this.transporter = this.fromAttribute('transporter', [diagramTransporter])
         const flowConnectsTo = [Gyrator, Potential, Reaction];
         for (let element of domElement.children) {
             if (element.nodeName === "connection") {
-                if (!("input" in element.attributes || "output" in element.attributes)) {
+                if (!element.hasAttribute('input') && !element.hasAttribute('output')) {
                     throw new exception.SyntaxError(element, "A flow connection requires an 'input' or 'output'");
                 }
-                if ('input' in element.attributes) {
+                if (element.hasAttribute('input')) {
                     bondGraph.addEdge(FlowEdge.createFromAttributeValue(diagram, element, 'input',
                                                                         true, this, flowConnectsTo));
                     }
-                if ('output' in element.attributes) {
+                if (element.hasAttribute('output')) {
                     bondGraph.addEdge(FlowEdge.createFromAttributeValue(diagram, element, 'output',
                                                                         false, this, flowConnectsTo));
                 }
@@ -344,8 +344,8 @@ export class Potential extends DiagramElement
     constructor(diagram, bondGraph, domElement)
     {
         super(diagram, domElement);
-        if ('quantity' in domElement.attributes) {
-            this.quantityId = domElement.attributes.quantity.textContent;
+        if (domElement.hasAttribute('quantity')) {
+            this.quantityId = domElement.getAttribute('quantity');
             const edge = new Connection(diagram, domElement, this.quantityId, false,
                                   this, [Quantity], `#${this.quantityId}`);
             bondGraph.addEdge(edge);

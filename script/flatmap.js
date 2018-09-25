@@ -157,14 +157,14 @@ export class ComponentConnection extends Connection
 {
     constructor(diagram, flatMap, domElement)
     {
-        if (!("from" in domElement.attributes)) {
+        if (!domElement.hasAttribute('from')) {
             throw new exception.KeyError(`Expected 'from' attribute`);
         }
-        const fromComponent = diagram.findElement(`#${domElement.attributes["from"].textContent}`, Component);
+        const fromComponent = diagram.findElement(`#${domElement.getAttribute('from')}`, Component);
         if (fromComponent === null) {
             throw new exception.KeyError(`No component with 'from' id`);
         }
-        super(diagram, domElement, domElement.attributes["to"].textContent,
+        super(diagram, domElement, domElement.getAttribute('to'),
               false, fromComponent, [Component]);
     }
 

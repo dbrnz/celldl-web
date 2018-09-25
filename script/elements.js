@@ -70,20 +70,19 @@ const HIGHLIGHT_OPACITY = 0.8;
 export class DiagramElement {
     constructor(diagram, domElement, requireId=true)
     {
-        if (requireId && !('id' in domElement.attributes)) {
+        if (requireId && !domElement.hasAttribute('id')) {
             throw new exception.KeyError("A diagram element must have an 'id'");
         }
         this.diagram = diagram;
         this._domElement = domElement;
-        this.attributes = domElement.attributes;
         this.tagName = domElement.tagName;
         this.id = (domElement.id != '') ? `#${domElement.id}` : '';
-        this.name = ('name' in this.attributes) ? this.attributes.name.textContent : this.id.substr(1);
-        this.classes = ('class' in this.attributes) ? this.attributes.class.textContent.split(/\s+/) : [];
+        this.name = domElement.hasAttribute('name') ? domElement.getAttribute('name') : this.id.substr(1);
+        this.classes = domElement.hasAttribute('class') ? domElement.getAttribute('class').split(/\s+/) : [];
         // _name, _label, _classes and getters??
         this.classes.push('draggable');
         this.classes.push(this.tagName);
-        this.label = ('label' in this.attributes) ? this.attributes.label.textContent : this.name;
+        this.label = domElement.hasAttribute('label') ? domElement.getAttribute('label') : this.name;
         this.style = diagram.stylesheet.style(domElement);
         this.position = new layout.Position(diagram, this, this.style.position);
         this._textPosition = this.position;
@@ -114,11 +113,11 @@ export class DiagramElement {
         diagram.addElement(this);
     }
 
-    fromAttribute(attributeName, elementClasses=[DiagramElement])
-    //===========================================================
+    fromAttribute(idAttributeName, elementClasses=[DiagramElement])
+    //=============================================================
     {
-        if (attributeName in this.attributes) {
-            const elementId = `#${this.attributes[attributeName].textContent}`;
+        if (this._domElement.hasAttribute(idAttributeName)) {
+            const elementId = `#${this._domElement.getAttribute(idAttributeName)}`;
             for (let elementClass of elementClasses) {
                 const element = this.diagram.findElement(elementId, elementClass);
                 if (element !== null) {

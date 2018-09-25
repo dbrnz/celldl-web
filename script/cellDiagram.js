@@ -65,8 +65,7 @@ export class CellDiagram {
 
         const xmlRoot = xmlDocument.children[0];
 
-        if ('xmlns' in xmlRoot.attributes
-         && xmlRoot.attributes.xmlns.textContent !== CELLDL_NAMESPACE) {
+        if (xmlRoot.hasAttribute('xmlns') && xmlRoot.getAttribute('xmlns') !== CELLDL_NAMESPACE) {
             throw new exception.SyntaxError(xmlRoot, "Not a CellDL document");
         } else if (xmlRoot.nodeName !== 'cell-diagram') {
             throw new exception.SyntaxError(xmlRoot, "Root tag must be <cell-diagram>");
@@ -110,8 +109,8 @@ export class CellDiagram {
                     throw new exception.SyntaxError(domElement, "Can only declare a single <diagram>");
                 }
             } else if (domElement.nodeName === 'style') {
-                if ('src' in domElement.attributes) {
-                    stylePromises.push(this.stylesheet.fetchStyles(domElement.attributes.src.textContent));
+                if (domElement.hasAttribute('src')) {
+                    asyncFetchs.push(this.stylesheet.fetchStyles(domElement.getAttribute('src')));
                 } else {
                     this.stylesheet.addStyles(domElement.textContent);
                     if (domElement.id === 'manual_adjustments') {
