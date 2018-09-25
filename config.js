@@ -60,3 +60,12 @@ export const HIGHLIGHT = { BORDER: 5,
                            OPACITY: 0.8 };
 
 //==============================================================================
+
+// Layout grid
+
+export const GRID = { X_SPACING: new geo.Length(1, 'vw'),
+                      Y_SPACING: new geo.Length(1, 'vh'),
+                      OPACITY: 0.2,
+                      COLOUR: "blue" };
+
+//==============================================================================
