@@ -432,10 +432,128 @@ export class Polygon extends GeoObject
         this.edges = new LineSegmentSet(this.boundary.lineSegments);
     }
 
+    static fromSvgPath(svgPath)
+    //=========================
+    {
+        const path = svgPath.trim().replace(/,/g, ' ').replace(/\n/g, ' ').split(' ').filter(e => e);
+        let lastcmd = null;
+        let lastpos = null;
+        const points = [];
+        let n = 0;
+        while (n < path.length) {
+            let cmd = null;
+            let pos = null;
+
+            if (/^[A-Z]$/i.test(path[n])) {  // Check if alpha
+                cmd = path[n];
+                n += 1;
+            } else {
+                cmd = lastcmd;
+            }
+
+            if (cmd === 'm' && lastpos === null) {
+                cmd = 'M';
+            }
+
+            if   (cmd === 'M') {
+                pos = new Point(parseFloat(path[n]), parseFloat(path[n+1]));
+                n += 2;
+            } else if (cmd == 'm') {
+                pos = lastpos.addOffset([parseFloat(path[n]), parseFloat(path[n+1])]);
+                n += 2;
+            } else if (cmd == 'L') {
+                pos = new Point(parseFloat(path[n]), parseFloat(path[n+1]));
+                n += 2;
+            } else if (cmd == 'l') {
+                pos = lastpos.addOffset([parseFloat(path[n]), parseFloat(path[n+1])]);
+                n += 2;
+            } else if (cmd == 'H') {
+                pos = new Point(parseFloat(path[n]), lastpos.y);
+                n += 1;
+            } else if (cmd == 'h') {
+                pos = lastpos.addOffset([parseFloat(path[n]), 0]);
+                n += 1;
+            } else if (cmd == 'V') {
+                pos = new Point([lastpos.x, parseFloat(path[n])]);
+                n += 1;
+            } else if (cmd == 'v') {
+                pos = lastpos.addOffset([0, parseFloat(path[n])]);
+                n += 1;
+            } else if (cmd == 'C') {
+                pos = new Point(parseFloat(path[n+4]), parseFloat(path[n+5]));
+                n += 6;
+            } else if (cmd == 'c') {
+                pos = lastpos.addOffset([parseFloat(path[n+4]), parseFloat(path[n+5])]);
+                n += 6;
+            } else if ('zZ'.indexOf(cmd) >= 0) {
+                ;   // Close the curve
+            } else {
+                continue;
+            }
+
+            // 'M/m' should just move and not draw...
+            if (pos !== null) {
+                points.push(pos);
+                lastpos = pos;
+                lastcmd = cmd;
+            }
+        }
+
+        if (points[0] === points.slice(-1)[0]) {
+            points.pop();
+        }
+        return new Polygon(points);
+    }
+
     lineIntersections(line)
     //=====================
     {
         return this.edges.lineIntersections(line);
+    }
+
+
+    /*
+     * ANSI C code from the article
+     * "Centroid of a Polygon"
+     * by Gerard Bashein and Paul R. Detmer,
+       (gb@locke.hs.washington.edu, pdetmer@u.washington.edu)
+     * in "Graphics Gems IV", Academic Press, 1994
+     */
+
+    /*********************************************************************
+    polyCentroid: Calculates the centroid (xCentroid, yCentroid) and area
+    of a polygon, given its vertices (x[0], y[0]) ... (x[n-1], y[n-1]). It
+    is assumed that the contour is closed, i.e., that the vertex following
+    (x[n-1], y[n-1]) is (x[0], y[0]).  The algebraic sign of the area is
+    positive for counterclockwise ordering of vertices in x-y plane;
+    otherwise negative.
+    Returned values:  0 for normal execution;  1 if the polygon is
+    degenerate (number of vertices < 3);  and 2 if area = 0 (and the
+    centroid is undefined).
+    **********************************************************************/
+
+    centroid()
+    //========
+    {
+        const points = this.boundary.coordinates;
+        const n = points.length;
+        if (n < 3) {
+            return null;
+        }
+        let a = 0;
+        let x = 0;
+        let y = 0;
+        let q = points.slice(-1)[0];
+        for (let p of points) {
+            const f = q.x*p.y - p.x*q.y;
+            a += f;
+            x += f*(p.x + q.x);
+            y += f*(p.y + q.y);
+            q = p;
+        }
+        this.area = a/2.0;
+        a *= 3.0;
+        return a ? (new Point(x/a, y/a)) : null;
     }
 
     svgNode()

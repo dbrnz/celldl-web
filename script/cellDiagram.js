@@ -22,6 +22,7 @@ limitations under the License.
 
 //==============================================================================
 
+import * as background from './background.js';
 import * as bondgraph from './bondgraph.js';
 import * as exception from './exception.js';
 import * as flatmap from './flatmap.js';
@@ -32,6 +33,8 @@ import * as utils from './utils.js';
 
 import {CELLDL_NAMESPACE, DiagramElement} from './elements.js';
 import {SvgFactory, SVG_NS, SVG_VERSION} from './svgElements.js';
+
+import {SvgDocument} from './svgDocument.js';
 
 //==============================================================================
 
@@ -71,22 +74,22 @@ export class CellDiagram {
             throw new exception.SyntaxError(xmlRoot, "Root tag must be <cell-diagram>");
         }
 
-        let stylePromises = [];
-        stylePromises.push(this.stylesheet.loadDefaultStylesheet());
+        let asyncFetchs = [];
+        asyncFetchs.push(this.stylesheet.loadDefaultStylesheet());
 
         // Scan for top level elements, make sure there are no more than one
         // of each, but don't create diagram elements until all stylesheets
         // have been loaded
 
-        let backgroundElement = null;
         let bondGraphElement = null;
         let flatMapElement = null;
         let diagramElement = null;
 
         for (let domElement of xmlRoot.children) {
             if (domElement.nodeName === 'background') {
-                if (backgroundElement === null) {
-                    backgroundElement = domElement;
+                if (this.background === null) {
+                    this.background = new background.Background(this, domElement);
+                    asyncFetchs.push(this.background.loadBackgroundImage());
                 } else {
                     throw new exception.SyntaxError(domElement, "Can only declare a single <background>");
                 }
@@ -131,7 +134,7 @@ export class CellDiagram {
         }
 
         // Only parse top level XML elements after all stylesheets have been loaded
-        return Promise.all(stylePromises)
+        return Promise.all(asyncFetchs)
                       .then(() => {
                             const style = this.stylesheet.style(xmlRoot);
                             if ('width' in style) {
@@ -139,12 +142,6 @@ export class CellDiagram {
                             }
                             if ('height' in style) {
                                 this.height = stylesheet.parseNumber(style.height);
-                            }
-                            if (backgroundElement !== null) {
-                                if ('href' in backgroundElement.attributes) {
-                                    this.background = backgroundElement.attributes['href'].textContent;
-                                    // FUTURE: check for style rules
-                                }
                             }
                             if (bondGraphElement !== null) {
                                 this.bondGraph = new bondgraph.BondGraph(this, bondGraphElement);
@@ -297,6 +294,12 @@ export class CellDiagram {
             connection.parseLine();
         }
 
+        // Assign positions of regions
+
+        if (this.background !== null) {
+            this.background.layout();
+        }
+
         // Layout all groups and their elements
 
         if (this.flatMap !== null) {
@@ -338,12 +341,8 @@ export class CellDiagram {
 //            svg.extend(c.svg());
 //        }
 
-        if (this.background) {
-            const background = document.createElementNS(SVG_NS, 'image');
-            background.setAttribute('xlink:href', this.background);
-            background.setAttribute('width', `${this.width}`);
-            background.setAttribute('height', `${this.height}`);
-            svgNode.appendChild(background);
+        if (this.background !== null) {
+            svgNode.appendChild(this.background.generateSvg());
         }
 
         if (this.flatMap !== null) {
