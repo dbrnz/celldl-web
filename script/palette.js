@@ -65,7 +65,7 @@ export class Palette
 
                     // Wait until all MathJax text has been rendered
 
-                    Promise.all(this.diagram.svgFactory.promises()).then(() => {
+                    this.diagram.svgFactory.promises().then(() => {
                         // Show the SVG diagram
                         // Note: If we use `appendChild` then `url()` links in the SVG
                         //       document are not resolved
