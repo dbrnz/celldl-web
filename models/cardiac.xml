@@ -1,7 +1,7 @@
 ﻿<cell-diagram>
 
     <flat-map>
-        <group id="central-level" label="Central\nLevel" class="level">
+        <component id="central-level" label="Central\nLevel" class="level">
             <component id="higher-centers" label="Higher\nCenters" class="efferent"/>
             <component id="medulla" label="Medulla" class="efferent"/>
             <component id="c1-c2" label="C1-C2" class="efferent"/>
@@ -15,10 +15,10 @@
             <component id="drg-afferent-soma" label="DRG\nAff. soma" class="afferent"/>
             <component id="spinal-cord" label="Spinal\nCord" class="big-label"/>
             <component id="brainstem" label="Brainstem" class="big-label"/>
-        </group>
+        </component>
 
-        <group id="intrathoracic-level" label="Intra-\nthoracic\nLevel" class="level">
-            <group id="intrathoracic-extracardiac-ganglia" label="" class="module">
+        <component id="intrathoracic-level" label="Intra-\nthoracic\nLevel" class="level">
+            <component id="intrathoracic-extracardiac-ganglia" label="" class="module">
                 <component id="intrathoracic-extracardiac-ganglia-label"
                            label="Intrathoracic\nExtracardiac\nGanglia" class="big-label"/>
                 <component id="intrathoracic-extracardiac-ganglia-lcn"
@@ -27,11 +27,11 @@
                            label="Afferent\nsoma" class="afferent"/>
                 <component id="intrathoracic-extracardiac-ganglia-sympath-efferent-soma"
                            label="Sympathetic\nEfferent\nsoma" class="efferent"/>
-            </group>
-        </group>
+            </component>
+        </component>
 
-        <group id="cardiac-level" label="Cardiac\nLevel" class="level">
-            <group id="icns" label="" class="module">
+        <component id="cardiac-level" label="Cardiac\nLevel" class="level">
+            <component id="icns" label="" class="module">
                 <component id="icns-label" label="Intrinsic\nCardiac\nGanglionated\nPlexus" class="big-label"/>
                 <component id="icns-lcn" label="Local Circuit\nNeurons" class="efferent"/>
                 <component id="icns-sympath-efferent-soma"
@@ -40,9 +40,9 @@
                            label="Parasym\nEff. soma" class="efferent"/>
                 <component id="icns-afferrent-soma"
                            label="Afferent\nsoma" class="afferent"/>
-            </group>
+            </component>
 
-            <group id="heart" label="Heart" class="big-label">
+            <component id="heart" label="Heart" class="big-label">
                 <component id="heart-neurite-drg" label="Neurite" class="afferent" type="boundary"/>
                 <component id="heart-neurite-iteg" label="Neurite" class="afferent" type="boundary"/>
                 <component id="heart-neurite-icns" label="Neurite" class="afferent" type="boundary"/>
@@ -52,8 +52,8 @@
                 <component id="heart-adenylate-cyclase" label="AC" class="efferent" type="boundary"/>
                 <component id="heart-Gs" label="$\text{G}_\text{s}$" class="efferent"/>
                 <component id="heart-Gi" label="$\text{G}_\text{i}$" class="efferent"/>
-            </group>
-        </group>
+            </component>
+        </component>
 
         <!-- Connections are between components -->
 
