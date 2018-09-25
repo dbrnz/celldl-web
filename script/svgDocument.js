@@ -22,6 +22,7 @@ limitations under the License.
 
 //==============================================================================
 
+import * as exception from './exception.js';
 import * as geo from './geometry.js';
 
 //==============================================================================
@@ -33,7 +34,9 @@ export class SvgDocument
         const domParser = new DOMParser();
         this._document = domParser.parseFromString(svgText, "image/svg+xml");
         const svgNode = this._document.documentElement;
-        console.assert(svgNode.nodeName === 'svg', "Background is not in SVG format...");
+        if (svgNode.nodeName !== 'svg') {
+            throw new exception.SyntaxError(svgNode, "Background is not in SVG format...");
+        }
 
         // get viewport/width/height/x/y
         const width = svgNode.getAttribute('width');
