@@ -118,6 +118,15 @@ export class TextEditor
             (error) => { alert(error); this.diagram = null; });
     }
 
+    saveSvg(svgDiagram)
+    //=================
+    {
+        const svg = svgDiagram.outerHTML;
+        const blob = new Blob([svg], { type: "image/svg+xml" });
+        const svgFileName = `${this.loadedFile.split('.')[0]}.svg`
+        saveAs(blob, svgFileName);
+    }
+
     exportSvg()
     //=========
     {
@@ -129,14 +138,13 @@ export class TextEditor
 
         // Wait until all MathJax text has been rendered
 
-        Promise.all(this.diagram.svgFactory.promises()).then(() => {
-            const svg = svgDiagram.outerHTML;
-
-            const blob = new Blob([svg], { type: "image/svg+xml" });
-            const svgFileName = `${this.loadedFile.split('.')[0]}.svg`
-
-            saveAs(blob, svgFileName);
-        });
+        if (this.diagram.svgFactory.promises().length) {
+            Promise.all(this.diagram.svgFactory.promises()).then(() => {
+                this.saveSvg(svgDiagram);
+            });
+        } else {
+            this.saveSvg(svgDiagram);
+        }
     }
 }
 
