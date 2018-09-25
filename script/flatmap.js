@@ -60,7 +60,7 @@ export class FlatMap extends DiagramElement
     //=========================
     {
         if        (domElement.nodeName === "component") {
-            this.addElement(new Component(this.diagram, this, domElement));
+            this.addElement(new Component(this.diagram, domElement, this));
         } else if (domElement.nodeName === "connection") {
             this.addConnection(new ComponentConnection(this.diagram, this, domElement));
         } else {
@@ -115,7 +115,7 @@ export class FlatMap extends DiagramElement
 
 export class Component extends aggregation(DiagramElement, RectangularMixin)
 {
-    constructor(diagram, flatMap, domElement)
+    constructor(diagram, domElement, flatMap)
     {
         super(diagram, domElement);
 
@@ -125,7 +125,7 @@ export class Component extends aggregation(DiagramElement, RectangularMixin)
 
         for (let element of domElement.children) {
             if (element.nodeName === "component") {
-                const component = new Component(diagram, element);
+                const component = new Component(diagram, element, flatMap);
                 flatMap.addElement(component);
                 // NB. Element must be added to component **after** adding it to flatmap
                 this.addElement(component);
