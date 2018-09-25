@@ -22,6 +22,7 @@ limitations under the License.
 
 //==============================================================================
 
+import * as config from '../config.js';
 import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
@@ -298,7 +299,7 @@ export class Flow extends DiagramElement
                        : ((["top", "left"].indexOf(side) >= 0) ? 1 : -1);
 
             const transporterEnd = this.transporter.coords.copy();
-            transporterEnd[index] += (sign * this.diagram.unitConverter.toPixels(layout.TRANSPORTER_EXTRA, index, false));
+            transporterEnd[index] += (sign * this.diagram.unitConverter.toPixels(config.TRANSPORTER.EXTRA, index, false));
 
             const offset = self.componentOffsets.find(co => co.component === component).length;
 
@@ -388,7 +389,7 @@ export class Quantity extends DiagramElement
         return 'none';
     }
 
-    assignGeometry(width=layout.QUANTITY_WIDTH, height=layout.QUANTITY_HEIGHT)
+    assignGeometry(width=config.QUANTITY.WIDTH, height=config.QUANTITY.HEIGHT)
     //========================================================================
     {
         if (this.hasCoordinates) {
@@ -425,7 +426,7 @@ export class Reaction extends DiagramElement
         }
     }
 
-    assignGeometry(radius=layout.TRANSPORTER_RADIUS)
+    assignGeometry(radius=config.TRANSPORTER.RADIUS)
     //==============================================
     {
         return super.assignGeometry(radius);

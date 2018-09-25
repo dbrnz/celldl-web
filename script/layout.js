@@ -25,6 +25,7 @@ limitations under the License.
 //import * as bg from './bondgraph.js';
 //import * as dia from './diagram.js';
 
+import * as config from '../config.js';
 import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as stylesheet from './stylesheet.js';
@@ -33,29 +34,6 @@ import * as utils from './utils.js';
 import {List} from './utils.js';
 
 //==============================================================================
-
-/**
- * Default diagram size (in SVG pixels)
-**/
-export const DIAGRAM_WIDTH = 500;
-export const DIAGRAM_HEIGHT = 500;
-
-/**
- * Default radius of an element (in SVG pixels)
-**/
-export const ELEMENT_RADIUS = 15;
-
-export const STROKE_WIDTH = new geo.Length(2.5, 'px');
-
-export const FLOW_OFFSET = new geo.Length(6, '%w');
-
-export const QUANTITY_OFFSET = new geo.Length(6, '%w');;
-export const QUANTITY_WIDTH = 50;
-export const QUANTITY_HEIGHT = 33;
-
-export const TRANSPORTER_RADIUS = 20;
-export const TRANSPORTER_EXTRA = new geo.Length(2.5, '%');
-export const TRANSPORTER_WIDTH = new geo.Length(5, '%');
 
 export const HORIZONTAL_RELATIONS = new List(['left', 'right']);
 export const VERTICAL_RELATIONS = new List(['above', 'below']);
@@ -66,9 +44,6 @@ export const VERTICAL_BOUNDARIES = new List(['left', 'right']);
 export const CORNER_BOUNDARIES = new List(['top-left', 'top-right', 'bottom-left', 'bottom-right']);
 export const COMPARTMENT_BOUNDARIES = new List().extend(HORIZONTAL_BOUNDARIES).extend(VERTICAL_BOUNDARIES);
 
-export const DEFAULT_POSITION = [ new geo.Length(50, '%'), new geo.Length(10, '%')];
-export const DEFAULT_SIZE     = [ new geo.Length(), new geo.Length()];
-
 //==============================================================================
 
 export class Size
@@ -76,7 +51,7 @@ export class Size
     constructor(element, sizeTokens)
     {
         this._element = element;
-        this._size = sizeTokens ? stylesheet.parseSize(sizeTokens) : DEFAULT_SIZE;
+        this._size = sizeTokens ? stylesheet.parseSize(sizeTokens) : config.DEFAULT.SIZE;
         this._pixelSize = [0, 0];
         this._dependents = new Set();  // Set of elements that depend on this size
     }
@@ -175,7 +150,7 @@ export class Position
         const container = this._element.container;
         if (container) {
             // TODO: Find relative position as a string (new `OFFSET from IDS` relationship??)
-            const tempOffset = this._offset || DEFAULT_POSITION;   // **TEMP**
+            const tempOffset = this._offset || config.DEFAULT.POSITION;   // **TEMP**
             if (tempOffset) {
                 const units = [tempOffset[0].units, tempOffset[1].units];
                 this._offset = utils.pixelsToOffset(this._coordinates.toOffset(), container, units, true);
@@ -416,7 +391,7 @@ export class Position
             this._parseComponent(tokens, null, defaultOffset, defaultDependency);
         } else if (this._coordinates === null && this._offset === null) {
             // Assign default position if none specified
-            this._offset = DEFAULT_POSITION;
+            this._offset = config.DEFAULT.POSITION;
             if (container !== null) {
                 this._addDependency(container);
             }

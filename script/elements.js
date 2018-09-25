@@ -37,6 +37,7 @@ limitations under the License.
 
 //==============================================================================
 
+import * as config from '../config.js';
 import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
@@ -49,12 +50,6 @@ import {SVG_NS} from './svgElements.js';
 //==============================================================================
 
 export const CELLDL_NAMESPACE = "http://www.cellml.org/celldl/1.0#";
-
-//==============================================================================
-
-const HIGHLIGHT_BORDER = 9;   // in layout.js ??
-const HIGHLIGHT_COLOUR = "#004A9C";
-const HIGHLIGHT_OPACITY = 0.8;
 
 //==============================================================================
 
@@ -97,7 +92,7 @@ export class DiagramElement {
         this.size = new layout.Size(this, this.style.size);
         this.stroke = this.getStyleAsString('stroke', 'none');
         this._strokeWidth = ('stroke-width' in this.style) ? stylesheet.parseLength(this.style['stroke-width'])
-                                                           : layout.STROKE_WIDTH;
+                                                           : config.STROKE.WIDTH;
         this.textColour = ('text-color' in this.style) ? stylesheet.parseColour(this.diagram, this.style['text-color'])
                                                        : '#202020'; // TODO: specify defaults in one place
         this.geometry = null;
@@ -323,7 +318,7 @@ export class DiagramElement {
         return this.size.asPixels;
     }
 
-    assignGeometry(radius=layout.ELEMENT_RADIUS)
+    assignGeometry(radius=config.DEFAULT.RADIUS)
     //==========================================
     {
         if (this.hasCoordinates) {
@@ -539,11 +534,11 @@ export class DiagramElement {
             svgNode.appendChild(node);
             this.appendLabelAsSvg(svgNode);
             if (highlight) {
-                const border = this.geometry.svgNode(HIGHLIGHT_BORDER + 2);
+                const border = this.geometry.svgNode(config.HIGHLIGHT.BORDER + 2);
                 setAttributes(border, { "fill": "none",
-                                        "stroke": HIGHLIGHT_COLOUR,
-                                        "stroke-width": HIGHLIGHT_BORDER,
-                                        "stroke-opacity": HIGHLIGHT_OPACITY });
+                                        "stroke": config.HIGHLIGHT.COLOUR,
+                                        "stroke-width": config.HIGHLIGHT.BORDER,
+                                        "stroke-opacity": config.HIGHLIGHT.OPACITY });
                 svgNode.appendChild(border);
             }
         }

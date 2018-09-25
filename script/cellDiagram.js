@@ -24,10 +24,10 @@ limitations under the License.
 
 import * as background from './background.js';
 import * as bondgraph from './bondgraph.js';
+import * as config from '../config.js';
 import * as exception from './exception.js';
 import * as flatmap from './flatmap.js';
 import * as geo from './geometry.js';
-import * as layout from './layout.js';
 import * as stylesheet from './stylesheet.js';
 import * as utils from './utils.js';
 
@@ -268,7 +268,7 @@ export class CellDiagram {
         this.bondGraph.addXml(element);
     }
 
-    layout(width=layout.DIAGRAM_WIDTH, height=layout.DIAGRAM_HEIGHT)
+    layout(width=config.DIAGRAM.WIDTH, height=config.DIAGRAM.HEIGHT)
     //==============================================================
     {
         // Position and size all elements of the diagram.

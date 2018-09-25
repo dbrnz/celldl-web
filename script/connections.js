@@ -22,6 +22,7 @@ limitations under the License.
 
 //==============================================================================
 
+import * as config from '../config.js';
 import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
@@ -192,7 +193,7 @@ export class Connection
         const svgNode = this.path.svgNode();
         setAttributes(svgNode, {id: this.diagramId, fill: 'none',
                                 stroke: this.lineColour,
-                                'stroke-width': this.diagram.strokeWidthToPixels(layout.STROKE_WIDTH),
+                                'stroke-width': this.diagram.strokeWidthToPixels(config.STROKE.WIDTH),
                                 'marker-end': this.diagram.svgFactory.arrow(this.lineColour)});
         if (styleAsString(this.style, 'line-style') === 'dashed') {
             setAttributes(svgNode, {'stroke-dasharray': '10,5'});

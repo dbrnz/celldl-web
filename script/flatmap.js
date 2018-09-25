@@ -38,7 +38,6 @@ import {aggregation} from '../thirdparty/aggregation/src/aggregation-es6.js';
 
 import * as exception from './exception.js';
 import * as geo from './geometry.js';
-import * as layout from './layout.js';
 
 import {DiagramElement, RectangularMixin} from './elements.js';
 import {Connection} from './connections.js';
