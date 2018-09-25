@@ -36,7 +36,8 @@ export class SyntaxError extends Error
 {
     constructor(domElement, message)
     {
-        super(`${message}\n${domElement.outerHTML}`);
+        super(message);
+//        super(`${message}\n${domElement.outerHTML}`);
     }
 }
 

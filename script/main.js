@@ -46,10 +46,11 @@ export function displayDiagram(textEditor, svgContainerNode, palette)
         const xmlDocument = domParser.parseFromString(cellDlText, "application/xml");
         document.body.style.cursor = 'wait';
 
+        const cellDiagram = new CellDiagram('diagram', textEditor);
         try {
-            const cellDiagram = new CellDiagram('diagram', textEditor);
-            cellDiagram.parseDocument(xmlDocument)
-                .then(() => {
+          cellDiagram.parseDocument(xmlDocument)
+            .then(() => {
+                try {
                     cellDiagram.layout();  // Pass width/height to use as defaults...
 
                     const svgDiagram = cellDiagram.generateSvg();
@@ -77,11 +78,15 @@ export function displayDiagram(textEditor, svgContainerNode, palette)
                         diagramEditor.svgLoaded(svgNode);
 
                         resolve(cellDiagram);
-                    });
-                });
+                    })
+                } catch (error) {
+                    reject(error);
+                }
+            }, error => { throw error; })
+            .catch(error => {
+                reject(error);
+            });
         } catch (error) {
-            document.body.style.cursor = 'default';
-            console.trace(error);
             reject(error);
         }
     });

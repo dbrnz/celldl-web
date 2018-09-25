@@ -153,7 +153,8 @@ export class CellDiagram {
                                 this.flatMap = new flatmap.FlatMap(this, flatMapElement);
                                 this.position.addDependent(this.flatMap);
                             }
-                        });
+                        })
+                      .catch(error => { throw error; });
     }
 
     lengthToPixels(length, index)

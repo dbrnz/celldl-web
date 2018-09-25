@@ -115,7 +115,12 @@ export class TextEditor
     {
         displayDiagram(this, this.svgContainerNode, this.palette).then(
             (diagram) => { this.diagram = diagram; },
-            (error) => { alert(error); this.diagram = null; });
+            (error) => {
+                document.body.style.cursor = 'default';
+                console.trace(error);
+                alert(error);
+                this.diagram = null;
+            });
     }
 
     saveSvg(svgDiagram)
