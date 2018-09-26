@@ -226,7 +226,7 @@ export function parseLength(tokens, defaultValue=null, defaultUnits='%')
             throw new exception.StyleError(tokens, "Length expected.");
         }
     }
-    const units = (tokens.type === "DIMENSION") ? tokens.unit : defaultUnit;
+    const units = (tokens.type === "DIMENSION") ? tokens.unit : defaultUnits;
     if (["vw", "vh", "px", defaultUnits].indexOf(units) < 0) {
         throw new exception.StyleError(tokens, "Unknown units for length");
     }
