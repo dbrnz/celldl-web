@@ -74,12 +74,6 @@ export class Point extends GeoObject
         this.y = y;
     }
 
-    toString()
-    //========
-    {
-        return `POINT(${this.x}, ${this.y})`;
-    }
-
     valueAt(index)
     //============
     {
@@ -121,16 +115,16 @@ export class Point extends GeoObject
         return !this.equal(other);
     }
 
-    addOffset(offset)
+    translate(offset)
     //===============
     {
         return new Point((this.x + offset[0]), (this.y + offset[1]));
     }
 
-    subtractOffset(offset)
-    //====================
+    scale(multiplier)
+    //===============
     {
-        return new Point((this.x - offset[0]), (this.y - offset[1]));
+        return new Point(multiplier*this.x, multiplier*this.y);
     }
 
     offset(other)
@@ -316,21 +310,21 @@ export class LineSegment extends ProjectiveLine
     translate(offset)
     //===============
     {
-        return new LineSegment(this.start.addOffset(offset), this.end.addOffset(offset));
+        return new LineSegment(this.start.translate(offset), this.end.translate(offset));
     }
 
     truncateEnd(length)
     //=================
     {
         return new LineSegment(this.start,
-                               this.end.subtractOffset([(this.end.x - this.start.x)*length/this.length,
-                                                        (this.end.y - this.start.y)*length/this.length]));
+                               this.end.translate([(this.start.x - this.end.x)*length/this.length,
+                                                   (this.start.y - this.end.y)*length/this.length]));
     }
 
     truncateStart(length)
     //===================
     {
-        return new LineSegment(this.start.addOffset([(this.end.x - this.start.x)*length/this.length,
+        return new LineSegment(this.start.translate([(this.end.x - this.start.x)*length/this.length,
                                                      (this.end.y - this.start.y)*length/this.length]),
                                this.end);
     }
@@ -459,31 +453,31 @@ export class Polygon extends GeoObject
                 pos = new Point(parseFloat(path[n]), parseFloat(path[n+1]));
                 n += 2;
             } else if (cmd == 'm') {
-                pos = lastpos.addOffset([parseFloat(path[n]), parseFloat(path[n+1])]);
+                pos = lastpos.translate([parseFloat(path[n]), parseFloat(path[n+1])]);
                 n += 2;
             } else if (cmd == 'L') {
                 pos = new Point(parseFloat(path[n]), parseFloat(path[n+1]));
                 n += 2;
             } else if (cmd == 'l') {
-                pos = lastpos.addOffset([parseFloat(path[n]), parseFloat(path[n+1])]);
+                pos = lastpos.translate([parseFloat(path[n]), parseFloat(path[n+1])]);
                 n += 2;
             } else if (cmd == 'H') {
                 pos = new Point(parseFloat(path[n]), lastpos.y);
                 n += 1;
             } else if (cmd == 'h') {
-                pos = lastpos.addOffset([parseFloat(path[n]), 0]);
+                pos = lastpos.translate([parseFloat(path[n]), 0]);
                 n += 1;
             } else if (cmd == 'V') {
                 pos = new Point([lastpos.x, parseFloat(path[n])]);
                 n += 1;
             } else if (cmd == 'v') {
-                pos = lastpos.addOffset([0, parseFloat(path[n])]);
+                pos = lastpos.translate([0, parseFloat(path[n])]);
                 n += 1;
             } else if (cmd == 'C') {
                 pos = new Point(parseFloat(path[n+4]), parseFloat(path[n+5]));
                 n += 6;
             } else if (cmd == 'c') {
-                pos = lastpos.addOffset([parseFloat(path[n+4]), parseFloat(path[n+5])]);
+                pos = lastpos.translate([parseFloat(path[n+4]), parseFloat(path[n+5])]);
                 n += 6;
             } else if ('zZ'.indexOf(cmd) >= 0) {
                 ;   // Close the curve
@@ -589,12 +583,12 @@ export class Rectangle extends Polygon
         this.width = Math.abs(topLeft.x - bottomRight.x);
         this.height = Math.abs(topLeft.y - bottomRight.y);
         this.centre = new Point((topLeft.x + bottomRight.x)/2.0, (topLeft.y + bottomRight.y)/2.0);
-        this.topLeft = this.centre.subtractOffset([this.width/2.0, this.height/2.0]);
-        this.bottomRight = this.centre.addOffset([this.width/2.0, this.height/2.0]);
-        this.edges = new LineSegmentSet([new LineSegment(topLeft, topLeft.addOffset([this.width, 0])),
-                                         new LineSegment(bottomRight.subtractOffset([0, this.height]), bottomRight),
-                                         new LineSegment(bottomRight, bottomRight.subtractOffset([this.width, 0])),
-                                         new LineSegment(topLeft.addOffset([0, this.height]), topLeft)
+        this.topLeft = this.centre.translate([-this.width/2.0, -this.height/2.0]);
+        this.bottomRight = this.centre.translate([this.width/2.0, this.height/2.0]);
+        this.edges = new LineSegmentSet([new LineSegment(topLeft, topLeft.translate([this.width, 0])),
+                                         new LineSegment(bottomRight.translate([0, -this.height]), bottomRight),
+                                         new LineSegment(bottomRight, bottomRight.translate([-this.width, 0])),
+                                         new LineSegment(topLeft.translate([0, this.height]), topLeft)
                                         ]);
     }
 
@@ -729,14 +723,14 @@ export class RoundedRectangle extends Rectangle
          || yCornerRadius < 0 || yCornerRadius > this.height/2.0) {
             throw new exception.ValueError("Invalid corner radius");
         }
-        this.edges = new LineSegmentSet([new LineSegment(topLeft.addOffset([xCornerRadius, 0]),
-                                                         topLeft.addOffset([this.width - xCornerRadius, 0])),
-                                         new LineSegment(bottomRight.subtractOffset([0, this.height - yCornerRadius]),
-                                                         bottomRight.subtractOffset([0, yCornerRadius])),
-                                         new LineSegment(bottomRight.subtractOffset([xCornerRadius, 0]),
-                                                         bottomRight.subtractOffset([this.width - xCornerRadius, 0])),
-                                         new LineSegment(topLeft.addOffset([0, this.height - yCornerRadius]),
-                                                         topLeft.addOffset([0, yCornerRadius]))
+        this.edges = new LineSegmentSet([new LineSegment(topLeft.translate([xCornerRadius, 0]),
+                                                         topLeft.translate([this.width - xCornerRadius, 0])),
+                                         new LineSegment(bottomRight.translate([0, yCornerRadius - this.height]),
+                                                         bottomRight.translate([0, -yCornerRadius])),
+                                         new LineSegment(bottomRight.translate([-xCornerRadius, 0]),
+                                                         bottomRight.translate([xCornerRadius - this.width, 0])),
+                                         new LineSegment(topLeft.translate([0, this.height - yCornerRadius]),
+                                                         topLeft.translate([0, yCornerRadius]))
                                         ]);
         this.xCornerRadius = xCornerRadius;
         this.yCornerRadius = yCornerRadius;
@@ -834,22 +828,22 @@ export class Ellipse extends GeoObject
             let y = -l.C/l.B;
             const x2 = Math.pow(this.xRadius, 2) - Math.pow(y*this.xRadius/this.yRadius, 2);
             if (x2 === 0) {
-                points.push(new Point(0, y).addOffset([this.centre.x, this.centre.y]));
+                points.push(new Point(0, y).translate([this.centre.x, this.centre.y]));
             } else if ( x2 > 0) {
                 const x = Math.sqrt(x2);
-                points.push(new Point(-x, y).addOffset([this.centre.x, this.centre.y]));
-                points.push(new Point( x, y).addOffset([this.centre.x, this.centre.y]));
+                points.push(new Point(-x, y).translate([this.centre.x, this.centre.y]));
+                points.push(new Point( x, y).translate([this.centre.x, this.centre.y]));
             }
         } else {
             const d2 = Math.pow(l.A*this.xRadius, 2) + Math.pow(l.B*this.yRadius, 2);
             const a = -l.C*l.B*Math.pow(this.yRadius, 2)/d2;
             const b = d2 - Math.pow(l.C, 2);
             if (b === 0) {
-                points.push(new Point(-(l.C + a*l.B)/l.A, a).addOffset([this.centre.x, this.centre.y]));
+                points.push(new Point(-(l.C + a*l.B)/l.A, a).translate([this.centre.x, this.centre.y]));
             } else if (b > 0) {
                 const c = -l.A*this.xRadius*this.yRadius*Math.sqrt(b)/d2;
-                points.push(new Point(-(l.C + (a + c)*l.B)/l.A, a + c).addOffset([this.centre.x, this.centre.y]));
-                points.push(new Point(-(l.C + (a - c)*l.B)/l.A, a - c).addOffset([this.centre.x, this.centre.y]));
+                points.push(new Point(-(l.C + (a + c)*l.B)/l.A, a + c).translate([this.centre.x, this.centre.y]));
+                points.push(new Point(-(l.C + (a - c)*l.B)/l.A, a - c).translate([this.centre.x, this.centre.y]));
             }
         }
         return points.filter(p => !line.outside(p));
@@ -865,9 +859,9 @@ export class Ellipse extends GeoObject
     location(point, delta)
     //====================
     {
-        if        (this.outside(point.addOffset([delta, delta]))) {
+        if        (this.outside(point.translate([delta, delta]))) {
             return 'outside';
-        } else if (!this.outside(point.addOffset([-delta, -delta]))) {
+        } else if (!this.outside(point.translate([-delta, -delta]))) {
             return 'inside';
         } else {
             return 'boundary'; // TODO: 'l, r, t, b, t-l, t-r, b-l, b-r'
@@ -877,7 +871,7 @@ export class Ellipse extends GeoObject
     translate(offset)
     //===============
     {
-        return new Ellipse(this.centre.addOffset(offset), this.xRadius, this.yRadius);
+        return new Ellipse(this.centre.translate(offset), this.xRadius, this.yRadius);
     }
 
     svgNode(expand=0)

@@ -172,7 +172,7 @@ export class Position
     moveByOffset(offset)
     //==================
     {
-        this.setCoordinates(this._coordinates.addOffset(offset));
+        this.setCoordinates(this._coordinates.translate(offset));
     }
 
     coordinatesToString()
@@ -321,7 +321,7 @@ export class Position
             if (!dependency.hasCoordinates) {
                 throw new exception.ValueError(`No coordinates for the '${dependency}' element`);
             }
-            coordinates = coordinates.addOffset(dependency.coordinates.toOffset());
+            coordinates = coordinates.translate(dependency.coordinates.toOffset());
         }
         return new geo.Point(coordinates.x/dependencies.length,
                              coordinates.y/dependencies.length);

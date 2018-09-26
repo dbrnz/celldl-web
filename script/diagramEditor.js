@@ -174,7 +174,7 @@ export class DiagramEditor
                                                     [mousePosition.x - this.startMousePosition.x,
                                                      mousePosition.y - this.startMousePosition.y],
                                                     this.currentLocation, this.grid);
-            this.startMousePosition = this.startMousePosition.addOffset(movedOffset);
+            this.startMousePosition = this.startMousePosition.translate(movedOffset);
             this.selectedElement.updateSvg(true);
         } else {
             this.currentElement = null;
