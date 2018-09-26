@@ -157,7 +157,14 @@ export class Point extends GeoObject
 
 //==============================================================================
 
-export class ProjectiveLine extends GeoObject
+export class Curve extends GeoObject
+{
+
+}
+
+//==============================================================================
+
+export class ProjectiveLine extends Curve
 {
     constructor(A, B, C)
     {
@@ -412,6 +419,59 @@ export class LineString extends GeoObject
             setAttributes(svgNode, { d: `M${points[0].x},${points[0].y}${pointCoords.join('')}`});
         }
         return svgNode;
+    }
+}
+
+//==============================================================================
+
+export class QuadraticBezierCurve extends Curve
+{
+    constructor(points, biezerJsCurve=null)
+    {
+        super();
+        if (biezerJsCurve) {
+            this._curve = biezerJsCurve;
+        } else {
+            this._curve = new Bezier(points);
+        }
+    }
+
+    static fromPoints(p1, p2, p3, t=0.5)
+    //==================================
+    {
+        return new QuadraticBezierCurve(null, Bezier.quadraticFromPoints(p1, p2, p3, t));
+    }
+
+    at(t)
+    //===
+    {
+        const pt = this._curve.get(t);
+        return new Point(pt.x, pt.y);
+    }
+
+    slice(t1, t2)
+    //===========
+    {
+        return new QuadraticBezierCurve(null, this._curve.split(t1, t2));
+    }
+
+    split(t)
+    //======
+    {
+        const parts = this._curve.split(t);
+        return [new QuadraticBezierCurve(null, parts.left),
+                new QuadraticBezierCurve(null, parts.right)];
+    }
+
+    generateSvg()
+    //===========
+    {
+        const pts = this._curve.points;
+        const path = document.createElementNS(SVG_NS, 'path');
+        path.setAttribute('d', `M ${pts[0].x},${pts[0].y} Q ${pts[1].x},${pts[1].y} ${pts[2].x},${pts[2].y}`);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', 'blue');  // TEMP
+        return path;
     }
 }
 
