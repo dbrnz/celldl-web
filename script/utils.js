@@ -54,6 +54,12 @@ export class List extends Array {
         }
         return this;
     }
+
+    slice(start, end)
+    //===============
+    {
+        return new List(Array(...this).slice(start, end));
+    }
 }
 
 //==============================================================================
