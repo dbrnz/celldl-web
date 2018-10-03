@@ -191,10 +191,14 @@ export class Connection
     //===========
     {
         const svgNode = this.path.svgNode();
+        const strokeWidth = this.diagram.strokeWidthToPixels(
+                                ('stroke-width' in this.style) ? stylesheet.parseLength(this.style['stroke-width'])
+                                                               : config.STROKE.WIDTH);
+        const configWidth = this.diagram.strokeWidthToPixels(config.STROKE.WIDTH);
         setAttributes(svgNode, {id: this.diagramId, fill: 'none',
                                 stroke: this.lineColour,
-                                'stroke-width': this.diagram.strokeWidthToPixels(config.STROKE.WIDTH),
-                                'marker-end': this.diagram.svgFactory.arrow(this.lineColour)});
+                                'stroke-width': strokeWidth,
+                                'marker-end': this.diagram.svgFactory.arrow(this.lineColour, strokeWidth/configWidth)});
         if (styleAsString(this.style, 'line-style') === 'dashed') {
             setAttributes(svgNode, {'stroke-dasharray': '10,5'});
         }
