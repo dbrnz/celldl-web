@@ -59,10 +59,12 @@ DEFAULT_STYLE_RULES = """
             color: #d0d0ff;
             size: {}v, {}v;
             text-position: 50%, 90%;
+            shape: rounded-rectangle;
         }}
         .macromolecule {{
             color: red;
             size: {}v, {}v;
+            shape: rounded-rectangle;
         }}
         .process {{
             color: green;
