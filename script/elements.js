@@ -83,7 +83,7 @@ export class DiagramElement {
         this._textPosition = this.position;
         this.colour = ('color' in this.style) ? stylesheet.parseColour(this.diagram, this.style.color)
                                               : '#808080'; // TODO: specify defaults in one place
-        this.display = ('display' in this.style) ? this.getStyleAsString("display")
+        this.display = ('display' in this.style) ? { display: this.getStyleAsString('display') }
                                                  : {};
         this.fontSize = ('font-size' in this.style) ? stylesheet.parseNumber(this.style['font-size'])
                                                     : 18; // TODO: specify defaults in one place
