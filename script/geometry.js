@@ -426,7 +426,7 @@ export class LineString extends GeoObject
 
 //==============================================================================
 
-export class QuadraticBezierCurve extends Curve
+export class BezierCurve extends Curve
 {
     constructor(points, biezerJsCurve=null)
     {
@@ -438,10 +438,16 @@ export class QuadraticBezierCurve extends Curve
         }
     }
 
-    static fromPoints(p1, p2, p3, t=0.5)
-    //==================================
+    static cubicFromPoints(p1, p2, p3, t=0.5, d1=undefined)
+    //=====================================================
     {
-        return new QuadraticBezierCurve(null, Bezier.quadraticFromPoints(p1, p2, p3, t));
+        return new BezierCurve(null, Bezier.cubicFromPoints(p1, p2, p3, t, d1));
+    }
+
+    static quadraticFromPoints(p1, p2, p3, t=0.5)
+    //===========================================
+    {
+        return new BezierCurve(null, Bezier.quadraticFromPoints(p1, p2, p3, t));
     }
 
     at(t)
@@ -454,25 +460,27 @@ export class QuadraticBezierCurve extends Curve
     slice(t1, t2)
     //===========
     {
-        return new QuadraticBezierCurve(null, this._curve.split(t1, t2));
+        return new BezierCurve(null, this._curve.split(t1, t2));
     }
 
     split(t)
     //======
     {
         const parts = this._curve.split(t);
-        return [new QuadraticBezierCurve(null, parts.left),
-                new QuadraticBezierCurve(null, parts.right)];
+        return [new BezierCurve(null, parts.left),
+                new BezierCurve(null, parts.right)];
     }
 
-    generateSvg()
-    //===========
+    svgNode()
+    //=======
     {
-        const pts = this._curve.points;
         const path = document.createElementNS(SVG_NS, 'path');
-        path.setAttribute('d', `M ${pts[0].x},${pts[0].y} Q ${pts[1].x},${pts[1].y} ${pts[2].x},${pts[2].y}`);
-        path.setAttribute('fill', 'none');
-        path.setAttribute('stroke', 'blue');  // TEMP
+        const pts = this._curve.points;
+        if        (this._curve.order === 2) {
+            path.setAttribute('d', `M ${pts[0].x},${pts[0].y} Q ${pts[1].x},${pts[1].y} ${pts[2].x},${pts[2].y}`);
+        } else if (this._curve.order === 3) {
+            path.setAttribute('d', `M ${pts[0].x},${pts[0].y} C ${pts[1].x},${pts[1].y} ${pts[2].x},${pts[2].y} ${pts[3].x},${pts[3].y}`);
+        }
         return path;
     }
 }
