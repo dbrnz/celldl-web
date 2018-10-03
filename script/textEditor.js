@@ -151,6 +151,39 @@ export class TextEditor
             this.saveSvg(svgDiagram);
         }
     }
+
+    connectionMatrix()
+    //================
+    {
+        const connections = this.diagram.bondGraph.connectionMatrix();
+
+        const html = ['<div>'];
+        html.push(' <a href="" class="connection-popup-close" title="Close">X</a>');
+        html.push(' <div class="connection-table">');
+        let r = 1;
+        for (let row of connections) {
+            const odd = (r % 2) ? ' odd' : '';
+            html.push(`  <div class="connection-row${odd}">`);
+            let c = 1;
+            for (let cell of row) {
+                const odd = (c % 2) ? ' odd' : '';
+                const value = (cell != 0) ? cell : '';
+                html.push(`   <span class="connection-cell${odd}">${value}</span>`);
+                c += 1;
+            }
+            html.push('  </div>');
+            r += 1;
+        }
+        html.push(' </div>');
+        html.push('</div>');
+        const matrixHtml = html.join('\n');
+
+        const matrixElement = document.getElementById('connection-matrix');
+        matrixElement.innerHTML = matrixHtml;
+
+        matrixElement.style.opacity = 1;
+        matrixElement.style['pointer-events'] = 'auto';
+    }
 }
 
 //==============================================================================

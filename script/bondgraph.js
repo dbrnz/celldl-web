@@ -117,6 +117,16 @@ export class BondGraph extends DiagramElement
         this.diagram.addConnection(edge);
     }
 
+    connectionMatrix()
+    //================
+    {
+        return [[  '', 'u1', 'u2', 'u3', 'u4'],
+                ['u1',    1,    0,    1,    0],
+                ['u1',    0,    1,    1,   -1],
+                ['u1',   -1,   -1,    1,    1],
+                ['u1',    0,    1,   -1,    1]];
+    }
+
     drawEdges(svgNode)
     //================
     {

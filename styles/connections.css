@@ -1,0 +1,55 @@
+.connection-popup {
+    font-family: Arial, Helvetica, sans-serif;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: rgba(200,200,200,0.7);
+    z-index: 99999;
+    opacity:0;
+    pointer-events: none;
+}
+.connection-popup > div {
+    width: min-content;
+    position: relative;
+    margin: 10% auto;
+    padding: 10px;
+    background: #fff;
+}
+
+.connection-popup-close {
+    background: #606061;
+    color: #FFFFFF;
+    line-height: 25px;
+    position: absolute;
+    right: -12px;
+    text-align: center;
+    top: -10px;
+    width: 24px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 12px;
+    box-shadow: 1px 1px 3px #000;
+}
+.connection-popup-close:hover {
+    background: #00d9ff;
+}
+
+.connection-table {
+    display: table;
+    border: 3px solid #80d080;
+}
+.connection-row {
+    display: table-row;
+}
+.connection-cell {
+    display: table-cell;
+    width: 20px;
+    text-align: right;
+    padding: 3px;
+    border: 1px solid #80d080;
+}
+.odd {
+    background: #808080;
+}
