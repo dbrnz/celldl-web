@@ -27,7 +27,16 @@ NAMESPACES = {'celldl': 'http://www.cellml.org/celldl/1.0#',
 
 # -----------------------------------------------------------------------------
 
+# Percentage range for automatically placing elements in a component
+
+MIN_POS =  5
+MAX_POS = 95
+
+# -----------------------------------------------------------------------------
+
 INDENT = 4
+
+# -----------------------------------------------------------------------------
 
 DEFAULT_SIZES = {
     'compartment': (25, 25),
@@ -42,7 +51,8 @@ DEFAULT_STYLE_RULES = """
         }}
         .outermost {{
             color: #ffd0d0;
-            size: 90v, 90v;
+            size: 95v, 95v;
+            position: 50%, 50%;
             text-position: 50%, 97%;
         }}
         .compartment {{
@@ -58,23 +68,48 @@ DEFAULT_STYLE_RULES = """
             color: green;
             size: {}v, {}v;
         }}
+        .consumption {{
+            line-color: #8080FF;
+        }}
+        .production {{
+            line-color: #FF8080;
+        }}
 """.format(DEFAULT_SIZES['compartment'][0], DEFAULT_SIZES['compartment'][1],
            DEFAULT_SIZES['macromolecule'][0], DEFAULT_SIZES['macromolecule'][1],
            DEFAULT_SIZES['process'][0], DEFAULT_SIZES['process'][1])
 
 # -----------------------------------------------------------------------------
 
-def clean(id):
+def clean_id(id):
     return 'ID_{}'.format(id) if id is not None else None
+
+# -----------------------------------------------------------------------------
+
+class Scaler(object):
+    def __init__(self):
+        self._xmin = 100
+        self._xmax =   0
+        self._ymin = 100
+        self._ymax =   0
+
+    def add(self, position):
+        if position[0] < self._xmin: self._xmin = position[0]
+        if position[0] > self._xmax: self._xmax = position[0]
+        if position[1] < self._ymin: self._ymin = position[1]
+        if position[1] > self._ymax: self._ymax = position[1]
+
+    def scale(self, position):
+        return (MIN_POS + (MAX_POS-MIN_POS)*(position[0] - self._xmin)/(self._xmax - self._xmin),
+                MIN_POS + (MAX_POS-MIN_POS)*(position[1] - self._ymin)/(self._ymax - self._ymin))
 
 # -----------------------------------------------------------------------------
 
 class Arc(object):
     def __init__(self, id, cls, source, target):
-        self._id = clean(id)
+        self._id = clean_id(id)
         self._class = cls
-        self._source = clean(source).rsplit('.')[0]  ## Port number...
-        self._target = clean(target).rsplit('.')[0]
+        self._source = clean_id(source).rsplit('.')[0]  ## Port number...
+        self._target = clean_id(target).rsplit('.')[0]
 
     def to_celldl(self, level=0):
         indent = INDENT*level*' '
@@ -106,7 +141,8 @@ class Glyph(object):
         self._class = cls
         self._label = label
         self._bbox = bbox
-        self._compartment = clean(compartment)
+        self._position = None
+        self._compartment = clean_id(compartment)
         self._parent = None
         self._children = []
 
@@ -123,8 +159,15 @@ class Glyph(object):
         return self._bbox
 
     @property
+    def position(self):
+        return self._position if self._position is not None else self._bbox.position
+
+    @property
     def size(self):
         return DEFAULT_SIZES.get(self._class, self._bbox.size)
+
+    def set_position(self, position):
+        self._position = position
 
     def set_parent(self, parent):
         self._parent = parent
@@ -144,6 +187,15 @@ class Glyph(object):
             attribs.append('label="_"')
         return ' '.join(attribs)
 
+    def assign_child_positions(self):
+        if len(self._children):
+            scaler = Scaler()
+            for c in self._children:
+                c.assign_child_positions()
+                scaler.add(c.bbox.position)
+            for c in self._children:
+                c.set_position(scaler.scale(c.bbox.position))
+
     def to_celldl(self, level=0):
         indent = INDENT*level*' '
         if len(self._children) == 0:
@@ -155,24 +207,12 @@ class Glyph(object):
             celldl.append('{}</component>'.format(indent))
             return '\n'.join(celldl)
 
-    def relative_position(self):
-        if self._parent is None:
-            return self._bbox.position
-        else:    # Calculate position as % of parent
-            parent_pos = self._parent._bbox.position
-            parent_size = self._parent.size
-            pos = self._bbox.position
-            rel_pos = (pos[0] - parent_pos[0],
-                       pos[1] - parent_pos[1])
-            return (100.0*rel_pos[0]/parent_size[0],
-                    100.0*rel_pos[1]/parent_size[1])
-
     def style(self, level=0):
-        if self._bbox is None:
+        if self._parent is None:
             return ''
         indent = INDENT*level*' '
         return '{}#{} {{ position: {:.2f}%, {:.2f}%; }}'.format(
-               indent, self._id, *self.relative_position())
+               indent, self._id, *self.position)
 
 # -----------------------------------------------------------------------------
 
@@ -188,7 +228,7 @@ class SBGN_ML(object):
         self._glyphs = {}
         self._root_glyphs = []
         for glyph in self._xml.findall('sbgn:map/sbgn:glyph', NAMESPACES):
-            id = clean(glyph.get('id'))
+            id = clean_id(glyph.get('id'))
             if id:
                 label = glyph.find('sbgn:label', NAMESPACES)
                 bbox = glyph.find('sbgn:bbox', NAMESPACES)
@@ -209,6 +249,8 @@ class SBGN_ML(object):
                 parent = self._glyphs[g.compartment]
                 g.set_parent(parent)
                 parent.add_child(g)
+        for g in self._root_glyphs:
+            g.assign_child_positions()
         self._arcs = []
         for arc in self._xml.findall('sbgn:map/sbgn:arc', NAMESPACES):
             label = glyph.find('sbgn:label', NAMESPACES)
