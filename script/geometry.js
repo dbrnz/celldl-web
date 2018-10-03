@@ -492,7 +492,7 @@ export class Polygon extends GeoObject
         const path = svgPath.trim().replace(/,/g, ' ').replace(/\n/g, ' ').split(' ').filter(e => e);
         let lastcmd = null;
         let lastpos = null;
-        const points = [];
+        const points = new utils.List();
         let n = 0;
         while (n < path.length) {
             let cmd = null;
@@ -533,12 +533,32 @@ export class Polygon extends GeoObject
             } else if (cmd == 'v') {
                 pos = lastpos.translate([0, parseFloat(path[n])]);
                 n += 1;
-            } else if (cmd == 'C') {
+            } else if (cmd == 'C') {  // S s
                 pos = new Point(parseFloat(path[n+4]), parseFloat(path[n+5]));
+                points.extend(Polygon._lineariseBezier([lastpos,
+                                                        new Point(parseFloat(path[n]), parseFloat(path[n+1])),
+                                                        new Point(parseFloat(path[n+2]), parseFloat(path[n+3])),
+                                                        pos]));
                 n += 6;
             } else if (cmd == 'c') {
                 pos = lastpos.translate([parseFloat(path[n+4]), parseFloat(path[n+5])]);
+                points.extend(Polygon._lineariseBezier([lastpos,
+                                                        lastpos.translate([parseFloat(path[n]), parseFloat(path[n+1])]),
+                                                        lastpos.translate([parseFloat(path[n+2]), parseFloat(path[n+3])]),
+                                                        pos]));
                 n += 6;
+            } else if (cmd == 'Q') {  // T t
+                pos = new Point(parseFloat(path[n+2]), parseFloat(path[n+3]));
+                points.extend(Polygon._lineariseBezier([lastpos,
+                                                        new Point(parseFloat(path[n]), parseFloat(path[n+1])),
+                                                        pos]));
+                n += 4;
+            } else if (cmd == 'q') {
+                pos = lastpos.translate([parseFloat(path[n+2]), parseFloat(path[n+3])]);
+                points.extend(Polygon._lineariseBezier([lastpos,
+                                                        lastpos.translate([parseFloat(path[n]), parseFloat(path[n+1])]),
+                                                        pos]));
+                n += 4;
             } else if ('zZ'.indexOf(cmd) >= 0) {
                 ;   // Close the curve
             } else {
@@ -557,6 +577,18 @@ export class Polygon extends GeoObject
             points.pop();
         }
         return new Polygon(points);
+    }
+
+    static _lineariseBezier(points)
+    //=============================
+    {
+        const curve = new Bezier(points);
+        const pts = [];
+        for (let n = 1; n < Polygon._CURVE_LINEAR_PARTS; ++n) {
+            const pt = curve.get(n/Polygon._CURVE_LINEAR_PARTS);
+            pts.push(new Point(pt.x, pt.y));
+        }
+        return pts;
     }
 
     lineIntersections(line)
@@ -623,6 +655,8 @@ export class Polygon extends GeoObject
         return svgNode;
     }
 }
+
+Polygon._CURVE_LINEAR_PARTS = 4;   // For linerising a Bezier curve
 
 //==============================================================================
 
