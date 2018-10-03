@@ -23,6 +23,8 @@ limitations under the License.
 //==============================================================================
 
 import * as exception from './exception.js';
+import * as utils from './utils.js';
+
 import {SVG_NS} from './svgElements.js';
 import {setAttributes, List} from './utils.js';
 
