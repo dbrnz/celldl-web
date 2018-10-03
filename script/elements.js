@@ -89,6 +89,7 @@ export class DiagramElement {
                                                     : 18; // TODO: specify defaults in one place
         this.fontStyle = this.getStyleAsString('font-style', '');
         this.fontWeight = this.getStyleAsString('font-weight', '');
+        this.shape = this.getStyleAsString('shape', '');
         this.size = new layout.Size(this, this.style.size);
         this.stroke = this.getStyleAsString('stroke', 'none');
         this._strokeWidth = ('stroke-width' in this.style) ? stylesheet.parseLength(this.style['stroke-width'])
@@ -540,8 +541,14 @@ export class RectangularMixin
         if (this.hasCoordinates) {
             const [width, height] = this.sizeAsPixels;
             const [x, y] = this.coordinates.toOffset();
-            this.geometry = new geo.Rectangle([x - width/2, y - height/2],
-                                              [x + width/2, y + height/2]);
+            if (this.shape === 'rounded-rectangle') {
+                this.geometry = new geo.RoundedRectangle([x - width/2, y - height/2],
+                                                         [x + width/2, y + height/2],
+                                                         0.2*width, 0.2*height);
+            } else {
+                this.geometry = new geo.Rectangle([x - width/2, y - height/2],
+                                                  [x + width/2, y + height/2]);
+            }
         }
     }
 
