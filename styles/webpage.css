@@ -11,6 +11,10 @@ svg {
     border: 2px solid #000080;
     pointer-events: visible;
 }
+.rh {
+    float: right;
+}
+
 #celldl-editor {
     width: 45%;
     height: 100%;
