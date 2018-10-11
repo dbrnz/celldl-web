@@ -1,0 +1,136 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="/svg/thirdparty/fixed-table/fixed-table.css">
+    <script src="/svg/thirdparty/fixed-table/fixed-table.js"></script>
+    <style>
+      .fixed-table-container {
+        color: #333;
+        margin: 40px;
+        width: 315px;  /* 35 * N-cols */
+        height: auto;
+      }
+      .fixed-table-container th,
+      .fixed-table-container td {
+        text-align: center;
+        font-size: 12pt;
+        padding: 6px;
+        padding-left: 3px;
+        padding-right: 3px;
+        line-height: 20px;
+        margin: 0;
+      }
+      th.col0 {
+        background-color: #FFF;
+      }
+      td.col0 {
+        font-weight: bold;
+      }
+/*
+      tr th:nth-child(4), tr td:nth-child(4) {
+        background-color: #CCF;
+      }
+      tbody tr:nth-child(7) {
+        background-color: #CCF;
+      }
+      tbody tr:nth-child(7) td:first-child {
+        background-color: #CCF;
+      }
+*/
+      td.diag {
+        background-color: #FCC !important;
+      }
+    </style>
+    <script>
+      let adjacencyMatrix = null;
+      let currentRow = null;
+      let currentCell = null;
+      function mouseDown(event) {
+      }
+
+      function mouseMove(event) {
+        if (currentCell !== null) {
+            currentCell.style["background-color"] = "";
+          }
+        currentRow = null;
+        currentCell = null;
+        for (let node of event.composedPath()) {
+          if (node.tagName === 'TABLE') {
+            break;  // Don't look for elements outside of adjacency table
+          } else if (node.tagName === 'TR') {
+            currentRow = node;
+          } else if (node.tagName === 'TD') {
+            currentCell = node;
+          }
+        }
+        if (currentRow !== null
+         && currentCell !== null
+         && !currentCell.classList.contains("col0")) {
+          let n = 0;
+          let columnHead = null;
+          for (let node of currentRow.children) {
+            if (node === currentCell) {
+              columnHead = adjacencyMatrix.firstElementChild.firstElementChild.firstElementChild.children[n];
+              break;
+            }
+            n += 1;
+          }
+          if (columnHead !== null
+            && (currentRow.classList.contains("flow") && !columnHead.classList.contains("flow")
+             || currentRow.classList.contains("potential") && !columnHead.classList.contains("potential"))) {
+              currentCell.style["background-color"] = "#8F8";
+            } else {
+              currentCell = null;
+            }
+          }
+        event.stopPropagation();
+        return false;
+      }
+
+      function mouseUp(event) {
+        if (currentCell !== null) {
+          if (currentCell.textContent !== '') {
+            currentCell.textContent = '';
+          } else {
+            currentCell.textContent = '1';
+          }
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="adjacency-matrix" class="fixed-table-container">
+      <table>
+        <thead>
+          <tr><th class="col0">&nbsp;</th>
+              <th class="potential">u1</th><th class="flow">v1</th>
+              <th class="potential">u2</th><th class="flow">v2</th>
+              <th class="potential">u3</th><th class="flow">v3</th>
+              <th class="potential">u4</th><th class="flow">v4</th></tr>
+        </thead>
+        <tbody>
+          <tr class="potential"><td class="col0">u1</td><td class="diag">1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr class="flow"><td class="col0">v1</td><td></td><td class="diag">1</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr class="potential"><td class="col0">u2</td><td></td><td></td><td class="diag">1</td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr class="flow"><td class="col0">v2</td><td></td><td></td><td></td><td class="diag">1</td><td></td><td></td><td></td><td></td></tr>
+          <tr class="potential"><td class="col0">u3</td><td></td><td></td><td></td><td></td><td class="diag">1</td><td></td><td></td><td></td></tr>
+          <tr class="flow"><td class="col0">v3</td><td></td><td></td><td></td><td></td><td></td><td class="diag">1</td><td></td><td></td></tr>
+          <tr class="potential"><td class="col0">u4</td><td></td><td></td><td></td><td></td><td></td><td></td><td class="diag">1</td><td></td></tr>
+          <tr class="flow"><td class="col0">v4</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class="diag">1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <script>
+      adjacencyMatrix = document.getElementById('adjacency-matrix');
+      const adjacencyTable = fixTable(adjacencyMatrix);
+      adjacencyMatrix.addEventListener('mousedown', mouseDown.bind(this));
+      adjacencyMatrix.addEventListener('mousemove', mouseMove.bind(this));
+      adjacencyMatrix.addEventListener('mouseup', mouseUp.bind(this));
+      adjacencyMatrix.addEventListener('mouseleave', mouseUp.bind(this));
+      adjacencyMatrix.addEventListener('touchstart', mouseDown.bind(this));
+      adjacencyMatrix.addEventListener("touchmove", mouseMove.bind(this));
+      adjacencyMatrix.addEventListener('touchend', mouseUp.bind(this));
+      adjacencyMatrix.addEventListener('touchleave', mouseUp.bind(this));
+      adjacencyMatrix.addEventListener('touchcancel', mouseUp.bind(this));
+    </script>
+  </body>
+</html>
