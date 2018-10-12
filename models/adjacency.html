@@ -25,33 +25,32 @@
       td.col0 {
         font-weight: bold;
       }
-/*
-      tr th:nth-child(4), tr td:nth-child(4) {
-        background-color: #CCF;
-      }
-      tbody tr:nth-child(7) {
-        background-color: #CCF;
-      }
-      tbody tr:nth-child(7) td:first-child {
-        background-color: #CCF;
-      }
-*/
       td.diag {
-        background-color: #FCC !important;
+        background-color: #FFC !important;
+      }
+      td.positive {
+        background-color: #FCC;
+      }
+      td.negative {
+        background-color: #CCC;
       }
     </style>
     <script>
       let adjacencyMatrix = null;
-      let currentRow = null;
       let currentCell = null;
+      let oppositeCell = null;
+      let clicked = false;
+
       function mouseDown(event) {
+        clicked = true;
       }
 
       function mouseMove(event) {
         if (currentCell !== null) {
             currentCell.style["background-color"] = "";
+            oppositeCell.style["background-color"] = "";
           }
-        currentRow = null;
+        let currentRow = null;
         currentCell = null;
         for (let node of event.composedPath()) {
           if (node.tagName === 'TABLE') {
@@ -65,19 +64,29 @@
         if (currentRow !== null
          && currentCell !== null
          && !currentCell.classList.contains("col0")) {
-          let n = 0;
           let columnHead = null;
+          let columnIndex = 0;
           for (let node of currentRow.children) {
             if (node === currentCell) {
-              columnHead = adjacencyMatrix.firstElementChild.firstElementChild.firstElementChild.children[n];
+              columnHead = adjacencyMatrix.firstElementChild.firstElementChild.firstElementChild.children[columnIndex];
               break;
             }
-            n += 1;
+            columnIndex += 1;
+          }
+          let rowIndex = 0;
+          for (let node of currentRow.parentElement.children) {
+            if (node === currentRow) {
+              break;
+            }
+            rowIndex += 1;
           }
           if (columnHead !== null
             && (currentRow.classList.contains("flow") && !columnHead.classList.contains("flow")
              || currentRow.classList.contains("potential") && !columnHead.classList.contains("potential"))) {
+              oppositeCell = currentRow.parentElement.children[columnIndex-1].children[rowIndex+1];
               currentCell.style["background-color"] = "#8F8";
+              oppositeCell.style["background-color"] = "#8F8";
+              // Also change colour of diagonally opposite cell -1
             } else {
               currentCell = null;
             }
@@ -88,10 +97,31 @@
 
       function mouseUp(event) {
         if (currentCell !== null) {
-          if (currentCell.textContent !== '') {
+            currentCell.style["background-color"] = "";
+            oppositeCell.style["background-color"] = "";
+          }
+        if (!clicked) {
+          return;
+        }
+        clicked = false;
+        if (currentCell !== null) {
+          if (currentCell.textContent === '-1') {
+            currentCell.classList.remove('negative');
             currentCell.textContent = '';
+            oppositeCell.classList.remove('positive');
+            oppositeCell.textContent = '';
+          } else if (currentCell.textContent === '1') {
+            currentCell.textContent = '-1';
+            currentCell.classList.remove('positive');
+            currentCell.classList.add('negative');
+            oppositeCell.textContent = '1';
+            oppositeCell.classList.remove('negative');
+            oppositeCell.classList.add('positive');
           } else {
+            currentCell.classList.add('positive');
             currentCell.textContent = '1';
+            oppositeCell.classList.add('negative');
+            oppositeCell.textContent = '-1';
           }
         }
       }
