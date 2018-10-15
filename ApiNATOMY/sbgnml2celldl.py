@@ -18,6 +18,7 @@
 #
 # -----------------------------------------------------------------------------
 
+import json
 from lxml import etree
 
 # -----------------------------------------------------------------------------
@@ -106,12 +107,28 @@ class Scaler(object):
 
 # -----------------------------------------------------------------------------
 
+class Group(object):
+    def __init__(self, index):
+        self.leaves = []
+        self.groups = []
+        self.index = index
+
+# -----------------------------------------------------------------------------
+
 class Arc(object):
     def __init__(self, id, cls, source, target):
         self._id = clean_id(id)
         self._class = cls
         self._source = clean_id(source).rsplit('.')[0]  ## Port number...
         self._target = clean_id(target).rsplit('.')[0]
+
+    @property
+    def source(self):
+        return self._source
+
+    @property
+    def target(self):
+        return self._target
 
     def to_celldl(self, level=0):
         indent = INDENT*level*' '
@@ -147,10 +164,27 @@ class Glyph(object):
         self._compartment = clean_id(compartment)
         self._parent = None
         self._children = []
+        self._index = None
 
     @property
     def id(self):
         return self._id
+
+    @property
+    def label(self):
+        return self._label
+
+    @property
+    def index(self):
+        return self._index
+
+    @property
+    def children(self):
+        return self._children
+
+    @property
+    def parent(self):
+        return self._parent
 
     @property
     def compartment(self):
@@ -167,6 +201,9 @@ class Glyph(object):
     @property
     def size(self):
         return DEFAULT_SIZES.get(self._class, self._bbox.size)
+
+    def set_index(self, index):
+        self._index = index
 
     def set_position(self, position):
         self._position = position
@@ -275,8 +312,49 @@ class SBGN_ML(object):
         celldl.append('{}</style>'.format(INDENT*' '))
 
         celldl.append('</cell-diagram>')
-        print '\n'.join(celldl)
+        return '\n'.join(celldl)
 
+    def _json_build(self, glyph):
+        if len(glyph.children) == 0:
+            size = glyph.size
+            self._json_nodes.append(dict(index=self._json_node_index,
+                                         name=glyph.label,
+                                         width=size[0],
+                                         height=size[1],
+                                         type=glyph._class))
+            glyph.set_index(self._json_node_index)
+            if glyph.parent is not None:
+                self._json_groups[glyph.parent.id].leaves.append(glyph.index)
+            self._json_node_index += 1
+        else:
+            if glyph.id not in self._json_groups:
+                self._json_groups[glyph.id] = Group(self._json_group_count)
+                self._json_group_count += 1
+            if glyph.parent is not None:
+                self._json_groups[glyph.parent.id].groups.append(glyph.id)
+            for c in glyph.children:
+                self._json_build(c)
+
+    def to_json(self):
+        self._json_nodes = []
+        self._json_node_index = 0
+        self._json_groups = {}
+        self._json_group_count = 0
+        for g in self._root_glyphs:
+            self._json_build(g)
+
+        groups = self._json_group_count*[None]
+        for g in self._json_groups.values():
+            groups[g.index] = dict(leaves = g.leaves,
+                                   groups = [self._json_groups[id].index for id in g.groups])
+
+        return { 'nodes': self._json_nodes,
+                 'links': [dict(source=self._glyphs[a.source].index,
+                                      target=self._glyphs[a.target].index,
+                                      type=a._class) for a in self._arcs],
+                 'groups': groups,
+                 'constraints': [],
+               }
 
     def style(self, level):
         styling = [DEFAULT_STYLE_RULES]
@@ -288,9 +366,21 @@ class SBGN_ML(object):
 
 if __name__ == '__main__':
 
-    with open('newt-complex-2.sbgnml') as f:
+    import sys
+
+    if len(sys.argv) < 3:
+        sys.exit('Usage: {} SBGNML_FILE [celldl | json]'.format(sys.argv[0]))
+
+    with open(sys.argv[1]) as f:
         sbgn = SBGN_ML(f.read())
 
-    sbgn.to_celldl()
+    if sys.argv[2] in ['json', 'JSON']:
+        j = sbgn.to_json()
+        print json.dumps(j, sort_keys=True,
+                         indent=4, separators=(',', ': '))
+    elif sys.argv[2] in ['celldl', 'CELLDL']:
+        print sbgn.to_celldl()
+    else:
+        sys.exit("Unknown output format")
 
 # -----------------------------------------------------------------------------
