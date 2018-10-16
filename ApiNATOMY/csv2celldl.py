@@ -133,10 +133,10 @@ if __name__ == '__main__':
         network = NeuralNetwork(reader)
 
     if sys.argv[2] in ['json', 'JSON']:
-        print json.dumps(network.to_json(), sort_keys=True,
-                         indent=INDENT, separators=(',', ': '))
+        print(json.dumps(network.to_json(), sort_keys=True,
+                         indent=INDENT, separators=(',', ': ')))
     elif sys.argv[2] in ['celldl', 'CELLDL']:
-        print network.to_celldl()
+        print(network.to_celldl())
     else:
         sys.exit("Unknown output format")
 

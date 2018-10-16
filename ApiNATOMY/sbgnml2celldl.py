@@ -376,10 +376,10 @@ if __name__ == '__main__':
 
     if sys.argv[2] in ['json', 'JSON']:
         j = sbgn.to_json()
-        print json.dumps(j, sort_keys=True,
-                         indent=4, separators=(',', ': '))
+        print(json.dumps(j, sort_keys=True,
+                         indent=4, separators=(',', ': ')))
     elif sys.argv[2] in ['celldl', 'CELLDL']:
-        print sbgn.to_celldl()
+        print(sbgn.to_celldl())
     else:
         sys.exit("Unknown output format")
 
