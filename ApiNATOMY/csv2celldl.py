@@ -84,6 +84,11 @@ class NeuralNetwork(object):
             self._synapses.append(Synapse(source.id, target.id, row['Synaptic type']))
 
     def add_neurone(self, name):
+        # A 'minus' sign is encoded in many different ways...
+        name = name.replace(u'\u2212', '-').replace(u'\u2013', '-')
+        # Clean up duplicate names for same neurone
+        if name == 'E-Dec-T':
+            name = 'E-Dec-Tonic'
         if name not in self._neurones:
             neurone = Neurone(name, self._next_id)
             self._neurones[name] = neurone
