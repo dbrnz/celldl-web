@@ -114,6 +114,9 @@ class NeuralNetwork(object):
         celldl.append('</cell-diagram>')
         return '\n'.join(celldl)
 
+    def neurones(self):
+        return '\n'.join(sorted(self._neurones.keys()))
+
     def to_json(self):
         nodes = []
         links = []
@@ -142,6 +145,8 @@ if __name__ == '__main__':
                          indent=INDENT, separators=(',', ': ')))
     elif sys.argv[2] in ['celldl', 'CELLDL']:
         print(network.to_celldl())
+    elif sys.argv[2] == 'neurones':
+        print(network.neurones())
     else:
         sys.exit("Unknown output format")
 
