@@ -36,12 +36,64 @@ MAX_POS = 95
 
 INDENT = 4
 
+RESPIRATORY_GROUP_BY_NAME = {
+    'Cough 2nd order (+)': 'NTS',
+    'Deflation 2nd (−)': 'NTS',
+    'E-Aug (+)': 'BötC',
+    'E-Aug-BS (+)': 'VRG',
+    'E-Aug-Cough (−)': 'BötC',
+    'E-Aug-early': 'BötC',
+    'E-Aug-late': 'BötC',
+    'E-Dec-Phasic': 'BötC',
+    'E-Dec-Tonic': 'BötC',
+    'E-Dec-pre-ELM': 'BötC',
+    'E-pons': 'PRG',
+    'EI-pons': 'PRG',
+    'ELM': 'Nucleus Ambiguus',
+    'I-Aug': 'VRG',
+    'I-Aug-BS': 'VRC',
+    'I-Dec': 'pre-BötC',
+    'I-Dec_2': 'pre-BötC',
+    'I-Driver': 'pre-BötC',
+    'I-pons': 'PRG',
+    'ILM': 'Nucleus Ambiguus',
+    'Lumbar': 'Spine',
+    'Lumbar-HT': 'Spine',
+    'Lung DIS_1s': 'Lung',
+    'Lung Def_1s': 'Lung',
+    'Lung PSRs': 'Lung',
+    'NRM-BötC': 'BötC',
+    'NRM-pons': 'PRG',
+    'Phrenic': 'Spine',
+    'Phrenic-HT': 'Spine',
+    'Pump (+)': 'NTS',
+    'Pump (-)': 'NTS',
+    'Raphé 28': 'Raphé',
+    'Raphé 29': 'Raphé',
+    'Raphé 30': 'Raphé',
+    'Raphé 31': 'Raphé',
+    'Raphé 32': 'Raphé',
+    'Raphé 8': 'Raphé',
+    'VRC-IE': 'VRG',
+    'caudal IE-pons': 'PRG',
+    'rostral IE-pons': 'PRG',
+    'pre-BötC': 'VRC',
+    'BötC': 'VRC',
+    'VRG': 'VRC',
+    'VRC': 'Brainstem Respiratory Network',
+    'Raphé': 'Brainstem Respiratory Network',
+    'PRG': 'Brainstem Respiratory Network',
+    'NTS': 'Brainstem Respiratory Network',
+    'Nucleus Ambiguus': 'Brainstem Respiratory Network',
+}
+
 # -----------------------------------------------------------------------------
 
-class Neurone(object):
-    def __init__(self, name, id):
+class Component(object):
+    def __init__(self, name, id, group_id=None):
         self._name = name
         self._id = id
+        self._group_id = group_id
 
     @property
     def name(self):
@@ -51,6 +103,49 @@ class Neurone(object):
     def id(self):
         return self._id
 
+    def set_group_id(self, group_id):
+        self._group_id = group_id
+
+    def to_json(self):
+        j = {'name': self._name,
+             'id': self._id
+            }
+        if self._group_id:
+            j['group'] = self._group_id
+        return j
+
+# -----------------------------------------------------------------------------
+
+class Neurone(Component):
+    pass
+
+# -----------------------------------------------------------------------------
+
+class Group(Component):
+    pass
+
+# -----------------------------------------------------------------------------
+
+class Groups(object):
+    def __init__(self, groups_by_name):
+        self._groups_by_name = groups_by_name
+        self._groups = {}
+        next_id = 1
+        for n, g in groups_by_name.items():
+            if g not in self._groups:
+                group = Group(g, next_id)
+                self._groups[g] = group
+                next_id += 1
+        for g in self._groups.values():
+            g.set_group_id(self.group_id(g.name))
+
+    def group_id(self, name):
+        group = self._groups.get(self._groups_by_name.get(name))
+        return group.id if group else None
+
+    def to_json(self):
+        return [g.to_json() for g in self._groups.values()]
+
 # -----------------------------------------------------------------------------
 
 class Synapse(object):
@@ -59,25 +154,20 @@ class Synapse(object):
         self._target = target
         self._type = type
 
-    @property
-    def source(self):
-        return self._source
-
-    @property
-    def target(self):
-        return self._target
-
-    @property
-    def type(self):
-        return self._type
+    def to_json(self):
+        return {'source': self._source,
+                'target': self._target,
+                'type': self._type
+               }
 
 # -----------------------------------------------------------------------------
 
 class NeuralNetwork(object):
     def __init__(self, csv_dict_reader):
         self._neurones = {}
-        self._next_id = 1
+        self._next_neurone_id = 1
         self._synapses = []
+        self._groups = Groups(RESPIRATORY_GROUP_BY_NAME)
         for row in csv_dict_reader:
             source = self.add_neurone(row['Source population'])
             target = self.add_neurone(row['Target population'])
@@ -90,9 +180,9 @@ class NeuralNetwork(object):
         if name == 'E-Dec-T':
             name = 'E-Dec-Tonic'
         if name not in self._neurones:
-            neurone = Neurone(name, self._next_id)
+            neurone = Neurone(name, self._next_neurone_id, self._groups.group_id(name))
             self._neurones[name] = neurone
-            self._next_id += 1
+            self._next_neurone_id += 1
         else:
             neurone = self._neurones[name]
         return neurone
@@ -120,12 +210,15 @@ class NeuralNetwork(object):
     def to_json(self):
         nodes = []
         links = []
+        groups = []
         for n in self._neurones.values():
-            nodes.append(dict(name=n.name, id=n.id))
+            nodes.append(n.to_json())
         for s in self._synapses:
-            links.append(dict(source=s.source, target=s.target, type=s.type))
-
-        return { 'nodes': nodes, 'links': links}
+            links.append(s.to_json())
+        return { 'nodes': nodes,
+                 'links': links,
+                 'groups': self._groups.to_json()
+               }
 
 # -----------------------------------------------------------------------------
 
