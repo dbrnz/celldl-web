@@ -41,7 +41,13 @@ export class Background extends DiagramElement
         this.id = `${this.diagram.id}_background`;
         this._image = domElement.getAttribute('image');
         this.container = diagram;
-        this.size.setSize([new geo.Length(100, '%'), new geo.Length(100, '%')]);
+        if (domElement.hasAttribute('scale')) {
+            this._scale = parseFloat(domElement.getAttribute('scale'));
+        } else {
+            this._scale = 1.0;
+        }
+        this.size.setSize([new geo.Length(100*this._scale, '%'),
+                           new geo.Length(100*this._scale, '%')]);
         this.position.setOffset([new geo.Length(50, '%'), new geo.Length(50, '%')]);
         this.svgDocument = null;
         if (this._image) {
@@ -93,6 +99,10 @@ export class Background extends DiagramElement
                                        width: `${this.diagram.width}`,
                                        height: `${this.diagram.height}`,
                                        preserveAspectRatio: "none"});
+        if (this._scale && this._scale !== 1.0) {
+            svgNode.setAttribute('transform',
+                                 `scale(${this._scale}) translate(${(1-this._scale)*this.diagram.width/2}, ${(1-this._scale)*this.diagram.height/2})`);
+        }
         return svgNode;
     }
 }
