@@ -115,8 +115,9 @@ export class DiagramEditor
         this.resizable = false;
         this.resizing = false;
         this.undoStack = new HistoryStack();
-        this.grid = [diagram.lengthToPixels(config.GRID.X_SPACING, 0),
-                     diagram.lengthToPixels(config.GRID.Y_SPACING, 1)]
+//        this.grid = [diagram.lengthToPixels(config.GRID.X_SPACING, 0),
+//                     diagram.lengthToPixels(config.GRID.Y_SPACING, 1)];
+        this.grid = [0, 0];
     }
 
     svgLoaded(svgNode)
