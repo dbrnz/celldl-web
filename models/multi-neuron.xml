@@ -12,16 +12,16 @@
         <potential id="u3"/>
         <potential id="u4"/>
         <flow id="v1">
-            <connection input="u1" output="u3"/>
+            <connection from="u1" to="u3"/>
         </flow>
         <flow id="v2">
-            <connection input="u2" output="u3"/>
+            <connection from="u2" to="u3"/>
         </flow>
         <flow id="v3">
-            <connection input="u3" output="u4"/>
+            <connection from="u3" to="u4"/>
         </flow>
         <flow id="v4">
-            <connection input="u4" output="u2"/>
+            <connection from="u4" to="u2"/>
         </flow>
     </bond-graph>
     <style>

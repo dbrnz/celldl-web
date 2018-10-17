@@ -12,8 +12,8 @@
         <potential id="u3" label="$\mu_3$"/>
 
         <transformer id="zF">
-            <input potential="u_E"/>
-            <output potential="u3"/>
+            <from potential="u_E"/>
+            <to potential="u3"/>
         </transformer>
 
         <reaction id="I_Kp" class="potassium" label="$\text{I}_\text{Kp}$">
@@ -21,14 +21,14 @@
         </reaction>
 
         <flow id="v1" label="$\nu_1$">
-            <connection input="u1" output="I_Kp" class="potassium"/>
-            <connection id="v1u3" input="u3"/>
-            <connection input="u4"/>
+            <connection from="u1" to="I_Kp" class="potassium"/>
+            <connection id="v1u3" from="u3"/>
+            <connection from="u4"/>
         </flow>
 
         <flow id="v2" label="$\nu_2$">
-            <connection input="I_Kp" output="u2" class="potassium"/>
-            <connection output="u4"/>
+            <connection from="I_Kp" to="u2" class="potassium"/>
+            <connection to="u4"/>
         </flow>
 
     </bond-graph>
@@ -42,8 +42,8 @@
         #q4, #zF, #u_E { color: none; }
 
         #q4,
-        #v1 > connection[input="u4"],
-        #v2 > connection[output="u4"] {
+        #v1 > connection[from="u4"],
+        #v2 > connection[to="u4"] {
             line-color: #A32ADE;
         }
 

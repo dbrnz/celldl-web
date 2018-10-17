@@ -235,19 +235,29 @@ export class Flow extends DiagramElement
 //        this.componentOffsets = [];
 //        const transporterId = element.getAttribute('transporter');
 //        this.transporter = this.fromAttribute('transporter', [diagramTransporter])
+        this._inEdge = null;
+        this._outEdge = null;
         const flowConnectsTo = [Gyrator, Potential, Reaction];
         for (let element of domElement.children) {
-            if (element.nodeName === "connection") {
-                if (!element.hasAttribute('input') && !element.hasAttribute('output')) {
-                    throw new exception.SyntaxError(element, "A flow connection requires an 'input' or 'output'");
+            if (element.nodeName === 'connection') {
+                if (!element.hasAttribute('from') && !element.hasAttribute('to')) {
+                    throw new exception.SyntaxError(element, "<connection> requires 'from' or 'to' element");
                 }
-                if (element.hasAttribute('input')) {
-                    bondGraph.addEdge(FlowEdge.createFromAttributeValue(diagram, element, 'input',
-                                                                        true, this, flowConnectsTo));
+                if (element.hasAttribute('from')) {
+                    if (this._inEdge !== null) {
+ //                       throw new exception.SyntaxError(element, `<flow> can only have a single 'from' element`);
                     }
-                if (element.hasAttribute('output')) {
-                    bondGraph.addEdge(FlowEdge.createFromAttributeValue(diagram, element, 'output',
-                                                                        false, this, flowConnectsTo));
+                    this._inEdge = FlowEdge.createFromAttributeValue(diagram, element, 'from',
+                                                                     true, this, flowConnectsTo);
+                    bondGraph.addEdge(this._inEdge);
+                    }
+                if (element.hasAttribute('to')) {
+                    if (this._outEdge !== null) {
+//                        throw new exception.SyntaxError(element, `<flow> can only have a single 'to' element`);
+                    }
+                    this._outEdge = FlowEdge.createFromAttributeValue(diagram, element, 'to',
+                                                                      false, this, flowConnectsTo);
+                    bondGraph.addEdge(this._outEdge);
                 }
             } else {
                 throw new exception.SyntaxError(element, `Unexpected <flow> element`);
@@ -255,6 +265,7 @@ export class Flow extends DiagramElement
         }
     }
 
+}
 
 /*
     componentOffset(component)
@@ -326,7 +337,6 @@ export class Flow extends DiagramElement
         return points;
     }
 */
-}
 
 //==============================================================================
 
@@ -337,10 +347,10 @@ export class Gyrator extends DiagramElement
         super(diagram, domElement);
         if (!this.label.startsWith('$')) this.label = `GY:${this.label}`;
         for (let element of domElement.children) {
-            if        (element.nodeName === 'input') {
+            if        (element.nodeName === 'from') {
                 bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element,
-                                                                     'flow', true, this, [Flow]));
-            } else if (element.nodeName === 'output') {
+                                                                      'flow', true, this, [Flow]));
+            } else if (element.nodeName === 'to') {
                 bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element,
                                                                       'flow', false, this, [Flow]));
             } else {
@@ -426,10 +436,10 @@ export class Reaction extends DiagramElement
         }
         if (!this.label.startsWith('$')) this.label = `RE:${this.label}`;
         for (let element of domElement.children) {
-            if (element.nodeName === 'input') {
+            if (element.nodeName === 'from') {
                 bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element, 'flow',
                                                                       true, this, [Flow]));
-            } else if (element.nodeName === 'output') {
+            } else if (element.nodeName === 'to') {
                 bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element, 'flow',
                                                                       false, this, [Flow]));
             } else if (element.nodeName === 'modulator') {
@@ -451,10 +461,10 @@ export class Transformer extends DiagramElement
         super(diagram, domElement);
         if (!this.label.startsWith('$')) this.label = `TF:${this.label}`;
         for (let element of domElement.children) {
-            if (element.nodeName === 'input') {
+            if (element.nodeName === 'from') {
                 bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element, 'potential',
                                                                       true, this, [Potential]));
-            } else if (element.nodeName === 'output') {
+            } else if (element.nodeName === 'to') {
                 bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element, 'potential',
                                                                       false, this, [Potential]));
             } else {
