@@ -1,0 +1,77 @@
+﻿<cell-diagram>
+    <background image="./models/neuron-background.svg" scale="0.8">
+        <region id="neuron" region="neuron"/>
+    </background>
+    <bond-graph>
+        <potential id="u_i1_d" label="$\mu_{i,1}^{d+}$"/>
+        <potential id="u_i2_d" label="$\mu_{i,2}^{d-}$"/>
+        <potential id="u_i_h" label="$\mu_i^h$" class="no-stroke"/>
+        <potential id="u_i1_a" label="$\mu_{i,1}^a$" class="no-stroke"/>
+        <potential id="u_i1_t" label="$\mu_{i,1}^t$" class="no-stroke"/>
+        <potential id="u_j1_d" label="$\mu_{i+1,1}^{d+}$"/>
+        <potential id="u_k1_d" label="$\mu_{i+2,1}^{d+}$"/>
+        <potential id="u_l1_d" label="$\mu_{i+3,1}^{d-}$"/>
+        <flow id="v_i1_d" label="$\mu_{i,1}^d$">
+            <connection from="u_i1_d" to="u_i_h"/>
+        </flow>
+        <flow id="v_i2_d" label="$\mu_{i,2}^d$">
+            <connection from="u_i2_d" to="u_i_h"/>
+        </flow>
+        <flow id="v_i1_a" label="$\mu_{i,1}^a$">
+            <connection from="u_i_h" to="u_i1_a"/>
+        </flow>
+        <flow id="v_i1_t" label="$\mu_{i,1}^t$">
+            <connection from="u_i1_a" to="u_j1_d"/>
+        </flow>
+        <flow id="v_i2_t" label="$\mu_{i,2}^t$">
+            <connection from="u_i1_a" to="u_i1_t"/>
+        </flow>
+        <flow id="v_i3_t" label="$\mu_{i,3}^t$">
+            <connection from="u_i1_t" to="u_k1_d"/>
+        </flow>
+        <flow id="v_i4_t" label="$\mu_{i,4}^t$">
+            <connection from="u_i1_t" to="u_l1_d"/>
+        </flow>
+    </bond-graph>
+    <style>
+        cell-diagram {
+            width:  1200;  /* SVG 'pixels' */
+            height:  400;  /* SVG 'pixels' */
+        }
+        potential {
+            radius: 25px;
+            stroke-width: 1px;
+            stroke: red;
+        }
+        flow {
+            radius: 25px;
+            stroke-width: 1px;
+            stroke: green;
+        }
+        .no-stroke {
+            stroke: none;
+        }
+
+        connection {
+            stroke-width: 3px;
+            line-color: #60A0D0;
+        }
+        
+        #v_i1_d { position: #u_i1_d #u_i_h; }
+        #v_i2_d { position: #u_i2_d #u_i_h; }
+        #u_i_h { position: 10% left #v_i1_a; }
+        #u_i1_a { position: 10% right #v_i1_a; }
+        #v_i1_t { position: #u_i1_a #u_j1_d; }
+        #v_i2_t { position: #u_i1_a #u_i1_t; }
+        #v_i3_t { position: #u_i1_t #u_k1_d; }
+        #v_i4_t { position: #u_i1_t #u_l1_d; }
+
+        #v_i1_a { position: 44%, 47%; }
+        #u_i1_d { position: 10.5%, 19%; }
+        #u_i2_d { position: 18.10080962731941%, 80.90728664587468%; }
+        #u_j1_d { position: 69.70566739123586%, 65.88299782629242%; }
+        #u_l1_d { position: 89.7983807453612%, 9.302428881958225%; }
+        #u_k1_d { position: 89.60485776391646%, 43.370853416501284%; }
+        #u_i1_t { position: 71%, 31%; }
+    </style>
+ </cell-diagram>
