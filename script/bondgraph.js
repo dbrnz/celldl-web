@@ -421,6 +421,9 @@ export class Reaction extends DiagramElement
     constructor(diagram, bondGraph, domElement)
     {
         super(diagram, domElement);
+        if (!('radius' in this.style)) {
+            this._radius = config.TRANSPORTER.RADIUS;
+        }
         if (!this.label.startsWith('$')) this.label = `RE:${this.label}`;
         for (let element of domElement.children) {
             if (element.nodeName === 'input') {
@@ -436,12 +439,6 @@ export class Reaction extends DiagramElement
                 throw new exception.SyntaxError(element, `Unexpected <reaction> element`);
             }
         }
-    }
-
-    assignGeometry(radius=config.TRANSPORTER.RADIUS)
-    //==============================================
-    {
-        return super.assignGeometry(radius);
     }
 }
 

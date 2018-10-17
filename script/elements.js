@@ -89,6 +89,8 @@ export class DiagramElement {
                                                     : 18; // TODO: specify defaults in one place
         this.fontStyle = this.getStyleAsString('font-style', '');
         this.fontWeight = this.getStyleAsString('font-weight', '');
+        this._radius = ('radius' in this.style) ? stylesheet.parseLength(this.style['radius'])
+                                                : config.DEFAULT.RADIUS;
         this.shape = this.getStyleAsString('shape', '');
         this.size = new layout.Size(this, this.style.size);
         this.stroke = this.getStyleAsString('stroke', 'none');
@@ -158,6 +160,12 @@ export class DiagramElement {
         const element = document.createElementNS(CELLDL_NAMESPACE, this.tagName);
         element.id = this.id.slice(1);
         return element;
+    }
+
+    get radius()
+    //==========
+    {
+        return this.diagram.strokeWidthToPixels(this._radius);
     }
 
     get strokeWidth()
@@ -319,11 +327,11 @@ export class DiagramElement {
         return this.size.asPixels;
     }
 
-    assignGeometry(radius=config.DEFAULT.RADIUS)
-    //==========================================
+    assignGeometry()
+    //==============
     {
         if (this.hasCoordinates) {
-            this.geometry = new geo.Circle(this.coordinates, radius);
+            this.geometry = new geo.Circle(this.coordinates, this.radius);
         }
     }
 

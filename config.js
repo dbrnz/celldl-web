@@ -37,7 +37,8 @@ export const DIAGRAM = { WIDTH:  500,
 export const DEFAULT = { POSITION: [ new geo.Length(50, '%'), new geo.Length(10, '%')],
                          SIZE:     [ new geo.Length(), new geo.Length()],
                          OFFSET: new geo.Length(),
-                         RADIUS: 15 };    // SVG pixels
+                         RADIUS: new geo.Length(15, 'px')
+                        };
 
 export const STROKE = { WIDTH: new geo.Length(2.5, 'px') };
 
@@ -47,7 +48,7 @@ export const QUANTITY = { OFFSET: new geo.Length(6, '%w'),
                           WIDTH:  50,     // SVG pixels
                           HEIGHT: 33 };   // SVG pixels
 
-export const TRANSPORTER = { RADIUS: 20,
+export const TRANSPORTER = { RADIUS: new geo.Length(15, 'px'),
                              EXTRA: new geo.Length(2.5, '%'),
                              WIDTH: new geo.Length(5, '%') };
 
