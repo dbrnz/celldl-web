@@ -26,9 +26,9 @@ import * as config from '../config.js';
 import * as exception from './exception.js';
 import * as geo from './geometry.js';
 import * as layout from './layout.js';
+import * as stylesheet from './stylesheet.js';
 
 import {setAttributes} from './utils.js';
-import {parseColour, styleAsString} from './stylesheet.js';
 
 //==============================================================================
 
@@ -115,7 +115,7 @@ export class Connection
     get lineColour()
     //==============
     {
-        return ('line-color' in this.style) ? parseColour(this.diagram, this.style['line-color'])
+        return ('line-color' in this.style) ? stylesheet.parseColour(this.diagram, this.style['line-color'])
                                             : '#A0A0A0'; // TODO: specify defaults in one place
     }
 
@@ -199,7 +199,7 @@ export class Connection
                                 stroke: this.lineColour,
                                 'stroke-width': strokeWidth,
                                 'marker-end': this.diagram.svgFactory.arrow(this.lineColour, strokeWidth/configWidth)});
-        if (styleAsString(this.style, 'line-style') === 'dashed') {
+        if (stylesheet.styleAsString(this.style, 'line-style') === 'dashed') {
             setAttributes(svgNode, {'stroke-dasharray': '10,5'});
         }
         return svgNode;
