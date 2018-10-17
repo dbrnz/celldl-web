@@ -5,7 +5,7 @@
         <quantity id="q2" class="potassium" label="$\text{q}_2^{[\text{K}^+]_\text{i}}$"/>
         <quantity id="q4" label="$\text{q}_4$"/>
 
-		<potential id="u1" quantity="q1" label="$\mu_{1}$"/>
+		<potential id="u1" quantity="q1" label="$\mu_1$"/>
         <potential id="u2" quantity="q2" label="$\mu_2$"/>
         <potential id="u4" quantity="q4" label="$\mu_4$"/>
         <potential id="u_E" label="$\mu_\text{E}$"/>
