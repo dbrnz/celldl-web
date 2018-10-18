@@ -11,25 +11,25 @@
         <potential id="u_j1_d" label="$\mu_{i+1,1}^{d+}$"/>
         <potential id="u_k1_d" label="$\mu_{i+2,1}^{d+}$"/>
         <potential id="u_l1_d" label="$\mu_{i+3,1}^{d-}$"/>
-        <flow id="v_i1_d" label="$\mu_{i,1}^d$">
+        <flow id="v_i1_d" label="$\nu_{i,1}^d$">
             <connection from="u_i1_d" to="u_i_h"/>
         </flow>
-        <flow id="v_i2_d" label="$\mu_{i,2}^d$">
+        <flow id="v_i2_d" label="$\nu_{i,2}^d$">
             <connection from="u_i2_d" to="u_i_h"/>
         </flow>
-        <flow id="v_i1_a" label="$\mu_{i,1}^a$">
+        <flow id="v_i1_a" label="$\nu_{i,1}^a$">
             <connection from="u_i_h" to="u_i1_a"/>
         </flow>
-        <flow id="v_i1_t" label="$\mu_{i,1}^t$">
+        <flow id="v_i1_t" label="$\nu_{i,1}^t$">
             <connection from="u_i1_a" to="u_j1_d"/>
         </flow>
-        <flow id="v_i2_t" label="$\mu_{i,2}^t$">
+        <flow id="v_i2_t" label="$\nu_{i,2}^t$">
             <connection from="u_i1_a" to="u_i1_t"/>
         </flow>
-        <flow id="v_i3_t" label="$\mu_{i,3}^t$">
+        <flow id="v_i3_t" label="$\nu_{i,3}^t$">
             <connection from="u_i1_t" to="u_k1_d"/>
         </flow>
-        <flow id="v_i4_t" label="$\mu_{i,4}^t$">
+        <flow id="v_i4_t" label="$\nu_{i,4}^t$">
             <connection from="u_i1_t" to="u_l1_d"/>
         </flow>
     </bond-graph>
@@ -56,7 +56,7 @@
             stroke-width: 3px;
             line-color: #60A0D0;
         }
-        
+
         #v_i1_d { position: #u_i1_d #u_i_h; }
         #v_i2_d { position: #u_i2_d #u_i_h; }
         #u_i_h { position: 10% left #v_i1_a; }
