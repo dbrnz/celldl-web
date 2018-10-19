@@ -166,6 +166,9 @@ export class Curve extends GeoObject
 
 //==============================================================================
 
+// The equation of a projective line is `Ax + By + C = 0`
+// Slope = -A/B, y-intercept = -C/B
+
 export class ProjectiveLine extends Curve
 {
     constructor(A, B, C)
