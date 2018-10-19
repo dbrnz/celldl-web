@@ -362,7 +362,7 @@ export class DiagramElement {
         if (grid !== null) {
             // Adjust offset so that new position snaps to the the grid
 
-            const [x, y] = this.position.coordinates.toOffset();
+            const [x, y] = this.position.coordinates.asArray();
             // Don't want to move in opposite direction to offset
             offset = [utils.gridSnap(x + offset[0], grid[0]) - x,
                       utils.gridSnap(y + offset[1], grid[1]) - y];
@@ -470,7 +470,7 @@ export class DiagramElement {
     appendLabelAsSvg(parentNode)
     //==========================
     {
-        let [x, y] = this._textPosition.coordinates.toOffset();
+        let [x, y] = this._textPosition.coordinates.asArray();
         if (this.label.startsWith('$')) {
             // Pass this.textcolour to MathJax...
             // see https://groups.google.com/forum/#!msg/mathjax-users/fo93aucG5Bo/7dH3s8szbNYJ
@@ -548,7 +548,7 @@ export class RectangularMixin
     {
         if (this.hasCoordinates) {
             const [width, height] = this.sizeAsPixels;
-            const [x, y] = this.coordinates.toOffset();
+            const [x, y] = this.coordinates.asArray();
             if (this.shape === 'rounded-rectangle') {
                 this.geometry = new geo.RoundedRectangle([x - width/2, y - height/2],
                                                          [x + width/2, y + height/2],

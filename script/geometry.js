@@ -91,8 +91,8 @@ export class Point extends GeoObject
         else if (index === 1) this.y = value;
     }
 
-    toOffset()
-    //========
+    asArray()
+    //=======
     {
         return [this.x, this.y];
     }

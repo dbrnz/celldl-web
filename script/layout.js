@@ -156,7 +156,7 @@ export class Position
             const tempOffset = this._offset || config.DEFAULT.POSITION;   // **TEMP**
             if (tempOffset) {
                 const units = [tempOffset[0].units, tempOffset[1].units];
-                this._offset = utils.pixelsToOffset(this._coordinates.toOffset(), container, units, true);
+                this._offset = utils.pixelsToOffset(this._coordinates.asArray(), container, units, true);
             } else {
                 // TODO: Find relative position as a string (new `OFFSET from IDS` relationship??)
             }
@@ -321,7 +321,7 @@ export class Position
             if (!dependency.hasCoordinates) {
                 throw new exception.ValueError(`No coordinates for the '${dependency}' element`);
             }
-            coordinates = coordinates.translate(dependency.coordinates.toOffset());
+            coordinates = coordinates.translate(dependency.coordinates.asArray());
         }
         return new geo.Point(coordinates.x/dependencies.length,
                              coordinates.y/dependencies.length);
@@ -707,7 +707,7 @@ export class LinePath
         const lineEnd = this._reversePath ? startCoordinates : endCoordinates;
 
         let currentPoint = lineStart;
-        const points = [currentPoint.toOffset()];
+        const points = [currentPoint.asArray()];
 
         for (let constraint of this._constraints) {
             const angle = constraint.angle;
@@ -739,7 +739,7 @@ export class LinePath
             }
         }
 */
-        points.push(lineEnd.toOffset());
+        points.push(lineEnd.asArray());
         if (this._reversePath) points.reverse();
 
         return new geo.LineString(points);
