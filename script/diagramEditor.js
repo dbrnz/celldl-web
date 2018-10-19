@@ -314,7 +314,7 @@ export class DiagramEditor
             const gridId = `${this.diagram.id}_grid`;
             const gridStrokeWidth = Math.min(this.grid[0], this.grid[1])/50;
             const gridStrokeDash = `${10*gridStrokeWidth} ${10*gridStrokeWidth}`;
-            const grid = `<g id="diagram-grid-group_">
+            const grid = `<g class="grid_>
   <defs>
     <pattern id="${gridId}" patternUnits="userSpaceOnUse"
              width="${this.grid[0]}" height="${this.grid[1]}"

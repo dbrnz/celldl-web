@@ -55,6 +55,6 @@ svg {
     width: 100%;
     height: 100%;
 }
-#diagram-grid-group_ {
+.grid_ {
     pointer-events: none;
 }
