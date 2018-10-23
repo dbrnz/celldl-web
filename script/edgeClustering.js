@@ -76,6 +76,24 @@ class Edge
     {
         this.start = nodes[0].coordinates;
         this.end = nodes[1].coordinates;
+        if (this.start.x === this.end.x) {
+            this.slope = 90;
+        } else if (this.start.y === this.end.y) {
+            this.slope = 0;
+        } else {
+            this.slope = 180*math.acos((this.end.x - this.start.x)
+                                       /math.distance(this.start.asArray(), this.end.asArray()))/math.pi;
+            if (this.start.y < this.end.y) this.slope = 180 - this.slope;
+            if (this.slope === 180) this.slope = 0;
+        }
+    }
+
+    angleBetween(other)
+    //=================
+    {
+        const angle = (other.slope <= 90) ? other.slope : other.slope - 180;
+        const difference = math.abs(angle - this.slope);
+        return (difference <= 90) ? difference : math.abs(difference - 180);
     }
 }
 
