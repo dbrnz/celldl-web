@@ -37,6 +37,8 @@ class Cell
         this._size = [size[0], size[1]];
         this._nodes = [];
         this._edges = [];
+        this._primaryEdges = 0;
+        this._primarySlope = null;
     }
 
     add_node(node)
@@ -52,10 +54,45 @@ class Cell
         this._edges.push(edge);
     }
 
+    static _slopeAngleDifference(p, q)
+    //================================
+    {   // The distance between 1 and 178 degrees is 3 degrees
+        const a = p[0];
+        let b = q[0];
+        if (b > 90) b -= 180;
+        const d = math.abs(b - a);
+        return (d <= 90) ? d : math.abs(d - 180);
+    }
+
+    calculatePrimarySlope(radius)
+    //===========================
+    {
+        if (this._edges.length === 1) {
+            this._primaryEdges = 1;
+            this._primarySlope = this._edges[0].slopeAngle;
+        } else if (this._edges.length > 1) {
+            const angles = [];
+            for (let edge of this._edges) {
+                angles.push([edge.slopeAngle]);
+            }
+            const dbscan = new DBSCAN();
+            const clusters = dbscan.run(angles, radius, 2, Cell._slopeAngleDifference);
+            if (clusters.length === 1
+             && clusters[0].length === this._edges.length) {   // ==> all edges are in the one cluster
+                let sum = 0;
+                for (let cluster of clusters[0]) {
+                    sum += angles[cluster][0];
+                }
+                this._primaryEdges = clusters[0].length;
+                this._primarySlope = sum/clusters[0].length;
+            }
+        }
+    }
+
     generateSvg()
     //===========
     {
-        const fill = (this._nodes.length && this._edges.length) ? "red"
+        const fill = (this._primarySlope) ? "red"
                    : (this._nodes.length) ? "green"
                    : (this._edges.length) ? "blue"
                    : "none";
@@ -77,23 +114,22 @@ class Edge
         this.start = nodes[0].coordinates;
         this.end = nodes[1].coordinates;
         if (this.start.x === this.end.x) {
-            this.slope = 90;
+            this._slopeAngle = 90;
         } else if (this.start.y === this.end.y) {
-            this.slope = 0;
+            this._slopeAngle = 0;
         } else {
-            this.slope = 180*math.acos((this.end.x - this.start.x)
-                                       /math.distance(this.start.asArray(), this.end.asArray()))/math.pi;
-            if (this.start.y < this.end.y) this.slope = 180 - this.slope;
-            if (this.slope === 180) this.slope = 0;
+            let angle = 180*math.acos((this.end.x - this.start.x)
+                                      /math.distance(this.start.asArray(), this.end.asArray()))/math.pi;
+            if (this.start.y < this.end.y) angle = 180 - angle;
+            if (angle === 180) angle = 0;
+            this._slopeAngle = angle;
         }
     }
 
-    angleBetween(other)
-    //=================
+    get slopeAngle()
+    //==============
     {
-        const angle = (other.slope <= 90) ? other.slope : other.slope - 180;
-        const difference = math.abs(angle - this.slope);
-        return (difference <= 90) ? difference : math.abs(difference - 180);
+        return this._slopeAngle;
     }
 }
 
@@ -246,6 +282,16 @@ class Grid
         */
     }
 
+    calculatePrimarySlopes(radius)
+    //============================
+    {
+        for (let i = 0; i < this._gridSteps; i += 1) {
+            for (let j = 0; j < this._gridSteps; j += 1) {
+                this._cellMatrix.get([i, j]).calculatePrimarySlope(radius);
+            }
+        }
+    }
+
     generateSvg()
     //===========
     {
@@ -327,6 +373,7 @@ export class EdgeClusterer
             for (let edge of graph.edges()) {
                 grid.add_edge(new Edge(edge));
             }
+            grid.calculatePrimarySlopes(this._directionThreshold/2);
             return grid.generateSvg();
         } else {
             return document.createElementNS(SVG_NS, 'g');
