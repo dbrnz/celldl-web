@@ -68,7 +68,7 @@
             </section>
             <section id="footer1">
                 <input type="button" value="Export SVG"  onclick="exportSvg()"/>
-                <input type="button" value="Connections"  onclick="connectionMatrix()" class="rh"/>
+                <input type="button" value="Connections"  onclick="connectionMatrix('connection-matrix')" class="rh"/>
             </section>
           </div>
         </div>
@@ -105,28 +105,8 @@
        and trigger a download to save data.
 -->
         <script type="module">
-            import {TextEditor} from './script/textEditor.js';
-            const editor = new TextEditor();
-
-            // Expose editor's functions to HTML elements
-
-            window.loadCellDl = (files) => editor.loadCellDl(files);
-            window.saveCellDl = () => editor.saveCellDl();
-            window.previewSvg = () => editor.previewSvg();
-            window.exportSvg = () => editor.exportSvg();
-            window.connectionMatrix = () => editor.connectionMatrix();
-
-            // Start with an empty diagram
-            editor.setValue(`<cell-diagram>
-    <style>
-        cell-diagram {
-            width:  500;  /* SVG 'pixels' */
-            height: 500;  /* SVG 'pixels' */
-        }
-    </style>
-</cell-diagram>`);
-            editor.clearSelection();
-            editor.previewSvg();
+            import {main} from './script/main.js';
+            main('cell-diagram', 'palette');
         </script>
     </body>
 </html>
