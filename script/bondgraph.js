@@ -119,6 +119,19 @@ export class BondGraph extends DiagramElement
 
     connectionMatrix()
     //================
+    asGraph()
+    //=======
+    {
+        const graph = new jsnx.Graph();
+        for (let element of this.elements) {
+            graph.addNode(element);
+        }
+        for (let connection of this.connections) {
+            graph.addEdge(connection.parentElement, connection.otherElement);
+        }
+        return graph;
+    }
+
     {
         return [[  '', 'u1', 'u2', 'u3', 'u4'],
                 ['u1',    1,    0,    1,    0],

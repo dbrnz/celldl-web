@@ -85,6 +85,19 @@ export class FlatMap extends DiagramElement
         this.position.addDependent(element);
     }
 
+    asGraph()
+    //=======
+    {
+        const graph = new jsnx.Graph();
+        for (let element of this.elements.filter(e => e.elements.length === 0)) {
+            graph.addNode(element);
+        }
+        for (let connection of this.connections) {
+            graph.addEdge(connection.parentElement, connection.otherElement);
+        }
+        return graph;
+    }
+
     generateSvg()
     //===========
     {
