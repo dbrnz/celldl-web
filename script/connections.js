@@ -28,7 +28,7 @@ import * as geo from './geometry.js';
 import * as layout from './layout.js';
 import * as stylesheet from './stylesheet.js';
 
-import {setAttributes} from './utils.js';
+import {List, setAttributes} from './utils.js';
 
 //==============================================================================
 
@@ -48,10 +48,11 @@ export class Connection
         this.line = null;
         this.path = null;
         this.validPath = false;
-        this.id = toParent ? `${fromId}-${parentElement.id.slice(1)}`
-                           : `${parentElement.id.slice(1)}-${fromId}`;
         this._order = 1;
         this._adjacent = 1;
+        const idList = (new List(toParent ? [fromId, parentElement.id.slice(1)]
+                                          : [parentElement.id.slice(1), fromId])).extend(domElement.classList);
+        this.id = idList.join('-');
         // Track who the parent is connected to
         parentElement.connectTo(fromId);
     }
