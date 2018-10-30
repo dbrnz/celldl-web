@@ -19,6 +19,7 @@
 # -----------------------------------------------------------------------------
 
 import json
+import logging
 from lxml import etree
 
 # -----------------------------------------------------------------------------
@@ -126,6 +127,10 @@ class Arc(object):
         self._target = clean_id(target).rsplit('.')[0]
 
     @property
+    def id(self):
+        return self._id
+
+    @property
     def source(self):
         return self._source
 
@@ -168,6 +173,8 @@ class Glyph(object):
         self._parent = None
         self._children = []
         self._index = None
+        self._sources = []
+        self._targets = []
         self._derived_from = []
 
     @property
@@ -205,6 +212,20 @@ class Glyph(object):
     @property
     def size(self):
         return DEFAULT_SIZES.get(self._class, self._bbox.size)
+
+    @property
+    def sources(self):
+        return self._sources
+
+    @property
+    def targets(self):
+        return self._targets
+
+    def add_source(self, source):
+        self._sources.append(source)
+
+    def add_target(self, target):
+        self._targets.append(target)
 
     def set_index(self, index):
         self._index = index
@@ -318,6 +339,58 @@ class SBGN_ML(object):
             self._arcs.append(Arc(arc.get('id'), arc.get('class'),
                                   arc.get('source'), arc.get('target')))
 
+    def glyphs_of_class(self, cls):
+        return [g for g in self._glyphs.values() if cls == g._class]
+
+    @property
+    def compartments(self):
+        return self.glyphs_of_class('compartment')
+
+    @property
+    def macromolecules(self):
+        return self.glyphs_of_class('macromolecule')
+
+    @property
+    def processes(self):
+        return self.glyphs_of_class('process')
+
+    def assign_links(self):
+        for arc in self._arcs:
+            source = self._glyphs.get(arc.source)
+            target = self._glyphs.get(arc.target)
+            if source and target:
+                if source._class == 'process':
+                    if target._class in [ 'compartment', 'macromolecule']:
+                        source.add_target(target)
+                    else:
+                        logging.error("Process ({}) target ({}) has invalid class".format(source.id, target.id))
+                elif source._class in ['compartment', 'macromolecule']:
+                    if target._class == 'process':
+                        target.add_source(source)
+                    else:
+                        logging.error("Process ({}) source ({}) has invalid class".format(target.id, source.id))
+                else:
+                    logging.error("Invalid class of arc source ({})".format(source.id))
+            else:
+                logging.error("Arc ({}) has invalid source ({}) or target ({})".format(arc.id, source.id, target.id))
+
+        for process in self.processes:
+            if len(process.sources) == 0 and len(process.targets) == 0:
+                logging.warning("Process ({}) is not connected".format(process.id))
+            elif len(process.sources) == 0:
+                # e.g. baroreceptor input to Raphe
+                logging.warning("Process ({}) has no sources".format(process.id))
+            elif len(process.targets) == 0:
+                logging.warning("Process ({}) has no targets".format(process.id))
+            elif len(process.sources) == 1:
+                for target in process.targets:
+                    process.sources[0].add_target(target)
+            elif len(process.targets) == 1:
+                for source in process.sources:
+                    source.add_target(process.targets[0])
+            else:
+                logging.warning("Process ({}) has multiple connections".format(process.id))
+
     def to_celldl(self):
         celldl = ['<cell-diagram>']
 
@@ -394,6 +467,8 @@ if __name__ == '__main__':
 
     with open(sys.argv[1]) as f:
         sbgn = SBGN_ML(f.read())
+
+    sbgn.assign_links()
 
     if sys.argv[2] in ['json', 'JSON']:
         j = sbgn.to_json()
