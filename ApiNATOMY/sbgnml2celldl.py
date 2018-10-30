@@ -240,20 +240,18 @@ class Glyph(object):
         self._children.append(child)
 
     def get_annotations(self, glyph_xml):
-        annotation = glyph_xml.find('annotation')
-        if annotation:
-            desc = annotation.find('rdf:Description', NAMESPACES)
-            if desc:
+        for annotation in glyph_xml.iter('{{{}}}annotation'.format(NAMESPACES['sbgn'])):
+            for desc in annotation.iter('{{{}}}Description'.format(NAMESPACES['rdf'])):
                 id = clean_id(desc.get('{{{}}}about'.format(NAMESPACES['rdf']))[1:])
                 if id != self.id:
                     raise ValueError("Annotation is not about us ({})".format(self.id))
                 derivation = desc.find('bqmodel:isDerivedFrom', NAMESPACES)
-                if derivation:
+                if derivation is not None:
                     bag = derivation.find('rdf:Bag', NAMESPACES)
-                    if bag:
+                    if bag is not None:
                         for item in bag.findall('rdf:li', NAMESPACES):
                             resource = item.get('{{{}}}resource'.format(NAMESPACES['rdf']))
-                            self._derived_from(resource)
+                            self._derived_from.append(resource)
 
     def _attributes(self):
         attribs = ['id="{}"'.format(self._id)]
