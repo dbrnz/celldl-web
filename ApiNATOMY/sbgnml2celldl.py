@@ -23,8 +23,11 @@ from lxml import etree
 
 # -----------------------------------------------------------------------------
 
-NAMESPACES = {'celldl': 'http://www.cellml.org/celldl/1.0#',
-              'sbgn': 'http://sbgn.org/libsbgn/0.2'}
+NAMESPACES = { 'bqmodel': 'http://biomodels.net/model-qualifiers/',
+               'celldl': 'http://www.cellml.org/celldl/1.0#',
+               'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+               'sbgn': 'http://sbgn.org/libsbgn/0.2',
+              }
 
 # -----------------------------------------------------------------------------
 
@@ -165,6 +168,7 @@ class Glyph(object):
         self._parent = None
         self._children = []
         self._index = None
+        self._derived_from = []
 
     @property
     def id(self):
@@ -213,6 +217,22 @@ class Glyph(object):
 
     def add_child(self, child):
         self._children.append(child)
+
+    def get_annotations(self, glyph_xml):
+        annotation = glyph_xml.find('annotation')
+        if annotation:
+            desc = annotation.find('rdf:Description', NAMESPACES)
+            if desc:
+                id = clean_id(desc.get('{{{}}}about'.format(NAMESPACES['rdf']))[1:])
+                if id != self.id:
+                    raise ValueError("Annotation is not about us ({})".format(self.id))
+                derivation = desc.find('bqmodel:isDerivedFrom', NAMESPACES)
+                if derivation:
+                    bag = derivation.find('rdf:Bag', NAMESPACES)
+                    if bag:
+                        for item in bag.findall('rdf:li', NAMESPACES):
+                            resource = item.get('{{{}}}resource'.format(NAMESPACES['rdf']))
+                            self._derived_from(resource)
 
     def _attributes(self):
         attribs = ['id="{}"'.format(self._id)]
@@ -283,6 +303,7 @@ class SBGN_ML(object):
                 self._glyphs[id] = g
                 if g.compartment is None:
                     self._root_glyphs.append(g)
+                g.get_annotations(glyph)
         for g in self._glyphs.values():
             if g.compartment:
                 parent = self._glyphs[g.compartment]
