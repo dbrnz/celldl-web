@@ -411,8 +411,12 @@ class SBGN_ML(object):
             if len(process.sources) == 0 and len(process.targets) == 0:
                 logging.warning("Process ({}) is not connected".format(process.id))
             elif len(process.sources) == 0:
-                # e.g. baroreceptor input to Raphe
-                logging.warning("Process ({}) has no sources".format(process.id))
+                if len(process.targets) == 2:
+                    process.targets[0].add_target(process.targets[1])
+                    process.targets[1].add_target(process.targets[0])
+                else:
+                    logging.warning("Process ({}) has no sources and targets {}".format(process.id,
+                                                                                        [t.id for t in process.targets]))
             elif len(process.targets) == 0:
                 logging.warning("Process ({}) has no targets".format(process.id))
             elif len(process.sources) == 1:
