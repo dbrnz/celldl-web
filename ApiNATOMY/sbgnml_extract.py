@@ -510,27 +510,24 @@ class SBGN_ML(object):
 # -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
     import sys
 
-    if len(sys.argv) < 3:
-        sys.exit('Usage: {} SBGNML_FILE [celldl | json | rdf | turtle]'.format(sys.argv[0]))
+    if len(sys.argv) < 3 or sys.argv[1] not in ['celldl', 'json', 'rdf']:
+        sys.exit('Usage: {} [celldl | json | rdf ] SBGNML_FILE'.format(sys.argv[0]))
 
-    filename = sys.argv[1]
+    filename = sys.argv[2]
     with open(filename) as f:
         sbgn = SBGN_ML(f.read(), pathlib.Path(os.path.abspath(filename)).as_uri())
 
     sbgn.assign_links()
 
-    if sys.argv[2] in ['json', 'JSON']:
+    if   sys.argv[1] == 'celldl':
+        print(sbgn.to_celldl())
+    elif sys.argv[1] == 'json':
         j = sbgn.to_json()
         print(json.dumps(j, sort_keys=True,
                          indent=4, separators=(',', ': ')))
-    elif sys.argv[2] in ['celldl', 'CELLDL']:
-        print(sbgn.to_celldl())
-    elif sys.argv[2] in ['rdf', 'turtle']:
+    elif sys.argv[1] == 'rdf':
         print(sbgn.to_turtle())
-    else:
-        sys.exit("Unknown output format")
 
 # -----------------------------------------------------------------------------
