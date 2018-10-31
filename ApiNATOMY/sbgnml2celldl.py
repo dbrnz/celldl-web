@@ -426,7 +426,9 @@ class SBGN_ML(object):
                 for source in process.sources:
                     source.add_target(process.targets[0])
             else:
-                logging.warning("Process ({}) has multiple connections".format(process.id))
+                logging.warning("Process ({}) has sources {} and targets {}".format(process.id,
+                                                                                    [s.id for s in process.sources],
+                                                                                    [t.id for t in process.targets]))
 
     def to_celldl(self):
         celldl = ['<cell-diagram>']
