@@ -513,7 +513,7 @@ if __name__ == '__main__':
     import sys
 
     if len(sys.argv) < 3 or sys.argv[1] not in ['celldl', 'json', 'rdf']:
-        sys.exit('Usage: {} [celldl | json | rdf ] SBGNML_FILE'.format(sys.argv[0]))
+        sys.exit('Usage: {} [ celldl | json | rdf ] SBGNML_FILE'.format(sys.argv[0]))
 
     filename = sys.argv[2]
     with open(filename) as f:
