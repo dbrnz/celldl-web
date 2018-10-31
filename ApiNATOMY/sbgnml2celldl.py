@@ -21,6 +21,8 @@
 import json
 import logging
 from lxml import etree
+import os
+import pathlib
 
 # -----------------------------------------------------------------------------
 
@@ -87,8 +89,21 @@ DEFAULT_STYLE_RULES = """
 
 # -----------------------------------------------------------------------------
 
-def clean_id(id):
+TURTLE_PREFIXES = ['@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .',
+                   '@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .',
+                   '@prefix bqmodel: <http://biomodels.net/model-qualifiers/> .',
+                   '@prefix cio: <http://purl.obolibrary.org/cio/> .',
+                   '@prefix ro: <http://purl.obolibrary.org/obo/> .',
+                   '@prefix fm: <http://example.org/flatmap-ontology/> .',
+                  ]
+
+# -----------------------------------------------------------------------------
+
+def escape_id(id):
     return 'ID_{}'.format(id) if id is not None else None
+
+def unescape_id(id):
+    return id[3:] if id is not None else None
 
 # -----------------------------------------------------------------------------
 
@@ -121,10 +136,10 @@ class Group(object):
 
 class Arc(object):
     def __init__(self, id, cls, source, target):
-        self._id = clean_id(id)
+        self._id = escape_id(id)
         self._class = cls
-        self._source = clean_id(source).rsplit('.')[0]  ## Port number...
-        self._target = clean_id(target).rsplit('.')[0]
+        self._source = escape_id(source).rsplit('.')[0]  ## Port number...
+        self._target = escape_id(target).rsplit('.')[0]
 
     @property
     def id(self):
@@ -169,7 +184,7 @@ class Glyph(object):
         self._label = label
         self._bbox = bbox
         self._position = None
-        self._compartment = clean_id(compartment)
+        self._compartment = escape_id(compartment)
         self._parent = None
         self._children = []
         self._index = None
@@ -180,6 +195,10 @@ class Glyph(object):
     @property
     def id(self):
         return self._id
+
+    @property
+    def uri(self):
+        return '<#{}>'.format(unescape_id(self._id))
 
     @property
     def label(self):
@@ -242,7 +261,7 @@ class Glyph(object):
     def get_annotations(self, glyph_xml):
         for annotation in glyph_xml.iter('{{{}}}annotation'.format(NAMESPACES['sbgn'])):
             for desc in annotation.iter('{{{}}}Description'.format(NAMESPACES['rdf'])):
-                id = clean_id(desc.get('{{{}}}about'.format(NAMESPACES['rdf']))[1:])
+                id = escape_id(desc.get('{{{}}}about'.format(NAMESPACES['rdf']))[1:])
                 if id != self.id:
                     raise ValueError("Annotation is not about us ({})".format(self.id))
                 derivation = desc.find('bqmodel:isDerivedFrom', NAMESPACES)
@@ -285,6 +304,21 @@ class Glyph(object):
             celldl.append('{}</component>'.format(indent))
             return '\n'.join(celldl)
 
+    def to_turtle(self):
+        turtle = [self.uri]
+        turtle.append('    a fm:Component;')
+        if self._label:
+            turtle.append('    rdfs:label "{}";'.format(self._label))
+        if self._derived_from:
+            derived_from = ['<{}>'.format(d) for d in self._derived_from]
+            turtle.append('    bqmodel:isDerivedFrom\n        {};'.format(',\n        '.join(derived_from)))
+        if self._children:
+            # ro:RO_0001019
+            turtle.append('    fm:contains\n        {};'.format(',\n        '.join([c.uri for c in self._children])))
+        if self._targets:
+            turtle.append('    fm:connected_to\n        {};'.format(',\n        '.join([t.uri for t in self._targets])))
+        return '\n'.join(turtle)
+
     def style(self, level=0):
         if self._parent is None:
             return ''
@@ -300,13 +334,14 @@ class SBGN_ML(object):
     def NS(tag):
         return '{{{}}}{}'.format(NAMESPACES['sbgn'], tag)
 
-    def __init__(self, text):
+    def __init__(self, text, source_uri=None):
+        self._source_uri = source_uri
         self._xml = etree.fromstring(text)
         assert self._xml.tag == self.NS('sbgn'), 'Not a valid SBGN document'
         self._glyphs = {}
         self._root_glyphs = []
         for glyph in self._xml.findall('sbgn:map/sbgn:glyph', NAMESPACES):
-            id = clean_id(glyph.get('id'))
+            id = escape_id(glyph.get('id'))
             if id:
                 label = glyph.find('sbgn:label', NAMESPACES)
                 bbox = glyph.find('sbgn:bbox', NAMESPACES)
@@ -448,6 +483,18 @@ class SBGN_ML(object):
                  'constraints': [],
                }
 
+    def to_turtle(self):
+        turtle = []
+        if self._source_uri:
+            turtle.append('@base <{}> .'.format(self._source_uri))
+        turtle.extend(TURTLE_PREFIXES)
+        turtle.append('')
+        for g in self.compartments:
+            turtle.append(g.to_turtle())
+        for g in self.macromolecules:
+            turtle.append(g.to_turtle())
+        return '\n'.join(turtle)
+
     def style(self, level):
         styling = [DEFAULT_STYLE_RULES]
         for g in self._glyphs.values():
@@ -461,10 +508,11 @@ if __name__ == '__main__':
     import sys
 
     if len(sys.argv) < 3:
-        sys.exit('Usage: {} SBGNML_FILE [celldl | json]'.format(sys.argv[0]))
+        sys.exit('Usage: {} SBGNML_FILE [celldl | json | rdf | turtle]'.format(sys.argv[0]))
 
-    with open(sys.argv[1]) as f:
-        sbgn = SBGN_ML(f.read())
+    filename = sys.argv[1]
+    with open(filename) as f:
+        sbgn = SBGN_ML(f.read(), pathlib.Path(os.path.abspath(filename)).as_uri())
 
     sbgn.assign_links()
 
@@ -474,6 +522,8 @@ if __name__ == '__main__':
                          indent=4, separators=(',', ': ')))
     elif sys.argv[2] in ['celldl', 'CELLDL']:
         print(sbgn.to_celldl())
+    elif sys.argv[2] in ['rdf', 'turtle']:
+        print(sbgn.to_turtle())
     else:
         sys.exit("Unknown output format")
 
