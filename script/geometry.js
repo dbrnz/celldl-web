@@ -148,6 +148,13 @@ export class Point extends GeoObject
         return this.notEqual(other);
     }
 
+    lerp(other, delta)
+    //================
+    {
+        return new Point((1 - delta)*this.x + delta*other.x,
+                         (1 - delta)*this.y + delta*other.y);
+    }
+
     svgNode()
     //=======
     {
@@ -411,6 +418,24 @@ export class PolyLine extends GeoObject
         }
     }
 
+    get start()
+    //=========
+    {
+        return this.coordinates[0];
+    }
+
+    get end()
+    //=======
+    {
+        return this.coordinates.slice(-1)[0];
+    }
+
+    asPolyBezier()
+    //============
+    {
+        return new PolyBezier(this.coordinates);
+    }
+
     svgNode()
     //=======
     {
@@ -485,6 +510,61 @@ export class BezierCurve extends Curve
             path.setAttribute('d', `M ${pts[0].x},${pts[0].y} C ${pts[1].x},${pts[1].y} ${pts[2].x},${pts[2].y} ${pts[3].x},${pts[3].y}`);
         }
         return path;
+    }
+}
+
+//==============================================================================
+
+export class PolyBezier extends GeoObject
+{
+    constructor(points, closed=false, type='Cubic', curviness=1.0) {
+        super();
+        this._points = points;
+        this._type = type;
+        this._curviness = curviness;
+    }
+
+    cubicPath(points)
+    //===============
+    {
+        const path = [];
+        if (points.length > 0) {
+            path.push(`M${points[0].x},${points[0].y}`);
+            if (points.length > 3) {
+                const endIndex = points.length - 1;
+                const midIndex = Math.round(endIndex/2);
+                const midpoint = points[midIndex];
+                let c1 = points[1];
+                let c2 = points[midIndex - 1];
+                let end = midpoint.lerp(c2, 1 - this._curviness);
+                path.push(`C${c1.x},${c1.y} ${c2.x},${c2.y} ${end.x},${end.y}`);
+                c1 = points[midIndex + 1];
+                c2 = points[endIndex - 1];
+                end = points[endIndex];
+                if (1 - this._curviness) {  // line to midpoint + percentage
+                    const start = midpoint.lerp(c1, 1 - this._curviness);
+                    path.push(`L${start.x},${start.y}`);
+                }
+                path.push(`C${c1.x},${c1.y} ${c2.x},${c2.y} ${end.x},${end.y}`);
+            } else {
+                const end = points[points.length - 1];
+                path.push(`L${end.x},${end.y}`);
+            }
+        }
+        return path;
+    }
+
+    svgNode()
+    //=======
+    {
+        const svgNode = document.createElementNS(SVG_NS, 'path');
+        const points = this._points;
+        const path = (this._type === 'Cubic') ? this.cubicPath(points)
+                   : [];
+        if (path.length) {
+            setAttributes(svgNode, { d: path.join(' ') });
+        }
+        return svgNode;
     }
 }
 
