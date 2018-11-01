@@ -46,16 +46,13 @@ INDENT = 4
 # -----------------------------------------------------------------------------
 
 DEFAULT_SIZES = {
+    'DIAGRAM': (1000, 1000),
     'compartment': (25, 25),
     'macromolecule': (4, 2),
     'process': (1, 1),
 }
 
 DEFAULT_STYLE_RULES = """
-        cell-diagram {{
-            width: 1000;
-            height: 1000;
-        }}
         connection {{
             stroke-opacity: 0.7;
         }}
@@ -91,9 +88,9 @@ DEFAULT_STYLE_RULES = """
             color: #ffff00;
             size: 1.5v, 1.5v;
         }}
-""".format(DEFAULT_SIZES['compartment'][0], DEFAULT_SIZES['compartment'][1],
-           DEFAULT_SIZES['macromolecule'][0], DEFAULT_SIZES['macromolecule'][1],
-           DEFAULT_SIZES['process'][0], DEFAULT_SIZES['process'][1])
+""".format(*DEFAULT_SIZES['compartment'],
+           *DEFAULT_SIZES['macromolecule'],
+           *DEFAULT_SIZES['process'])
 
 # -----------------------------------------------------------------------------
 
@@ -132,6 +129,10 @@ class Scaler(object):
             self._ymin = bounds_y[0]
         if self._ymax is None or self._ymax < bounds_y[1]:
             self._ymax = bounds_y[1]
+
+    def absolute_size(self):
+        return ((self._xmax - self._xmin),
+                (self._ymax - self._ymin))
 
     def scale_size(self, size):
         return (100*size[0]/(self._xmax - self._xmin),
@@ -398,7 +399,7 @@ class SBGN_ML(object):
                 parent = self._glyphs[g.compartment]
                 g.set_parent(parent)
                 parent.add_child(g)
-        self.assign_geometry(self._root_glyphs)
+        self._geometry = self.assign_geometry(self._root_glyphs)
         self._arcs = []
         for arc in self._xml.findall('sbgn:map/sbgn:arc', NAMESPACES):
             label = glyph.find('sbgn:label', NAMESPACES)
@@ -415,6 +416,7 @@ class SBGN_ML(object):
             c.set_position(scaler.scale_position(c.bbox.position))
             c.set_size(scaler.scale_size(c.bbox.size))
             SBGN_ML.assign_geometry(c.children)
+        return scaler
 
     def glyphs_of_class(self, cls):
         return [g for g in self._glyphs.values() if cls == g.primary_class]
@@ -546,7 +548,11 @@ class SBGN_ML(object):
         return '\n'.join(turtle)
 
     def style(self, level):
-        styling = [DEFAULT_STYLE_RULES]
+        styling = [ '''cell-diagram {{
+    width: {};
+    height: {};
+}}'''.format(*self._geometry.absolute_size())]
+        styling.append(DEFAULT_STYLE_RULES)
         for g in self._glyphs.values():
             styling.append(g.style(level))
         return '\n'.join(styling)
