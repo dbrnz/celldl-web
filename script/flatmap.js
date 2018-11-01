@@ -193,8 +193,8 @@ export class ComponentConnection extends Connection
             const offset = (count === 1) ? 0.5
                                          : (1 + (this.order - 1)*count/(count - 1))/(count + 2);
 
-            return new geo.LineString([overlappedSet.lineSegments[0].ratio(offset),
-                                       overlappedSet.lineSegments[1].ratio(offset)])
+            return new geo.PolyLine([overlappedSet.lineSegments[0].ratio(offset),
+                                     overlappedSet.lineSegments[1].ratio(offset)])
         }
     }
 }

@@ -182,7 +182,7 @@ componentPoints.extend(this.flow.getFlowLine(this));
 for (let to of this.toPotentials) {
     const points = new List(componentPoints);
     points.extend(this.lines["end"].points(to.coordinates, {"flow": this.flow, "reverse": true}));
-    const line = new geo.LineString(points);
+    const line = new geo.PolyLine(points);
 
     const lineStyle = this.getStyleAsString("line-style", "");
     if ((this.count % 2) === 0) {

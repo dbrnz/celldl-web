@@ -384,7 +384,7 @@ export class LineSegmentSet extends GeoObject
 
 //==============================================================================
 
-export class LineString extends GeoObject
+export class PolyLine extends GeoObject
 {
     constructor(points, closed=false) {
         super();
@@ -495,7 +495,7 @@ export class Polygon extends GeoObject
     constructor(points)
     {
         super();
-        this.boundary = new LineString(points, true);
+        this.boundary = new PolyLine(points, true);
         this.edges = new LineSegmentSet(this.boundary.lineSegments);
     }
 

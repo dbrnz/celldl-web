@@ -130,7 +130,7 @@ export class Connection
     lineAsPath(fromElement, toElement)
     //================================
     {
-        return this.line.toLineString(fromElement.coordinates, toElement.coordinates);
+        return this._line.toPolyLine(fromElement.coordinates, toElement.coordinates);
     }
 
     static trimPath(path, fromElement, toElement)

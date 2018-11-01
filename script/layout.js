@@ -698,8 +698,8 @@ export class LinePath
         }
     }
 
-    toLineString(startCoordinates, endCoordinates)
-    //============================================
+    toPolyLine(startCoordinates, endCoordinates)
+    //==========================================
     {
         // If coords are the same we will return an empty path
 
@@ -742,7 +742,7 @@ export class LinePath
         points.push(lineEnd.asArray());
         if (this._reversePath) points.reverse();
 
-        return new geo.LineString(points);
+        return new geo.PolyLine(points);
     }
 }
 
