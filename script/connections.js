@@ -220,6 +220,9 @@ export class Connection
         if (stylesheet.styleAsString(this.style, 'line-style') === 'dashed') {
             setAttributes(svgNode, {'stroke-dasharray': '10,5'});
         }
+        if ('stroke-opacity' in this._style) {
+            setAttributes(svgNode, {'opacity': stylesheet.parseNumber(this._style['stroke-opacity'])});
+        }
         return svgNode;
     }
 
