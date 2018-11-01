@@ -564,9 +564,13 @@ if __name__ == '__main__':
     if len(sys.argv) < 3 or sys.argv[1] not in ['celldl', 'json', 'rdf']:
         sys.exit('Usage: {} [ celldl | json | rdf ] SBGNML_FILE'.format(sys.argv[0]))
 
+    BOM = '\ufeff'  # Unicode file marker
     filename = sys.argv[2]
-    with open(filename) as f:
-        sbgn = SBGN_ML(f.read(), pathlib.Path(os.path.abspath(filename)).as_uri())
+    with open(filename, encoding='utf-8') as f:
+        text = f.read()
+        if text.startswith(BOM):
+            text = text[1:]
+        sbgn = SBGN_ML(text.encode('utf-8'), pathlib.Path(os.path.abspath(filename)).as_uri())
 
     sbgn.assign_links()
 
