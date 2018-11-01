@@ -91,7 +91,16 @@ class CellDlFile
         }
     }
 
+    save()
+    //====
+    {
+        const text = this._editor.getValue();
+        const blob = new Blob([text], { type: "application/xml;charset=utf-8" });
+        saveAs(blob, this.loadedFile);
+    }
+
     displayDiagram()
+    //==============
     {
         return new Promise((resolve, reject) => {
             // Remove any existing content from our SVG container
@@ -153,14 +162,6 @@ class CellDlFile
                 reject(error);
             }
         });
-    }
-
-    save()
-    //====
-    {
-        const text = this._editor.getValue();
-        const blob = new Blob([text], { type: "application/xml;charset=utf-8" });
-        saveAs(blob, this._loadedFile);
     }
 
     previewSvg()
