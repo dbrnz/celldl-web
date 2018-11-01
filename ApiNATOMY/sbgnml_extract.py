@@ -56,6 +56,9 @@ DEFAULT_STYLE_RULES = """
             width: 1000;
             height: 1000;
         }}
+        connection {{
+            stroke-opacity: 0.7;
+        }}
         .compartment {{
             color: none;
             stroke: red;
