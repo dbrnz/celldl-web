@@ -116,8 +116,6 @@ export class BondGraph extends DiagramElement
         super.addConnection(edge);
     }
 
-    connectionMatrix()
-    //================
     asGraph()
     //=======
     {
@@ -129,14 +127,6 @@ export class BondGraph extends DiagramElement
             graph.addEdge(connection._parentElement, connection._otherElement);
         }
         return graph;
-    }
-
-    {
-        return [[  '', 'u1', 'u2', 'u3', 'u4'],
-                ['u1',    1,    0,    1,    0],
-                ['u1',    0,    1,    1,   -1],
-                ['u1',   -1,   -1,    1,    1],
-                ['u1',    0,    1,   -1,    1]];
     }
 
     drawEdges(svgNode)
