@@ -282,6 +282,38 @@ export class CellDiagram {
         this.bondGraph.addXml(element);
     }
 
+    clusterConnections(edges)
+    //=======================
+    {
+        const angleStrength = 0.5;
+        const neighbours = 4;
+        const groupCompare = null;
+        const delta = 0.8;   // 80%
+
+        const bundler = new Bundler();
+        bundler.options.angleStrength = angleStrength;
+        bundler.options.sort = groupCompare;
+
+        bundler.setNodes(edges);
+        bundler.buildNearestNeighborGraph(neighbours);
+        bundler.MINGLE();
+
+        bundler.graph.each(node => {
+            const edges = node.unbundleEdges(delta);
+            for (let edge of edges) {
+                const connection = this.findConnection(edge[0].node.id);
+                if (connection) {
+                    const points = [];
+                    for (let e of edge) {
+                        points.push(e.unbundledPos);
+                    }
+                    // Best way to do this??
+                    connection._path = new geo.PolyLine(points);
+                }
+            }
+        });
+    }
+
     layoutConnections()
     //=================
     {
@@ -303,6 +335,10 @@ export class CellDiagram {
                 }
             }
         }
+        if (connectionEdges.length) {
+            this.clusterConnections(connectionEdges);
+        }
+
 
     layout(width=config.DIAGRAM.WIDTH, height=config.DIAGRAM.HEIGHT)
     //==============================================================
