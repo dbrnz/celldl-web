@@ -113,20 +113,53 @@ def unescape_id(id):
 
 class Scaler(object):
     def __init__(self):
-        self._xmin = 100
-        self._xmax =   0
-        self._ymin = 100
-        self._ymax =   0
+        self._xmin = None
+        self._xmax = None
+        self._ymin = None
+        self._ymax = None
 
-    def add(self, position):
-        if position[0] < self._xmin: self._xmin = position[0]
-        if position[0] > self._xmax: self._xmax = position[0]
-        if position[1] < self._ymin: self._ymin = position[1]
-        if position[1] > self._ymax: self._ymax = position[1]
+    def update(self, bbox):
+        (bounds_x, bounds_y) = bbox.bounds
+        if self._xmin is None or self._xmin > bounds_x[0]:
+            self._xmin = bounds_x[0]
+        if self._xmax is None or self._xmax < bounds_x[1]:
+            self._xmax = bounds_x[1]
+        if self._ymin is None or self._ymin > bounds_y[0]:
+            self._ymin = bounds_y[0]
+        if self._ymax is None or self._ymax < bounds_y[1]:
+            self._ymax = bounds_y[1]
 
-    def scale(self, position):
+    def scale_size(self, size):
+        return (100*size[0]/(self._xmax - self._xmin),
+                100*size[1]/(self._ymax - self._ymin))
+
+    def scale_position(self, position):
         return (MIN_POS + (MAX_POS-MIN_POS)*(position[0] - self._xmin)/(self._xmax - self._xmin),
                 MIN_POS + (MAX_POS-MIN_POS)*(position[1] - self._ymin)/(self._ymax - self._ymin))
+
+# -----------------------------------------------------------------------------
+
+class BBox(object):
+    def __init__(self, x, y, width, height):
+        if width < 0: width = -width
+        if height < 0: height = -height
+        self._x = x + width/2.0
+        self._y = y + height/2.0
+        self._width = width
+        self._height = height
+
+    @property
+    def size(self):
+        return (self._width, self._height)
+
+    @property
+    def position(self):
+        return (self._x, self._y)
+
+    @property
+    def bounds(self):
+        return ((self._x - self._width/2.0, self._x + self._width/2.0),
+                (self._y - self._height/2.0, self._y + self._height/2.0))
 
 # -----------------------------------------------------------------------------
 
@@ -168,23 +201,6 @@ class Arc(object):
 
 # -----------------------------------------------------------------------------
 
-class BBox(object):
-    def __init__(self, x, y, width, height):
-        self._x = x/100.0                     # to %, 10000 is full width
-        self._y = (10000 + y)/100.0
-        self._width = width/10.0
-        self._height = height/10.0            # to %, 1000 is full width
-
-    @property
-    def size(self):
-        return (self._width, self._height)
-
-    @property
-    def position(self):
-        return (self._x, self._y)
-
-# -----------------------------------------------------------------------------
-
 class Glyph(object):
     def __init__(self, id, cls, label, bbox, compartment):
         self._id = id         # Already cleaned...
@@ -192,6 +208,7 @@ class Glyph(object):
         self._label = label
         self._bbox = bbox
         self._position = None
+        self._size = None
         self._compartment = escape_id(compartment)
         self._parent = None
         self._children = []
@@ -242,7 +259,7 @@ class Glyph(object):
 
     @property
     def size(self):
-        return DEFAULT_SIZES.get(self._class, self._bbox.size)
+        return self._size if self._size is not None else self._bbox.size
 
     @property
     def sources(self):
@@ -263,6 +280,9 @@ class Glyph(object):
 
     def set_position(self, position):
         self._position = position
+
+    def set_size(self, size):
+        self._size = size
 
     def set_parent(self, parent):
         self._parent = parent
@@ -301,15 +321,6 @@ class Glyph(object):
             attribs.append('label="_"')
         return ' '.join(attribs)
 
-    def assign_child_positions(self):
-        if len(self._children):
-            scaler = Scaler()
-            for c in self._children:
-                c.assign_child_positions()
-                scaler.add(c.bbox.position)
-            for c in self._children:
-                c.set_position(scaler.scale(c.bbox.position))
-
     def to_celldl(self, level=0):
         indent = INDENT*level*' '
         if len(self._children) == 0:
@@ -337,11 +348,14 @@ class Glyph(object):
         return '\n'.join(turtle)
 
     def style(self, level=0):
-        if self._parent is None:
-            return ''
         indent = INDENT*level*' '
-        return '{}#{} {{ position: {:.2f}%, {:.2f}%; }}'.format(
-               indent, self._id, *self.position)
+        indent1 = (INDENT+1)*level*' '
+        style = ['{}#{} {{'.format(indent, self._id)]
+        style.append('{} position: {:.2f}%, {:.2f}%;'.format(indent1, *self.position))
+        if self.primary_class == 'compartment':
+            style.append('{} size: {:.2f}%, {:.2f}%;'.format(indent1, *self.size))
+        style.append('{}}}'.format(indent))
+        return '\n'.join(style)
 
 # -----------------------------------------------------------------------------
 
@@ -380,14 +394,23 @@ class SBGN_ML(object):
                 parent = self._glyphs[g.compartment]
                 g.set_parent(parent)
                 parent.add_child(g)
-        for g in self._root_glyphs:
-            g.assign_child_positions()
+        self.assign_geometry(self._root_glyphs)
         self._arcs = []
         for arc in self._xml.findall('sbgn:map/sbgn:arc', NAMESPACES):
             label = glyph.find('sbgn:label', NAMESPACES)
             bbox = glyph.find('sbgn:bbox', NAMESPACES)
             self._arcs.append(Arc(arc.get('id'), arc.get('class'),
                                   arc.get('source'), arc.get('target')))
+
+    @staticmethod
+    def assign_geometry(children):
+        scaler = Scaler()
+        for c in children:
+            scaler.update(c.bbox)
+        for c in children:
+            c.set_position(scaler.scale_position(c.bbox.position))
+            c.set_size(scaler.scale_size(c.bbox.size))
+            SBGN_ML.assign_geometry(c.children)
 
     def glyphs_of_class(self, cls):
         return [g for g in self._glyphs.values() if cls == g.primary_class]
