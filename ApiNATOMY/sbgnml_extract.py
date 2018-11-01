@@ -47,7 +47,7 @@ INDENT = 4
 
 DEFAULT_SIZES = {
     'compartment': (25, 25),
-    'macromolecule': (6, 4),
+    'macromolecule': (4, 2),
     'process': (1, 1),
 }
 
@@ -56,21 +56,22 @@ DEFAULT_STYLE_RULES = """
             width: 1000;
             height: 1000;
         }}
-        .outermost {{
-            color: #ffd0d0;
-            size: 95v, 95v;
-            position: 50%, 50%;
-            text-position: 50%, 97%;
-        }}
         .compartment {{
-            color: #d0d0ff;
+            color: none;
+            stroke: red;
+            stroke-width: 2px;
             size: {}v, {}v;
             text-position: 50%, 90%;
             shape: rounded-rectangle;
         }}
+        .outermost {{
+            size: 95v, 95v;
+            stroke: #c0c0c0;
+        }}
         .macromolecule {{
-            color: red;
+            color: #c0c0FF;
             size: {}v, {}v;
+            font-size: 10;
             shape: rounded-rectangle;
         }}
         .process {{
