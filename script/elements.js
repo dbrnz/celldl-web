@@ -83,6 +83,8 @@ export class DiagramElement {
         this._textPosition = this.position;
         this.colour = ('color' in this.style) ? stylesheet.parseColour(this.diagram, this.style.color)
                                               : '#808080'; // TODO: specify defaults in one place
+        this._opacity = ('opacity' in this.style) ? this.getStyleAsString('opacity')
+                                                  : '';
         this.display = ('display' in this.style) ? { display: this.getStyleAsString('display') }
                                                  : {};
         this.fontSize = ('font-size' in this.style) ? stylesheet.parseNumber(this.style['font-size'])
@@ -513,6 +515,7 @@ export class DiagramElement {
         if (this.geometry !== null) {
             const node = this.geometry.svgNode();
             setAttributes(node, { stroke: this.stroke, fill: this.colour,
+                                  'opacity': this._opacity,
                                   'stroke-width': this.strokeWidth});
             svgNode.appendChild(node);
             this.appendLabelAsSvg(svgNode);
