@@ -216,8 +216,8 @@ export class Connection
         setAttributes(svgNode, {id: this.diagramId, fill: 'none',
                                 stroke: this.lineColour,
                                 'stroke-width': strokeWidth,
-                                'marker-end': this.diagram.svgFactory.arrow(this.lineColour, strokeWidth/configWidth)});
-        if (stylesheet.styleAsString(this.style, 'line-style') === 'dashed') {
+                                'marker-end': this._diagram.svgFactory.arrow(this.lineColour, arrowScale)});
+        if (stylesheet.styleAsString(this._style, 'line-style') === 'dashed') {
             setAttributes(svgNode, {'stroke-dasharray': '10,5'});
         }
         if ('stroke-opacity' in this._style) {
