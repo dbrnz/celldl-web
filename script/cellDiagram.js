@@ -46,6 +46,7 @@ export class CellDiagram {
         this._elements = [];
         this._elementsById = {};
         this._connections = [];
+        this._connectionsById = {};
         this.width = 0;
         this.height = 0;
         this.diagonal = 0;
@@ -233,6 +234,12 @@ export class CellDiagram {
     addConnection(connection)
     //=======================
     {
+        if (connection.id !== '') {
+            if (connection.id in this._connectionsById) {
+                throw new exception.KeyError(`Duplicate connection 'id': ${connection.id}`);
+            }
+            this._connectionsById[connection.id] = connection;
+        }
         this._connections.push(connection);
     }
 
@@ -240,6 +247,12 @@ export class CellDiagram {
     //===========
     {
          return this._connections;
+    }
+
+    findConnection(id)
+    //================
+    {
+        return (id in this._connectionsById) ? this._connectionsById[id] : null;
     }
 
 /* FUTURE ??
@@ -268,6 +281,28 @@ export class CellDiagram {
         // Create bondGraph if none exists
         this.bondGraph.addXml(element);
     }
+
+    layoutConnections()
+    //=================
+    {
+        // Assign paths to all connections
+
+        const connectionEdges = [];
+        for (let connection of this._connections) {
+            connection.assignPath();
+            const path = connection.path;
+            if (path) {  // && config.cluster_edges
+                const start = path.start;
+                const end = path.end;
+                if (start && end) {
+                    connectionEdges.push({ id: connection.id,
+                                           name: connection.id,
+                                           data: { coords: [start.x,start.y,
+                                                            end.x,end.y] }
+                                        });
+                }
+            }
+        }
 
     layout(width=config.DIAGRAM.WIDTH, height=config.DIAGRAM.HEIGHT)
     //==============================================================
@@ -298,16 +333,8 @@ export class CellDiagram {
 
         // Layout the diagram
 
-         this.position.layoutDependents();
-
-        // Assign paths to all connections
-
-        for (let connection of this._connections) {
-            connection.assignPath();
-        }
-
- // Space flow lines going through a transporter
- //       bondGraph.setOffsets();
+        this.position.layoutDependents();
+        this.layoutConnections();
     }
 
     generateSvg(addViewBox=true, dimensions=false)

@@ -114,7 +114,6 @@ export class BondGraph extends DiagramElement
     //===========
     {
         super.addConnection(edge);
-        this.diagram.addConnection(edge);
     }
 
     connectionMatrix()
@@ -127,7 +126,7 @@ export class BondGraph extends DiagramElement
             graph.addNode(element);
         }
         for (let connection of this.connections) {
-            graph.addEdge(connection.parentElement, connection.otherElement);
+            graph.addEdge(connection._parentElement, connection._otherElement);
         }
         return graph;
     }
@@ -232,8 +231,7 @@ export class FlowEdge extends Connection
     parseLine()
     //=========
     {
-        this.line = new layout.LinePath(this.diagram, this.style, `${this.direction}-line-path`);
-        this.line.parseLine();
+        super.parseLine(this.direction);
     }
 
 }

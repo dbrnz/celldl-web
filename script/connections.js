@@ -35,26 +35,32 @@ import {List, setAttributes} from './utils.js';
 export class Connection
 {
     constructor(diagram, domElement, fromId, toParent, parentElement, validClasses, styleElementId=null) {
-        this.diagram = diagram;
-        this.domElement = domElement;
-        this.otherId = `#${fromId}`;
-        this.otherElement = null;
-        this.toParent = toParent;
-        this.parentElement = parentElement;
-        this.parentElement.addConnection(this);
-        this.validClasses = validClasses;
-        this.style = null;
-        this.styleElementId = styleElementId;
-        this.line = null;
-        this.path = null;
-        this.validPath = false;
-        this._order = 1;
-        this._adjacent = 1;
         const idList = (new List(toParent ? [fromId, parentElement.id.slice(1)]
                                           : [parentElement.id.slice(1), fromId])).extend(domElement.classList);
         this.id = idList.join('-');
+        this._diagram = diagram;
+        this._domElement = domElement;
+        this._otherId = `#${fromId}`;
+        this._otherElement = null;
+        this._toParent = toParent;
+        this._parentElement = parentElement;
+        this._parentElement.addConnection(this);
+        this._validClasses = validClasses;
+
         // Track who the parent is connected to
+
         parentElement.connectTo(fromId);
+
+        this._style = null;
+        this._styleElementId = styleElementId;
+
+        this._line = null;
+        this._path = null;
+        this._validPath = false;
+        this._order = 1;
+        this._adjacent = 1;
+
+        this._diagram.addConnection(this);
     }
 
     static createFromAttributeValue(diagram, domElement, attributeName,
@@ -71,27 +77,27 @@ export class Connection
     get diagramId()
     //=============
     {
-        return `${this.diagram.id}_${this.id}`;
+        return `${this._diagram.id}_${this.id}`;
     }
 
     resolveReferences()
     //=================
     {
-        for (let elementClass of this.validClasses) {
-            this.otherElement = this.diagram.findElement(this.otherId, elementClass);
-            if (this.otherElement !== null) {
-                const styleDomElement = (this.styleElementId !== null)
-                                            ? this.diagram.findElement(this.styleElementId).domElement
-                                            : this.domElement;
-                this.style = this.diagram.stylesheet.style(styleDomElement);
-                this.otherElement.addConnection(this);  // Will set `order` and `adjacent`
+        for (let elementClass of this._validClasses) {
+            this._otherElement = this._diagram.findElement(this._otherId, elementClass);
+            if (this._otherElement !== null) {
+                const styleDomElement = (this._styleElementId !== null)
+                                            ? this._diagram.findElement(this._styleElementId).domElement
+                                            : this._domElement;
+                this._style = this._diagram.stylesheet.style(styleDomElement);
+                this._otherElement.addConnection(this);  // Will set `order` and `adjacent`
                 return;
             }
         }
-        const names = this.validClasses.filter(c => c.name);
+        const names = this._validClasses.filter(c => c.name);
         const classNames = (names.length === 1) ? names[0]
                                                 : [names.slice(0, -1).join(', '), names.slice(-1)[0]].join(' or ');
-        throw new exception.KeyError(`Can't find ${classNames} with id '${this.otherId}'`);
+        throw new exception.KeyError(`Can't find ${classNames} with id '${this._otherId}'`);
     }
 
     setOrder(order, adjacent)
@@ -116,15 +122,16 @@ export class Connection
     get lineColour()
     //==============
     {
-        return ('line-color' in this.style) ? stylesheet.parseColour(this.diagram, this.style['line-color'])
-                                            : '#A0A0A0'; // TODO: specify defaults in one place
+        return ('line-color' in this._style) ? stylesheet.parseColour(this._diagram, this._style['line-color'])
+                                             : '#A0A0A0'; // TODO: specify defaults in one place
     }
 
-    parseLine()
-    //=========
+    parseLine(direction=null)
+    //=======================
     {
-        this.line = new layout.LinePath(this.diagram, this.style, 'line-path');
-        this.line.parseLine();
+        const attributeName = (direction !== null) ? `${direction}-line-path` : 'line-path';
+        this._line = new layout.LinePath(this._diagram, this._style, attributeName);
+        this._line.parseLine();
     }
 
     lineAsPath(fromElement, toElement)
@@ -169,33 +176,43 @@ export class Connection
 
     assignPath()
     //==========
-    {
-        const fromElement = this.toParent ? this.otherElement : this.parentElement;
-        const toElement = this.toParent ? this.parentElement : this.otherElement;
-        this.path = Connection.trimPath(this.lineAsPath(fromElement, toElement), fromElement, toElement);
-        this.validPath = true;
+    {// make from/to class members
+        const fromElement = this._toParent ? this._otherElement : this._parentElement;
+        const toElement = this._toParent ? this._parentElement : this._otherElement;
+        this._path = this.lineAsPath(fromElement, toElement);
+        this._validPath = true;
     }
 
     get invalidPath()
     //===============
     {
-        return (this.validPath === false);
+        return (this._validPath === false);
     }
 
     invalidatePath()
     //==============
     {
-        this.validPath = false;
+        this._validPath = false;
+    }
+
+    get path()
+    //========
+    {
+        return this._validPath ? this._path : null;
     }
 
     generateSvg()
     //===========
     {
-        const svgNode = this.path.svgNode();
-        const strokeWidth = this.diagram.strokeWidthToPixels(
-                                ('stroke-width' in this.style) ? stylesheet.parseLength(this.style['stroke-width'])
-                                                               : config.STROKE.WIDTH);
-        const configWidth = this.diagram.strokeWidthToPixels(config.STROKE.WIDTH);
+        const fromElement = this._toParent ? this._otherElement : this._parentElement;
+        const toElement = this._toParent ? this._parentElement : this._otherElement;
+        const trimmedPath = Connection.trimPath(this._path, fromElement, toElement).asPolyBezier();
+        const svgNode = trimmedPath.svgNode();
+        const strokeWidth = this._diagram.strokeWidthToPixels(
+                                ('stroke-width' in this._style) ? stylesheet.parseLength(this._style['stroke-width'])
+                                                                : config.STROKE.WIDTH);
+        const configWidth = this._diagram.strokeWidthToPixels(config.STROKE.WIDTH);
+        const arrowScale = Math.sqrt(0.5*(strokeWidth+configWidth)/configWidth);
         setAttributes(svgNode, {id: this.diagramId, fill: 'none',
                                 stroke: this.lineColour,
                                 'stroke-width': strokeWidth,

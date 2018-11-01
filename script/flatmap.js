@@ -71,13 +71,6 @@ export class FlatMap extends DiagramElement
         }
     }
 
-    addConnection(connection)
-    //=======================
-    {
-        super.addConnection(connection);
-        this.diagram.addConnection(connection);
-    }
-
     addElement(element)
     //=================
     {
@@ -93,7 +86,7 @@ export class FlatMap extends DiagramElement
             graph.addNode(element);
         }
         for (let connection of this.connections) {
-            graph.addEdge(connection.parentElement, connection.otherElement);
+            graph.addEdge(connection._parentElement, connection._otherElement);
         }
         return graph;
     }
@@ -103,7 +96,6 @@ export class FlatMap extends DiagramElement
     {
         const svgNode = document.createElementNS(SVG_NS, 'g');
         svgNode.id = this.id;
-
 
         const dependents = this.position.dependents();
         for (let element of dependents.filter(d => d.elements.length > 0)) {
