@@ -339,6 +339,7 @@ export class CellDiagram {
             this.clusterConnections(connectionEdges);
         }
 
+    }
 
     layout(width=config.DIAGRAM.WIDTH, height=config.DIAGRAM.HEIGHT)
     //==============================================================
