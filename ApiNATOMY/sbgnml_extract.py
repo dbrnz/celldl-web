@@ -71,7 +71,6 @@ DEFAULT_STYLE_RULES = """
         .macromolecule {{
             color: #c0c0FF;
             size: {}v, {}v;
-            font-size: 10;
             shape: rounded-rectangle;
         }}
         .process {{
