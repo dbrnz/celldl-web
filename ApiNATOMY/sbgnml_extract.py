@@ -83,6 +83,10 @@ DEFAULT_STYLE_RULES = """
         .production {{
             line-color: #FF8080;
         }}
+        .warn {{
+            color: #ffff00;
+            size: 1.5v, 1.5v;
+        }}
 """.format(DEFAULT_SIZES['compartment'][0], DEFAULT_SIZES['compartment'][1],
            DEFAULT_SIZES['macromolecule'][0], DEFAULT_SIZES['macromolecule'][1],
            DEFAULT_SIZES['process'][0], DEFAULT_SIZES['process'][1])
@@ -137,13 +141,17 @@ class Group(object):
 class Arc(object):
     def __init__(self, id, cls, source, target):
         self._id = escape_id(id)
-        self._class = cls
+        self._classes = [cls] if cls else []
         self._source = escape_id(source).rsplit('.')[0]  ## Port number...
         self._target = escape_id(target).rsplit('.')[0]
 
     @property
     def id(self):
         return self._id
+
+    @property
+    def primary_class(self):
+        return self._classes[0]
 
     @property
     def source(self):
@@ -155,7 +163,7 @@ class Arc(object):
 
     def to_celldl(self, level=0):
         indent = INDENT*level*' '
-        cls = ' class="{}"'.format(self._class) if self._class else ''
+        cls = ' class="{}"'.format(' '.join(self._classes)) if self._classes else ''
         return '{}<connection from="{}" to="{}"{}/>'.format(indent, self._source, self._target, cls)
 
 # -----------------------------------------------------------------------------
@@ -180,7 +188,7 @@ class BBox(object):
 class Glyph(object):
     def __init__(self, id, cls, label, bbox, compartment):
         self._id = id         # Already cleaned...
-        self._class = cls
+        self._classes = [cls] if cls else []
         self._label = label
         self._bbox = bbox
         self._position = None
@@ -195,6 +203,10 @@ class Glyph(object):
     @property
     def id(self):
         return self._id
+
+    @property
+    def primary_class(self):
+        return self._classes[0]
 
     @property
     def uri(self):
@@ -258,6 +270,10 @@ class Glyph(object):
     def add_child(self, child):
         self._children.append(child)
 
+    def add_warning(self, message):
+        logging.warning(message)
+        self._classes.append('warn')
+
     def get_annotations(self, glyph_xml):
         for annotation in glyph_xml.iter('{{{}}}annotation'.format(NAMESPACES['sbgn'])):
             for desc in annotation.iter('{{{}}}Description'.format(NAMESPACES['rdf'])):
@@ -274,10 +290,11 @@ class Glyph(object):
 
     def _attributes(self):
         attribs = ['id="{}"'.format(self._id)]
-        if self._class is not None:
-            if self._class == 'compartment' and self._parent is None:
-                self._class = 'outermost'
-            attribs.append('class="{}"'.format(self._class))
+        if self._classes:
+            classes = self._classes.copy()
+            if classes[0] == 'compartment' and self._parent is None:
+                classes.append('outermost')
+            attribs.append('class="{}"'.format(' '.join(classes)))
         if self._label != '':
             attribs.append('label="{}"'.format(self._label))
         else:
@@ -373,7 +390,7 @@ class SBGN_ML(object):
                                   arc.get('source'), arc.get('target')))
 
     def glyphs_of_class(self, cls):
-        return [g for g in self._glyphs.values() if cls == g._class]
+        return [g for g in self._glyphs.values() if cls == g.primary_class]
 
     @property
     def compartments(self):
@@ -392,13 +409,13 @@ class SBGN_ML(object):
             source = self._glyphs.get(arc.source)
             target = self._glyphs.get(arc.target)
             if source and target:
-                if source._class == 'process':
-                    if target._class in [ 'compartment', 'macromolecule']:
+                if source.primary_class == 'process':
+                    if target.primary_class in [ 'compartment', 'macromolecule']:
                         source.add_target(target)
                     else:
                         logging.error("Process ({}) target ({}) has invalid class".format(source.id, target.id))
-                elif source._class in ['compartment', 'macromolecule']:
-                    if target._class == 'process':
+                elif source.primary_class in ['compartment', 'macromolecule']:
+                    if target.primary_class == 'process':
                         target.add_source(source)
                     else:
                         logging.error("Process ({}) source ({}) has invalid class".format(target.id, source.id))
@@ -409,16 +426,16 @@ class SBGN_ML(object):
 
         for process in self.processes:
             if len(process.sources) == 0 and len(process.targets) == 0:
-                logging.warning("Process ({}) is not connected".format(process.id))
+                process.add_warning("Process ({}) is not connected".format(process.id))
             elif len(process.sources) == 0:
                 if len(process.targets) == 2:
                     process.targets[0].add_target(process.targets[1])
                     process.targets[1].add_target(process.targets[0])
                 else:
-                    logging.warning("Process ({}) has no sources and targets {}".format(process.id,
-                                                                                        [t.id for t in process.targets]))
+                    process.add_warning("Process ({}) has no sources and targets {}".format(process.id,
+                                                                                           [t.id for t in process.targets]))
             elif len(process.targets) == 0:
-                logging.warning("Process ({}) has no targets".format(process.id))
+                process.add_warning("Process ({}) has no targets".format(process.id))
             elif len(process.sources) == 1:
                 for target in process.targets:
                     process.sources[0].add_target(target)
@@ -426,9 +443,9 @@ class SBGN_ML(object):
                 for source in process.sources:
                     source.add_target(process.targets[0])
             else:
-                logging.warning("Process ({}) has sources {} and targets {}".format(process.id,
-                                                                                    [s.id for s in process.sources],
-                                                                                    [t.id for t in process.targets]))
+                process.add_warning("Process ({}) has sources {} and targets {}".format(process.id,
+                                                                                       [s.id for s in process.sources],
+                                                                                       [t.id for t in process.targets]))
 
     def to_celldl(self):
         celldl = ['<cell-diagram>']
@@ -454,7 +471,7 @@ class SBGN_ML(object):
                                          name=glyph.label,
                                          width=size[0],
                                          height=size[1],
-                                         type=glyph._class))
+                                         type=glyph.primary_class))
             glyph.set_index(self._json_node_index)
             if glyph.parent is not None:
                 self._json_groups[glyph.parent.id].leaves.append(glyph.index)
@@ -484,7 +501,7 @@ class SBGN_ML(object):
         return { 'nodes': self._json_nodes,
                  'links': [dict(source=self._glyphs[a.source].index,
                                       target=self._glyphs[a.target].index,
-                                      type=a._class) for a in self._arcs],
+                                      type=a.primary_class) for a in self._arcs],
                  'groups': groups,
                  'constraints': [],
                }
