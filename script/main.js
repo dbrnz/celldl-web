@@ -64,6 +64,7 @@ class CellDlFile
             ],
             layout: {
                 name: 'preset',
+                fit: true,
                 padding: 5
             }
         });
