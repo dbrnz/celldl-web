@@ -331,12 +331,13 @@ export class Gyrator extends DiagramElement
         super(diagram, domElement);
         if (!this.label.startsWith('$')) this.label = `GY:${this.label}`;
         for (let element of domElement.children) {
+// Need to allow either Flows or Potentials...
             if        (element.nodeName === 'from') {
                 bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element,
-                                                                      'flow', true, this, [Flow]));
+                                                                      'potential', true, this, [Potential]));
             } else if (element.nodeName === 'to') {
                 bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element,
-                                                                      'flow', false, this, [Flow]));
+                                                                      'potential', false, this, [Potential]));
             } else {
                 throw new exception.SyntaxError(element, `Unexpected <gyrator> element`);
             }
@@ -445,6 +446,7 @@ export class Transformer extends DiagramElement
         super(diagram, domElement);
         if (!this.label.startsWith('$')) this.label = `TF:${this.label}`;
         for (let element of domElement.children) {
+// Need to allow either Flows or Potentials...
             if (element.nodeName === 'from') {
                 bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element, 'potential',
                                                                       true, this, [Potential]));
