@@ -129,34 +129,17 @@ export class BondGraph extends DiagramElement
         return graph;
     }
 
-    drawEdges(svgNode)
-    //================
-    {
-        for (let edge of this.connections) {
-            svgNode.appendChild(edge.generateSvg());
-        }
-    }
-
-    drawElements(svgNode, elementClass)
-    //=================================
-    {
-        for (let element of this.diagram.elements(elementClass)) {
-            svgNode.appendChild(element.generateSvg());
-        }
-    }
-
     generateSvg()
     //===========
     {
         const svgNode = document.createElementNS(SVG_NS, 'g');
         svgNode.id = this.id;
-        this.drawEdges(svgNode);
-        this.drawElements(svgNode, Flow);
-        this.drawElements(svgNode, Gyrator);
-        this.drawElements(svgNode, Potential);
-        this.drawElements(svgNode, Quantity);
-        this.drawElements(svgNode, Reaction);
-        this.drawElements(svgNode, Transformer);
+        for (let element of this.elements) {
+            svgNode.appendChild(element.generateSvg());
+        }
+        for (let edge of this.connections) {
+            svgNode.appendChild(edge.generateSvg());
+        }
         return svgNode;
     }
 }
@@ -343,17 +326,18 @@ export class Flow extends DiagramElement
 
 export class Gyrator extends DiagramElement
 {
-    constructor(diagram, bondgraph, domElement)
+    constructor(diagram, bondGraph, domElement)
     {
         super(diagram, domElement);
         if (!this.label.startsWith('$')) this.label = `GY:${this.label}`;
         for (let element of domElement.children) {
+// Need to allow either Flows or Potentials...
             if        (element.nodeName === 'from') {
                 bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element,
-                                                                      'flow', true, this, [Flow]));
+                                                                      'potential', true, this, [Potential]));
             } else if (element.nodeName === 'to') {
                 bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element,
-                                                                      'flow', false, this, [Flow]));
+                                                                      'potential', false, this, [Potential]));
             } else {
                 throw new exception.SyntaxError(element, `Unexpected <gyrator> element`);
             }
@@ -462,6 +446,7 @@ export class Transformer extends DiagramElement
         super(diagram, domElement);
         if (!this.label.startsWith('$')) this.label = `TF:${this.label}`;
         for (let element of domElement.children) {
+// Need to allow either Flows or Potentials...
             if (element.nodeName === 'from') {
                 bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element, 'potential',
                                                                       true, this, [Potential]));

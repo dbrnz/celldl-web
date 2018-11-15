@@ -34,14 +34,14 @@ import {saveAs} from '../thirdparty/FileSaver.js';
 
 class CellDlFile
 {
-    constructor(svgContainerId, paletteId)
+    constructor(htmlContainerId, paletteId)
     {
         this._editor = new TextEditor();
         // Check editor.isClean() before loading a new file or closing window
         // and then editor.markClean()
 
         this._loadedFile = '';
-        this._svgContainerNode = document.getElementById(svgContainerId);
+        this._svgContainerNode = document.getElementById(htmlContainerId);
         this._palette = new Palette(document.getElementById(paletteId));
         this.diagram = null;
 
@@ -103,7 +103,7 @@ class CellDlFile
     //==============
     {
         return new Promise((resolve, reject) => {
-            // Remove any existing content from our SVG container
+            // Remove any existing content from our container
 
             for (let child of this._svgContainerNode.children) {
                 child.remove();
@@ -254,9 +254,9 @@ class CellDlFile
 
 //==============================================================================
 
-export function main(svgContainerId, paletteId)
+export function main(htmlContainerId, paletteId)
 {
-    const cellDlFile = new CellDlFile(svgContainerId, paletteId);
+    const cellDlFile = new CellDlFile(htmlContainerId, paletteId);
 
     // Expose editor's functions to HTML elements
 

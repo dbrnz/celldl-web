@@ -94,7 +94,7 @@ export class Connection
                 return;
             }
         }
-        const names = this._validClasses.filter(c => c.name);
+        const names = this._validClasses.map(c => c.name);
         const classNames = (names.length === 1) ? names[0]
                                                 : [names.slice(0, -1).join(', '), names.slice(-1)[0]].join(' or ');
         throw new exception.KeyError(`Can't find ${classNames} with id '${this._otherId}'`);
@@ -174,12 +174,20 @@ export class Connection
     return path;
     }
 
+    sourceTarget()
+    //============
+    {
+        return {
+            source: this._toParent ? this._otherElement : this._parentElement,
+            target: this._toParent ? this._parentElement : this._otherElement
+        };
+    }
+
     assignPath()
     //==========
-    {// make from/to class members
-        const fromElement = this._toParent ? this._otherElement : this._parentElement;
-        const toElement = this._toParent ? this._parentElement : this._otherElement;
-        this._path = this.lineAsPath(fromElement, toElement);
+    {
+        const nodes = this.sourceTarget();
+        this._path = this.lineAsPath(nodes.source, nodes.target);
         this._validPath = true;
     }
 
@@ -204,9 +212,8 @@ export class Connection
     generateSvg()
     //===========
     {
-        const fromElement = this._toParent ? this._otherElement : this._parentElement;
-        const toElement = this._toParent ? this._parentElement : this._otherElement;
-        const trimmedPath = Connection.trimPath(this._path, fromElement, toElement).asPolyBezier();
+        const nodes = this.sourceTarget();
+        const trimmedPath = Connection.trimPath(this._path, nodes.source, nodes.target).asPolyBezier();
         const svgNode = trimmedPath.svgNode();
         const strokeWidth = this._diagram.strokeWidthToPixels(
                                 ('stroke-width' in this._style) ? stylesheet.parseLength(this._style['stroke-width'])
