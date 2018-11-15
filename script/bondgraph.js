@@ -326,7 +326,7 @@ export class Flow extends DiagramElement
 
 export class Gyrator extends DiagramElement
 {
-    constructor(diagram, bondgraph, domElement)
+    constructor(diagram, bondGraph, domElement)
     {
         super(diagram, domElement);
         if (!this.label.startsWith('$')) this.label = `GY:${this.label}`;
