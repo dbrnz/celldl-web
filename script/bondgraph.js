@@ -129,34 +129,17 @@ export class BondGraph extends DiagramElement
         return graph;
     }
 
-    drawEdges(svgNode)
-    //================
-    {
-        for (let edge of this.connections) {
-            svgNode.appendChild(edge.generateSvg());
-        }
-    }
-
-    drawElements(svgNode, elementClass)
-    //=================================
-    {
-        for (let element of this.diagram.elements(elementClass)) {
-            svgNode.appendChild(element.generateSvg());
-        }
-    }
-
     generateSvg()
     //===========
     {
         const svgNode = document.createElementNS(SVG_NS, 'g');
         svgNode.id = this.id;
-        this.drawEdges(svgNode);
-        this.drawElements(svgNode, Flow);
-        this.drawElements(svgNode, Gyrator);
-        this.drawElements(svgNode, Potential);
-        this.drawElements(svgNode, Quantity);
-        this.drawElements(svgNode, Reaction);
-        this.drawElements(svgNode, Transformer);
+        for (let element of this.elements) {
+            svgNode.appendChild(element.generateSvg());
+        }
+        for (let edge of this.connections) {
+            svgNode.appendChild(edge.generateSvg());
+        }
         return svgNode;
     }
 }
