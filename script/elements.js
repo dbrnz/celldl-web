@@ -469,6 +469,15 @@ export class DiagramElement {
         return [0, 0]
     }
 
+    cyElement()
+    //=========
+    {
+        return {
+            data: {id: this.id, name: this.label},
+            position: this.geometry.centre
+        };
+    }
+
     appendLabelAsSvg(parentNode)
     //==========================
     {

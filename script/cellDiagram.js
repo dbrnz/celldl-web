@@ -33,6 +33,7 @@ import * as stylesheet from './stylesheet.js';
 import * as utils from './utils.js';
 
 import {CELLDL_NAMESPACE, DiagramElement} from './elements.js';
+import {CyElementList} from './cytoscape-utils.js';
 import {SvgFactory, SVG_NS, SVG_VERSION} from './svgElements.js';
 
 //==============================================================================
@@ -59,7 +60,6 @@ export class CellDiagram {
         this._manualPositions = [];
         this._manualSizes = [];
     }
-
 
     parseDocument(xmlDocument)
     //========================
@@ -372,6 +372,28 @@ export class CellDiagram {
 
         this.position.layoutDependents();
         this.layoutConnections();
+    }
+
+    cyElements()
+    //==========
+    {
+        const cyElementList = new CyElementList;
+
+        if (this.background !== null) {
+//...
+        }
+
+        if (this.flatMap !== null) {
+            cyElementList.extend(this.flatMap.cyElements());
+        }
+
+        if (this.bondGraph !== null) {
+            cyElementList.extend(this.bondGraph.cyElements());
+        }
+
+// Add custom styles...
+
+        return cyElementList.elements;
     }
 
     generateSvg(addViewBox=true, dimensions=false)

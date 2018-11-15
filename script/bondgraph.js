@@ -129,6 +129,20 @@ export class BondGraph extends DiagramElement
         return graph;
     }
 
+    cyElements()
+    //==========
+    {
+        const nodes = [];
+        for (let node of this.elements) {
+            nodes.push(node.cyElement());
+        }
+        const edges = [];
+        for (let edge of this.connections) {
+            edges.push(edge.cyElement());
+        }
+        return { nodes: nodes, edges: edges };
+    }
+
     generateSvg()
     //===========
     {

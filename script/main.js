@@ -41,7 +41,32 @@ class CellDlFile
         // and then editor.markClean()
 
         this._loadedFile = '';
-        this._svgContainerNode = document.getElementById(htmlContainerId);
+        this._cy = cytoscape({
+            container:
+                document.getElementById(htmlContainerId),
+            style: [
+                {
+                    selector: 'node',
+                    css: {
+                        label: 'data(id)',
+                        'text-valign': 'center',
+                        'text-halign': 'center',
+                        'font-size': 8
+                    }
+                },
+                {
+                    selector: 'edge',
+                    css: {
+                        'curve-style': 'bezier',
+                        'target-arrow-shape': 'triangle'
+                    }
+                }
+            ],
+            layout: {
+                name: 'preset',
+                padding: 5
+            }
+        });
         this._palette = new Palette(document.getElementById(paletteId));
         this.diagram = null;
 
@@ -105,9 +130,7 @@ class CellDlFile
         return new Promise((resolve, reject) => {
             // Remove any existing content from our container
 
-            for (let child of this._svgContainerNode.children) {
-                child.remove();
-            }
+            this._cy.remove('*');
 
             const cellDlText = this._editor.getValue();
             if (cellDlText === '') {
@@ -124,33 +147,7 @@ class CellDlFile
                 .then(() => {
                     try {
                         cellDiagram.layout();  // Pass width/height to use as defaults...
-
-                        const svgDiagram = cellDiagram.generateSvg();
-
-                        // Wait until all MathJax text has been rendered
-
-                        cellDiagram.svgFactory.promises().then(() => {
-                            // Show the SVG diagram
-                            // Note: If we use `appendChild` then `url()` links in the SVG
-                            //       document are not resolved
-                            this._svgContainerNode.insertAdjacentHTML('afterbegin', svgDiagram.outerHTML);
-
-                            // Reset busy wheel
-                            document.body.style.cursor = 'default';
-
-                            const svgNode = this._svgContainerNode.children[0];
-
-                            const diagramEditor = new DiagramEditor(cellDiagram, this._palette);
-
-                            const grid = diagramEditor.gridSvg();
-                            if (grid !== null) {
-                                svgNode.insertAdjacentHTML('beforeend', grid.outerHTML);
-                             }
-
-                            diagramEditor.svgLoaded(svgNode);
-
-                            resolve(cellDiagram);
-                        })
+                        this._cy.add(cellDiagram.cyElements());  // start/end batch??
                     } catch (error) {
                         reject(error);
                     }
