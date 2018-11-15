@@ -475,15 +475,15 @@ export class SvgFactory
         this._promises = [];
     }
 
-    typeset(latex, x, y, rotation=0, colour="#000000")
-    //================================================
+    typeset(latex, x, y, rotation=0, colour="#000000", returnSvgElement=false)
+    //========================================================================
     {
         const nodeId = this.nextId();
         const svgNode = document.createElementNS(SVG_NS, 'g');
         svgNode.id = nodeId;
         // And rotate...
         svgNode.setAttribute('transform', `translate(${x}, ${y})`);
-        this._promises.push(new mathjax.TypeSetter(latex, nodeId, svgNode, colour));
+        this._promises.push(new mathjax.TypeSetter(latex, nodeId, svgNode, colour, returnSvgElement));
         return svgNode;
     }
 }

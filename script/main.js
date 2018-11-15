@@ -48,7 +48,7 @@ class CellDlFile
                 {
                     selector: 'node',
                     css: {
-                        label: 'data(id)',
+                        label: 'data(label)',
                         'text-valign': 'center',
                         'text-halign': 'center',
                         'font-size': 8
@@ -148,7 +148,32 @@ class CellDlFile
                 .then(() => {
                     try {
                         cellDiagram.layout();  // Pass width/height to use as defaults...
-                        this._cy.add(cellDiagram.cyElements());  // start/end batch??
+
+                        const cyElements = cellDiagram.cyElements();
+
+
+                        // Wait until any MathJax text has been rendered
+
+                        cellDiagram.svgFactory.promises().then(() => {
+
+                            // Reset busy wheel
+                            document.body.style.cursor = 'default';
+
+                            this._cy.add(cyElements);  // start/end batch??
+
+                            // Now set typeset labels as node background images
+                            this._cy.elements('node._typeset_label').forEach(node => {
+                                const svg = node.scratch()._labelAsSvg;
+                                if (svg) {
+                                    node.style('background-image',
+                                               'data:image/svg+xml;utf8,'
+                                             + '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE svg>'
+                                             + svg.innerHTML.replace(/#/g, '%23'));
+                                }
+                            });
+
+                            resolve(cellDiagram);
+                        });
                     } catch (error) {
                         reject(error);
                     }

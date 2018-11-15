@@ -83,12 +83,12 @@ export function loadMathJax()
 
 export class TypeSetter
 {
-    constructor(latex, id, destinationNode, colour)
+    constructor(latex, id, destinationNode, colour, returnSvgElement=false)
     {
         latex = `\\color{${colour}}${latex}`;
         if (TypeSetter._cache.has(latex)) {
-            const textNode = TypeSetter._cache.get(latex);
-            destinationNode.appendChild(textNode);
+            const svgNode = TypeSetter._cache.get(latex);
+            destinationNode.appendChild(svgNode);
             return Promise.resolve(null);
         }
 
@@ -108,7 +108,8 @@ export class TypeSetter
         const typesetPromise = new Promise(function(resolve, reject) {
             MathJax.Hub.Queue(["Typeset", MathJax.Hub, math, resolve]);
         });
-        return typesetPromise.then(TypeSetter.saveSvg(this));
+        return returnSvgElement ? typesetPromise.then(TypeSetter.saveSvg(this))
+                                : typesetPromise.then(TypeSetter.saveSvgContents(this));
     }
 
     static suffixIds(rootNode, attribute, id_base, NS=null)
@@ -126,6 +127,44 @@ export class TypeSetter
 
     static saveSvg(self)
     //==================
+    {
+        return function() {
+            var jax = MathJax.Hub.getAllJax(self.content)[0];
+            if (!jax) return;
+
+            const script = jax.SourceElement();
+            const svgNode = script.previousSibling.getElementsByTagName('svg')[0];
+            TypeSetter.suffixIds(svgNode, 'id', self.id);
+            TypeSetter.suffixIds(svgNode, 'href', self.id, XLINK_NS);
+/*
+            const width = svgNode.getAttribute('width');
+            const height = svgNode.getAttribute('height');
+            const style = svgNode.getAttribute('style');
+
+            const w = 6*Number.parseFloat(width.slice(0, -2));  // `6*`` == ex --> ??
+            const h = 6*Number.parseFloat(height.slice(0, -2));
+            const va = 6*Number.parseFloat(style.split(' ')[1].slice(0, -3));
+
+            const textNode = document.createElementNS(SVG_NS, 'g');
+            textNode.setAttribute('transform', `translate(${-w/2 - 2}, ${h/2 + va + 2}) scale(0.02)`);
+
+            const svg = svgNode.innerHTML;
+            textNode.insertAdjacentHTML('afterbegin', svg);
+
+            TypeSetter._cache.set(self.latex, textNode);
+            self.destinationNode.appendChild(textNode);
+*/
+            TypeSetter._cache.set(self.latex, svgNode);
+            self.destinationNode.appendChild(svgNode);
+
+            // We can now delete the content node
+
+            self.content.remove();
+        };
+    }
+
+    static saveSvgContents(self)
+    //==========================
     {
         return function() {
             var jax = MathJax.Hub.getAllJax(self.content)[0];
