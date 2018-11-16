@@ -472,38 +472,31 @@ export class DiagramElement {
     cyElement()
     //=========
     {
-
-// Style attibutes
-// width, height, shape
-// background-color, background-opacity, border-*
-// background-image: ele => { return typesetAsSvg(ele.id); };  ??
-
-// parent: parent_id,
-// Setting parent makes patrent_id a compound node whose position and size are determined by its children.
-
+        const strokeWidth = (this.stroke === 'none') ? 0 : this.strokeWidth;
+        const width = this.geometry.width + strokeWidth;
+        const height = this.geometry.height + strokeWidth;
+        const position = this.geometry.centre;
+        const svgNode = this.generateSvg();
+        svgNode.setAttribute('transform', `translate(${width/2-position.x}, ${height/2-position.y})`);
         const element = {
-            data: { id: this.id },
-            position: this.geometry.centre
+            data: {
+                id: this.id,
+                width,
+                height
+                },
+            position,
+            scratch: {
+                _elementAsSvg: {
+                    svgNode,
+                    svgFactory: this.diagram.svgFactory
+                }
+            }
         };
-
-        let classes = this.classes.join(" ");
-        if (this.label.startsWith('$')) {
-            let [x, y] = this._textPosition.coordinates.asArray();
-            // Pass this.textcolour to MathJax...
-            // see https://groups.google.com/forum/#!msg/mathjax-users/fo93aucG5Bo/7dH3s8szbNYJ
-            const rotation = Number.parseFloat(this.getStyleAsString("text-rotation", "0"));
-            const svg = this.diagram.svgFactory.typeset(this.label.slice(1, -1),
-                                                        x, y, rotation, this.textColour,
-                                                        true);
-            // This returns a <g id=""> SVG element whose contents are only set when
-            // MathJax finishes...
-            element.scratch = { _labelAsSvg: svg };
-            classes += " _typeset_label";
-        } else {
-            element.data.label = this.label;
+        if (this.classes) {
+            element.classes = this.classes.join(" ");
         }
-        element.classes = classes;
 
+        // We now will wait until all MathJax has been rendered
         return element;
     }
 

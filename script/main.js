@@ -29,6 +29,7 @@ import {StyleSheet} from './stylesheet.js';
 import {TextEditor} from './textEditor.js';
 
 import {saveAs} from '../thirdparty/FileSaver.js';
+import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
 
@@ -48,10 +49,13 @@ class CellDlFile
                 {
                     selector: 'node',
                     css: {
-                        label: 'data(label)',
-                        'text-valign': 'center',
-                        'text-halign': 'center',
-                        'font-size': 8
+                        shape: 'rectangle',
+                        width: 'data(width)',
+                        height: 'data(height)',
+                        'background-image': e => CellDlFile.cyElementSvg(e),
+                        'background-fit': 'cover',
+                        'background-clip': 'none',
+                        'background-opacity': 0.3
                     }
                 },
                 {
@@ -65,7 +69,7 @@ class CellDlFile
             layout: {
                 name: 'preset',
                 fit: true,
-                padding: 5
+                padding: 0
             }
         });
         this._palette = new Palette(document.getElementById(paletteId));
@@ -159,18 +163,7 @@ class CellDlFile
                             // Reset busy wheel
                             document.body.style.cursor = 'default';
 
-                            this._cy.add(cyElements);  // start/end batch??
-
-                            // Now set typeset labels as node background images
-                            this._cy.elements('node._typeset_label').forEach(node => {
-                                const svg = node.scratch()._labelAsSvg;
-                                if (svg) {
-                                    node.style('background-image',
-                                               'data:image/svg+xml;utf8,'
-                                             + '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE svg>'
-                                             + svg.innerHTML.replace(/#/g, '%23'));
-                                }
-                            });
+                            this._cy.add(cyElements);
 
                             resolve(cellDiagram);
                         });
@@ -185,6 +178,37 @@ class CellDlFile
                 reject(error);
             }
         });
+    }
+
+    static cyElementSvg(e)
+    //====================
+    {
+        const width = e.data('width');
+        const height = e.data('height');
+        const svg = [[`<svg xmlns="${SVG_NS}" xmlns:xlink="http://www.w3.org/1999/xlink"`,
+                      `viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">`].join(' ')];
+        const elementAsSvg = e.scratch()._elementAsSvg;
+        const elementSvg = elementAsSvg.svgNode.outerHTML;
+        const defs = new Map();
+        const urlIds = elementSvg.match(/url\(#[^)]+\)/g);
+        if (urlIds) {
+            for (let urlId of urlIds) {
+                const id = urlId.substring(5, urlId.length-1);
+                if (!defs.has(id)) {
+                    const definition = elementAsSvg.svgFactory.getDefinition(id);
+                    if (definition) {
+                        defs.set(id, definition);
+                    }
+                }
+            }
+        }
+        if (defs.size > 0) {
+            svg.push(`<defs>${Array.from(defs.values()).join('\n')}</defs>`)
+        }
+        svg.push(elementSvg);
+        svg.push('</svg>')
+        console.log(svg.join('\n'));
+        return `data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8"?>${encodeURIComponent(svg.join('\n'))}`;
     }
 
     previewSvg()
