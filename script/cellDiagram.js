@@ -409,7 +409,7 @@ export class CellDiagram {
 //            svg.extend(transporter.svg());
 //        }
 
-        svgNode.appendChild(this.svgFactory.defines());
+        svgNode.appendChild(this.svgFactory.definitions());
 
         return svgNode;
     }

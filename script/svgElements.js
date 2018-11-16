@@ -75,7 +75,7 @@ class CellMembrane extends SvgElement
         this.outerWidth = this.innerWidth + 2*this.outerRadius;
         this.outerHeight = this.innerHeight + 2*this.outerRadius;
         // Add our definitions
-        DefinesStore.add(idBase, format(CellMembrane.SVG_DEFS,
+        DefinitionsStore.add(idBase, format(CellMembrane.SVG_DEFS,
             {'RADIUS': markerRadius, 'TAIL': this.markerTail, 'WIDTH': strokeWidth,
              'STROKE': strokeColour, 'FILL': fillColour, 'ID_BASE': idBase,
              'OFFSET': -this.lineWidth/2.0, 'SPACING': -this.markerWidth/2.0}));
@@ -232,7 +232,7 @@ class TransporterElement extends SvgElement
         this.rotation = rotation;
         this.height = height;
         this.definedHeight = definedHeight;
-        DefinesStore.add(idBase, format(defs, {'ID_BASE': idBase}));
+        DefinitionsStore.add(idBase, format(defs, {'ID_BASE': idBase}));
     }
 
     svg()
@@ -376,8 +376,8 @@ export class SvgFactory
     constructor(idPrefix)
     {
         this._arrows = {};
-        this._defines = new Map;
-        this._lastDefine = 0;
+        this._definitions = new Map;
+        this._lastDefinition = 0;
         this._gradientsToId = {};
         this._idPrefix = idPrefix;
         this._nextId = 0;
@@ -393,7 +393,7 @@ export class SvgFactory
         } else {
             id = this.nextId();
             this._arrows[colour] = id;
-            this.definesStoreAdd(id, `<marker id="${id}" orient="auto" style="overflow: visible">
+            this.definitionsStore(id, `<marker id="${id}" orient="auto" style="overflow: visible">
     <path fill="${colour}" transform="rotate(90) scale(${0.5*scale}) translate(0, 10)"
         d="M0,0l5,3.1l0.1-0.2l-3.3-8.2l-1.9-8.6l-1.9,8.6l-3.3,8.2l0.1,0.2l5-3.1z"/>
 </marker>`);
@@ -401,31 +401,37 @@ export class SvgFactory
         return `url(#${id})`;
     }
 
-    defines(allDefines=true)
-    //======================
+    definitions(all=true)
+    //===================
     {
         const defs = ['<defs>'];
-        const firstIndex = allDefines ? 0 : this._lastDefine;
+        const firstIndex = all ? 0 : this._lastDefinition;
         let index = 0;
-        for (let defines of this._defines.values()) {
+        for (let definitions of this._definitions.values()) {
             if (index >= firstIndex) {
-                defs.push(defines);
+                defs.push(definitions);
             }
             index += 1;
         }
         defs.push('</defs>');
-        this._lastDefine = this._defines.size;
+        this._lastDefinition = this._definitions.size;
         const parser = new DOMParser();
         const svgNode = parser.parseFromString(defs.join(' '), "application/xml");
         return svgNode.documentElement;
     }
 
-    definesStoreAdd(id, defines)
-    //==========================
+    addDefinition(id, definition)
+    //===========================
     {
-        if (!this._defines.has(id)) {
-            this._defines.set(id, defines);
+        if (!this._definitions.has(id)) {
+            this._definitions.set(id, definition);
         }
+    }
+
+    getDefinition(id, definition)
+    //===========================
+    {
+        return this._definitions.get(id);
     }
 
     gradient(gradientType, stopColours)
@@ -451,7 +457,7 @@ export class SvgFactory
                 stops.push(`<stop${offset} stop-color="${stopcolour[0]}"/>`);
                 n += 1;
             }
-            this.definesStoreAdd(id, `<${gradientType}Gradient id="${id}">${stops.join('\n')}</${gradientType}Gradient>`);
+            this.addDefinition(id, `<${gradientType}Gradient id="${id}">${stops.join('\n')}</${gradientType}Gradient>`);
         }
         return `url(#${id})`;
     }
