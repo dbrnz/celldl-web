@@ -132,7 +132,10 @@ export class TypeSetter
             if (!jax) return;
 
             const script = jax.SourceElement();
+
             const svgNode = script.previousSibling.getElementsByTagName('svg')[0];
+            svgNode.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
             TypeSetter.suffixIds(svgNode, 'id', self.id);
             TypeSetter.suffixIds(svgNode, 'href', self.id, XLINK_NS);
 
