@@ -275,8 +275,8 @@ export class DiagramEditor
 
                 // We could have new <defs> if say a new element type is
                 // not in the current diagram...
-                const definesSvg = this.diagram.svgFactory.defines(false);
-                this.bondgraphNode.insertAdjacentHTML('beforeend', definesSvg.outerHTML);
+                const defsSvg = this.diagram.svgFactory.definitions(false);
+                this.bondgraphNode.insertAdjacentHTML('beforeend', defsSvg.outerHTML);
 
                 // New element is not selected, this.moving is false
 //                 this.movedElement = newElement;
