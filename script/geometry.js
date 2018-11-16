@@ -577,6 +577,7 @@ export class Polygon extends GeoObject
         super();
         this.boundary = new PolyLine(points, true);
         this.edges = new LineSegmentSet(this.boundary.lineSegments);
+        this.centre = this.centroid();
     }
 
     static fromSvgPath(svgPath)
@@ -769,7 +770,6 @@ export class Rectangle extends Polygon
         super([topLeft, [bottomRight.x, topLeft.y], bottomRight, [topLeft.x, bottomRight.y]]);
         this.width = Math.abs(topLeft.x - bottomRight.x);
         this.height = Math.abs(topLeft.y - bottomRight.y);
-        this.centre = new Point((topLeft.x + bottomRight.x)/2.0, (topLeft.y + bottomRight.y)/2.0);
         this.topLeft = this.centre.translate([-this.width/2.0, -this.height/2.0]);
         this.bottomRight = this.centre.translate([this.width/2.0, this.height/2.0]);
         this.edges = new LineSegmentSet([new LineSegment(topLeft, topLeft.translate([this.width, 0])),
@@ -1002,6 +1002,8 @@ export class Ellipse extends GeoObject
         this.centre = centre;
         this.xRadius = xRadius;
         this.yRadius = yRadius;
+        this.width = 2*xRadius;
+        this.height = 2*yRadius;
     }
 
     lineIntersections(line)
