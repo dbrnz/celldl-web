@@ -80,7 +80,8 @@ class CellDlFile
                 },
                 {   selector: 'edge[colour]',
                     css: {
-                        'line-color': 'data(colour)'
+                        'line-color': 'data(colour)',
+                        'target-arrow-color': 'data(colour)'
                     }
                 }
             ],
