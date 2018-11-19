@@ -418,7 +418,7 @@ export class Quantity extends DiagramElement
             const y = this.coordinates.y;
             this.geometry = new geo.RoundedRectangle([x - width/2, y - height/2],
                                                      [x + width/2, y + height/2],
-                                                     0.375*width, 0.375*height);
+                                                     0.18*width, 0.18*height);
         }
     }
 }
