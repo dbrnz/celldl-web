@@ -777,6 +777,7 @@ export class Rectangle extends Polygon
                                          new LineSegment(bottomRight, bottomRight.translate([-this.width, 0])),
                                          new LineSegment(topLeft.translate([0, this.height]), topLeft)
                                         ]);
+        this.cyShape = "rectangle";
     }
 
     toString()
@@ -924,6 +925,7 @@ export class RoundedRectangle extends Rectangle
         this.cornerEllipse = (xCornerRadius !== 0 && yCornerRadius !== 0)
                            ? new Ellipse(this.centre, xCornerRadius, yCornerRadius)
                            : null;
+        this.cyShape = "roundrectangle";
     }
 
     outside(point)
@@ -1004,6 +1006,7 @@ export class Ellipse extends GeoObject
         this.yRadius = yRadius;
         this.width = 2*xRadius;
         this.height = 2*yRadius;
+        this.cyShape = "ellipse";
     }
 
     lineIntersections(line)

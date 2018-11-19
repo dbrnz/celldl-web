@@ -482,7 +482,8 @@ export class DiagramElement {
             data: {
                 id: this.id,
                 width,
-                height
+                height,
+                shape: this.geometry.cyShape
                 },
             position,
             scratch: {

@@ -49,7 +49,7 @@ class CellDlFile
                 {
                     selector: 'node',
                     css: {
-                        shape: 'rectangle',
+                        shape: 'data(shape)',
                         width: 'data(width)',
                         height: 'data(height)',
                         'background-image': e => CellDlFile.cyElementSvg(e),
