@@ -213,7 +213,9 @@ export class Connection
     //=========
     {
         const nodes = this.sourceTarget();
-        return {data: { source: nodes.source.id, target: nodes.target.id }};
+        return {
+            data: { source: nodes.source.id, target: nodes.target.id, colour: this.lineColour }
+        };
     }
 
     generateSvg()

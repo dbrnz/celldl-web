@@ -64,6 +64,11 @@ class CellDlFile
                         'curve-style': 'bezier',
                         'target-arrow-shape': 'triangle'
                     }
+                },
+                {   selector: 'edge[colour]',
+                    css: {
+                        'line-color': 'data(colour)'
+                    }
                 }
             ],
             layout: {
