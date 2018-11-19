@@ -31,7 +31,7 @@ const HEIGHT = 400;
 
 const PALETTE_XML = `<cell-diagram xmlns="http://www.cellml.org/celldl/1.0#">
     <bond-graph>
-        <quantity id="q"/>
+        <quantity id="q" label="$\\text{q}$"/>
         <potential id="u" label="$\\mu$"/>
         <flow id="v" label="$\\nu$"/>
         <reaction id="k"/>
