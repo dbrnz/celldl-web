@@ -473,26 +473,31 @@ export class DiagramElement {
     //=========
     {
         const strokeWidth = (this.stroke === 'none') ? 0 : this.strokeWidth;
-        const width = this.geometry.width + strokeWidth;
+        const width = this.geometry.width + strokeWidth;  // Also take text width into account... max(...)
         const height = this.geometry.height + strokeWidth;
         const position = this.geometry.centre;
-        const svgNode = this.generateSvg();
-        svgNode.setAttribute('transform', `translate(${width/2-position.x}, ${height/2-position.y})`);
         const element = {
-            data: {
-                id: this.id,
-                width,
-                height,
-                shape: this.geometry.cyShape
-                },
-            position,
-            scratch: {
-                _elementAsSvg: {
-                    svgNode,
-                    svgFactory: this.diagram.svgFactory
-                }
-            }
+            data: { id: this.id },
+            position
         };
+
+        if (this.elements.length === 0) {
+            element.data.width = width;
+            element.data.height = height;
+            element.data.shape = this.geometry.cyShape;
+            const svgNode = this.generateSvg();
+            svgNode.setAttribute('transform', `translate(${width/2-position.x}, ${height/2-position.y})`);
+            element.scratch = {
+                _elementAsSvg: {
+                        svgNode,
+                        svgFactory: this.diagram.svgFactory
+                    }
+                };
+            }
+
+        if (this.container) {
+            element.data['parent'] = this.container.id;
+        }
         if (this.classes) {
             element.classes = this.classes.join(" ");
         }

@@ -46,20 +46,27 @@ class CellDlFile
             container:
                 document.getElementById(htmlContainerId),
             style: [
-                {
-                    selector: 'node',
+                {   selector: 'node',
+                    css: {
+                        shape: 'roundrectangle',
+                    }
+                },
+                {   selector: 'node[shape]',
                     css: {
                         shape: 'data(shape)',
-                        width: 'data(width)',
-                        height: 'data(height)',
                         'background-image': e => CellDlFile.cyElementSvg(e),
                         'background-fit': 'cover',
                         'background-clip': 'none',
                         'background-opacity': 0
                     }
                 },
-                {
-                    selector: 'edge',
+                {   selector: 'node[width]',
+                    css: {
+                        width: 'data(width)',
+                        height: 'data(height)'
+                    }
+                },
+                {   selector: 'edge',
                     css: {
                         'curve-style': 'bezier',
                         'target-arrow-shape': 'triangle'
