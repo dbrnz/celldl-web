@@ -493,7 +493,10 @@ export class DiagramElement {
                         svgFactory: this.diagram.svgFactory
                     }
             };
-        } else {
+        } else if (this.colour === 'none') {
+            element.data.colour = 'white';
+            element.data.opacity = 0;
+        } else if (this.colour) {
             element.data.colour = this.colour;
             element.data.opacity = this._opacity;
         }
