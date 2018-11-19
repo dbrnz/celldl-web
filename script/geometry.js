@@ -894,7 +894,7 @@ W2 > +delta      |     W2 < -delta     |      W2 > +delta
 
 export class RoundedRectangle extends Rectangle
 {
-    constructor(topLeft, bottomRight, xCornerRadius = 0, yCornerRadius = 0)
+    constructor(topLeft, bottomRight, xCornerRadius=0, yCornerRadius=0)
     {
         if (topLeft instanceof Array) {
             topLeft = new Point(...topLeft);
