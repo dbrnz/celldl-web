@@ -392,7 +392,7 @@ export class SvgFactory
         } else {
             id = this.nextId();
             this._arrows[colour] = id;
-            this.definitionsStore(id, `<marker id="${id}" orient="auto" style="overflow: visible">
+            this.addDefinition(id, `<marker id="${id}" orient="auto" style="overflow: visible">
     <path fill="${colour}" transform="rotate(90) scale(${0.5*scale}) translate(0, 10)"
         d="M0,0l5,3.1l0.1-0.2l-3.3-8.2l-1.9-8.6l-1.9,8.6l-3.3,8.2l0.1,0.2l5-3.1z"/>
 </marker>`);
