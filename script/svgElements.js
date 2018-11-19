@@ -481,15 +481,17 @@ export class SvgFactory
         this._promises = [];
     }
 
-    typeset(latex, x, y, rotation=0, colour="#000000", returnSvgElement=false)
-    //========================================================================
+    typeset(latex, x, y, rotation=0, colour="#000000")  // Need BBox of destination (x, y, w, h)
+    //================================================
     {
         const nodeId = this.nextId();
         const svgNode = document.createElementNS(SVG_NS, 'g');
         svgNode.id = nodeId;
+
         // And rotate...
-        svgNode.setAttribute('transform', `translate(${x}, ${y})`);
-        this._promises.push(new mathjax.TypeSetter(latex, nodeId, svgNode, colour, returnSvgElement));
+        svgNode.setAttribute('transform', `translate(${x}, ${y}) scale(0.90)`); // Scale to give a margin
+
+        this._promises.push(new mathjax.TypeSetter(latex, svgNode, colour));
         return svgNode;
     }
 }

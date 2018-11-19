@@ -3,35 +3,8 @@
         <meta charset="utf-8"/>
         <link href="./styles/webpage.css" rel="stylesheet" type="text/css" />
         <link href="./styles/connections.css" rel="stylesheet" type="text/css" />
-        <script type="text/x-mathjax-config">
-            MathJax.Hub.Config({
-                jax: ["input/TeX", "output/SVG"],
-                messageStyle: "none",
-                showProcessingMessages: false,
-                skipStartupTypeset: true,
-                showMathMenu: false,
-                showMathMenuMSIE: false,
-                TeX: {
-                    extensions: window.Array(
-                        "AMSmath.js",
-                        "AMSsymbols.js",
-                        "autoload-all.js"
-                    )
-                },
-                SVG: {
-                    font: "STIX-Web",
-                    useFontCache: true,
-                    useGlobalCache: false,  // Can we set true and extract global <defs> ??
-                    EqnChunk: 1000000,
-                    EqnDelay: 0
-                } /* ,
-                tex2jax: {
-                    inlineMath: [['$','$'],['\\(','\\)']]
-                } */
-            });
-        </script>
         <script type="text/javascript"
-                src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js">
+                src="./thirdparty/mathjax3/mj3-tex2svg-global.dist.js">
         </script>
         <script src="./thirdparty/ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8">
         </script>
@@ -85,7 +58,11 @@
             </section>
           </div>
         </div>
-
+<!-- -->
+        <script>
+            document.head.appendChild(MathJax.Stylesheet());
+        </script>
+<!-- -->
         <!-- Allow our editor windows to be resized -->
         <script>
             const editorResize = document.getElementById('editor-resize');
