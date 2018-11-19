@@ -39,7 +39,7 @@
             height: 500;           /* SVG `pixel` units */
         }
 
-        #q4, #zF, #u_E { color: none; }
+        #q4, #u_E { color: none; }
 
         #q4,
         #v1 > connection[from="u4"],

@@ -343,7 +343,6 @@ export class Gyrator extends DiagramElement
     constructor(diagram, bondGraph, domElement)
     {
         super(diagram, domElement);
-        if (!this.label.startsWith('$')) this.label = `GY:${this.label}`;
         for (let element of domElement.children) {
 // Need to allow either Flows or Potentials...
             if        (element.nodeName === 'from') {
@@ -433,7 +432,6 @@ export class Reaction extends DiagramElement
         if (!('radius' in this.style)) {
             this._radius = config.TRANSPORTER.RADIUS;
         }
-        if (!this.label.startsWith('$')) this.label = `RE:${this.label}`;
         for (let element of domElement.children) {
             if (element.nodeName === 'from') {
                 bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element, 'flow',
@@ -458,7 +456,6 @@ export class Transformer extends DiagramElement
     constructor(diagram, bondGraph, domElement)
     {
         super(diagram, domElement);
-        if (!this.label.startsWith('$')) this.label = `TF:${this.label}`;
         for (let element of domElement.children) {
 // Need to allow either Flows or Potentials...
             if (element.nodeName === 'from') {
