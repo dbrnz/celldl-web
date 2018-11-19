@@ -62,18 +62,14 @@ export class Palette
                     this.diagram.layout(WIDTH, HEIGHT);   // Pass width/height to use as defaults...
 
                     const svgDiagram = this.diagram.generateSvg(); //false, true);
+                    // Show the SVG diagram
 
-                    // Wait until all MathJax text has been rendered
+                    // Note: If we use `appendChild` then `url()` links in the SVG
+                    //       document are not resolved
+                    containerNode.insertAdjacentHTML('afterbegin', svgDiagram.outerHTML);
 
-                    this.diagram.svgFactory.promises().then(() => {
-                        // Show the SVG diagram
-                        // Note: If we use `appendChild` then `url()` links in the SVG
-                        //       document are not resolved
-                        containerNode.insertAdjacentHTML('afterbegin', svgDiagram.outerHTML);
-
-                        this.svgNode = containerNode.children[0];
-                        this.initialiseMouseHandlers();
-                    });
+                    this.svgNode = containerNode.children[0];
+                    this.initialiseMouseHandlers();
                 });
         } catch (error) {
             document.body.style.cursor = 'default';

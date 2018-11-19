@@ -28,7 +28,7 @@ import {SVG_NS, XLINK_NS} from './svgElements.js';
 
 export class TypeSetter
 {
-    constructor(latex, destinationNode, colour)
+    static typeset(latex, destinationNode, colour)
     {
         let svgNode = null;
         latex = `\\color{${colour}}{${latex}}`;
@@ -36,15 +36,15 @@ export class TypeSetter
             const svgNode = TypeSetter._cache.get(latex);
         } else {
             MathJax.Reset();
-            svgNode = TypeSetter.cleanSvg(destinationNode.id, MathJax.Typeset(latex, true).children[0]);
+            svgNode = TypeSetter._cleanSvg(destinationNode.id, MathJax.Typeset(latex, true).children[0]);
             TypeSetter._cache.set(self.latex, svgNode);
         }
         destinationNode.appendChild(svgNode);
-        return Promise.resolve(null);
+        return destinationNode;
     }
 
-    static suffixIds(rootNode, attribute, id_base, NS=null)
-    //=====================================================
+    static _suffixIds(rootNode, attribute, id_base, NS=null)
+    //======================================================
     {
         const idElements = (NS === null) ? rootNode.querySelectorAll(`[${attribute}]`)
                                          : rootNode.querySelectorAll(`[*|${attribute}]`);
@@ -56,11 +56,11 @@ export class TypeSetter
         }
     }
 
-    static cleanSvg(id, svgNode)
-    //==========================
+    static _cleanSvg(id, svgNode)
+    //===========================
     {
-        TypeSetter.suffixIds(svgNode, 'id', id);
-        TypeSetter.suffixIds(svgNode, 'href', id, XLINK_NS);
+        TypeSetter._suffixIds(svgNode, 'id', id);
+        TypeSetter._suffixIds(svgNode, 'href', id, XLINK_NS);
 
         const viewBox = svgNode.getAttribute('viewBox').split(/\s*,\s*| \s*/);
         const x = Number.parseFloat(viewBox[0]);

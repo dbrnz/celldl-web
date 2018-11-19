@@ -22,7 +22,7 @@ limitations under the License.
 
 //==============================================================================
 
-import * as mathjax from './mathjax.js';
+import {TypeSetter} from './mathjax.js';
 import {List, format} from './utils.js';
 
 //==============================================================================
@@ -381,7 +381,6 @@ export class SvgFactory
         this._gradientsToId = {};
         this._idPrefix = idPrefix;
         this._nextId = 0;
-        this._promises = [];
     }
 
     arrow(colour, scale=1.0)
@@ -469,18 +468,6 @@ export class SvgFactory
         return `_SVG_${this._idPrefix}_${this._nextId}_`;
     }
 
-    promises()
-    //========
-    {
-        return Promise.all(this._promises);
-    }
-
-    resetPromises()
-    //=============
-    {
-        this._promises = [];
-    }
-
     typeset(latex, x, y, rotation=0, colour="#000000")  // Need BBox of destination (x, y, w, h)
     //================================================
     {
@@ -490,9 +477,7 @@ export class SvgFactory
 
         // And rotate...
         svgNode.setAttribute('transform', `translate(${x}, ${y}) scale(0.90)`); // Scale to give a margin
-
-        this._promises.push(new mathjax.TypeSetter(latex, svgNode, colour));
-        return svgNode;
+        return TypeSetter.typeset(latex, svgNode, colour);
     }
 }
 

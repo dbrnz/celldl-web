@@ -155,18 +155,12 @@ class CellDlFile
 
                         const cyElements = cellDiagram.cyElements();
 
+                        this._cy.add(cyElements);
 
-                        // Wait until any MathJax text has been rendered
+                        // Reset busy wheel
+                        document.body.style.cursor = 'default';
 
-                        cellDiagram.svgFactory.promises().then(() => {
-
-                            // Reset busy wheel
-                            document.body.style.cursor = 'default';
-
-                            this._cy.add(cyElements);
-
-                            resolve(cellDiagram);
-                        });
+                        resolve(cellDiagram);
                     } catch (error) {
                         reject(error);
                     }
@@ -238,19 +232,8 @@ class CellDlFile
     {
         // Render the diagram without selected elements and grid
 
-        this._diagram.svgFactory.resetPromises();
-
         const svgDiagram = this._diagram.generateSvg();
-
-        // Wait until all MathJax text has been rendered
-
-        if (this._diagram.svgFactory.promises().length) {
-            Promise.all(this._diagram.svgFactory.promises()).then(() => {
-                this.saveSvg(svgDiagram);
-            });
-        } else {
-            this.saveSvg(svgDiagram);
-        }
+        this.saveSvg(svgDiagram);
     }
 
     connectionMatrix(connectionMatrixId)
