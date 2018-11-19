@@ -55,7 +55,7 @@ class CellDlFile
                         'background-image': e => CellDlFile.cyElementSvg(e),
                         'background-fit': 'cover',
                         'background-clip': 'none',
-                        'background-opacity': 0.3
+                        'background-opacity': 0
                     }
                 },
                 {
