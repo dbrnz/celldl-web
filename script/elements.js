@@ -520,7 +520,7 @@ export class DiagramElement {
                 const textAttributes = { x: x, y: y, fill: this.textColour,
                                          'dominant-baseline': "central",
                                          'text-anchor': "middle",
-                                         'font-size': LINE_HEIGHT};
+                                         'font-size': 0.8*LINE_HEIGHT};
                 const styleAttributes = [];
                 if (this.fontStyle !== "") {
                     styleAttributes.push(`font-style: ${this.fontStyle};`)
