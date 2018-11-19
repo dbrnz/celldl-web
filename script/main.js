@@ -166,7 +166,7 @@ class CellDlFile
                         cellDiagram.layout();  // Pass width/height to use as defaults...
 
                         const cyElements = cellDiagram.cyElements();
-
+//console.log(JSON.stringify(cyElements, null, 4));
                         this._cy.add(cyElements);
 
                         // Reset busy wheel
@@ -213,7 +213,7 @@ class CellDlFile
         }
         svg.push(elementSvg);
         svg.push('</svg>')
-        console.log(svg.join('\n'));
+//        console.log(svg.join('\n'));
         return `data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8"?>${encodeURIComponent(svg.join('\n'))}`;
     }
 
