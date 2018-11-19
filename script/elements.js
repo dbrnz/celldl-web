@@ -497,6 +497,15 @@ export class DiagramElement {
             element.data.colour = this.colour;
             element.data.opacity = this._opacity;
         }
+        if (this.stroke === 'none') {
+            element.data.stroke = 'white';
+            element.data['stroke-opacity'] = 0;
+            element.data['stroke-width'] = 0;
+        } else if (this.stroke) {
+            element.data.stroke = this.stroke;
+            element.data['stroke-opacity'] = 1;
+            element.data['stroke-width'] = strokeWidth;
+        }
 
         if (this.container) {
             element.data['parent'] = this.container.id;

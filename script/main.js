@@ -66,6 +66,13 @@ class CellDlFile
                         'background-opacity': 0
                     }
                 },
+                {   selector: 'node[stroke]',
+                    css: {
+                        'border-color': 'data(stroke)',
+                        'border-opacity': 'data(stroke-opacity)',
+                        'border-width': 'data(stroke-width)'
+                    }
+                },
                 {   selector: 'node[width]',
                     css: {
                         width: 'data(width)',
