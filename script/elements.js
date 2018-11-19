@@ -84,7 +84,7 @@ export class DiagramElement {
         this.colour = ('color' in this.style) ? stylesheet.parseColour(this.diagram, this.style.color)
                                               : '#808080'; // TODO: specify defaults in one place
         this._opacity = ('opacity' in this.style) ? this.getStyleAsString('opacity')
-                                                  : '';
+                                                  : '1';
         this.display = ('display' in this.style) ? { display: this.getStyleAsString('display') }
                                                  : {};
         this.fontSize = ('font-size' in this.style) ? stylesheet.parseNumber(this.style['font-size'])
@@ -492,8 +492,11 @@ export class DiagramElement {
                         svgNode,
                         svgFactory: this.diagram.svgFactory
                     }
-                };
-            }
+            };
+        } else {
+            element.data.colour = this.colour;
+            element.data.opacity = this._opacity;
+        }
 
         if (this.container) {
             element.data['parent'] = this.container.id;

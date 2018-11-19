@@ -51,6 +51,12 @@ class CellDlFile
                         shape: 'roundrectangle',
                     }
                 },
+                {   selector: 'node[colour]',
+                    css: {
+                        'background-color': 'data(colour)',
+                        'background-opacity': 'data(opacity)'
+                    }
+                },
                 {   selector: 'node[shape]',
                     css: {
                         shape: 'data(shape)',
