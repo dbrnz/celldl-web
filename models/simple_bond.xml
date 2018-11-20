@@ -4,7 +4,7 @@
         <potential id="u1"/>
         <potential id="u2"/>
         <flow id="v1">
-            <connection input="u1" output="u2" class="potassium"/>
+            <connection from="u1" to="u2" class="potassium"/>
         </flow>
     </bond-graph>
 
