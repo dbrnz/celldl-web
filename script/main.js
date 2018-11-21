@@ -127,6 +127,12 @@ class CellDlFile
         this.previewSvg();
     }
 
+    containerResize()
+    //===============
+    {
+        this._cy.resize();
+    }
+
     renderBottomLayer(evt)
     //====================
     {
@@ -356,7 +362,7 @@ export function main(htmlContainerId, paletteId)
     window.previewSvg = () => cellDlFile.previewSvg();
     window.exportSvg = () => cellDlFile.exportSvg();
     window.connectionMatrix = () => cellDlFile.connectionMatrix();
-
+    window.containerResize = () => cellDlFile.containerResize();
 }
 
 //==============================================================================
