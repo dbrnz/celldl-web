@@ -57,6 +57,14 @@ class CellDlFile
                         'background-opacity': 'data(opacity)'
                     }
                 },
+                {   selector: 'node[image]',
+                    css: {
+                        'background-image': 'data(image)',
+                        'background-fit': 'cover',
+                        'background-clip': 'none',
+                        'background-opacity': 0
+                    }
+                },
                 {   selector: 'node[shape]',
                     css: {
                         shape: 'data(shape)',
@@ -98,6 +106,11 @@ class CellDlFile
                 padding: 0
             }
         });
+        this._cyBottomLayer = this._cy.cyCanvas({ zIndex: -1 });
+        this._cyCtx = this._cyBottomLayer.getCanvas().getContext("2d");
+        this._cyBackgroundImage = null;
+        this._cy.on("render cyCanvas.resize", this.renderBottomLayer.bind(this));
+
         this._palette = new Palette(document.getElementById(paletteId));
         this.diagram = null;
 
@@ -112,6 +125,20 @@ class CellDlFile
 </cell-diagram>`);
         this._editor.clearSelection();
         this.previewSvg();
+    }
+
+    renderBottomLayer(evt)
+    //====================
+    {
+        // Draw the background image if it's been set
+        if (this._cyBackgroundImage !== null) {
+            this._cyBottomLayer.resetTransform(this._cyCtx);
+            this._cyBottomLayer.clear(this._cyCtx);
+            this._cyBottomLayer.setTransform(this._cyCtx);
+            this._cyCtx.save();
+            this._cyCtx.drawImage(this._cyBackgroundImage, 0, 0, this.diagram.width, this.diagram.height);
+            this._cyCtx.restore();
+        }
     }
 
     upLoadedFileAsText(file)
@@ -162,6 +189,8 @@ class CellDlFile
             // Remove any existing content from our container
 
             this._cy.remove('*');
+            this._cyBackgroundImage = null;
+            this._cyBottomLayer.clear(this._cyCtx);
 
             const cellDlText = this._editor.getValue();
             if (cellDlText === '') {
@@ -173,12 +202,18 @@ class CellDlFile
             document.body.style.cursor = 'wait';
 
             const cellDiagram = new CellDiagram('diagram', this._editor);
+            this.diagram = cellDiagram;
             try {
               cellDiagram.parseDocument(xmlDocument)
                 .then(() => {
                     try {
                         cellDiagram.layout();  // Pass width/height to use as defaults...
 
+
+                        // Set the background image if one is specified
+                        if (cellDiagram.background !== null) {
+                            this._cyBackgroundImage = cellDiagram.background.svgImage;
+                        }
                         const cyElements = cellDiagram.cyElements();
 //console.log(JSON.stringify(cyElements, null, 4));
                         this._cy.add(cyElements);

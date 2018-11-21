@@ -92,7 +92,7 @@ export class CellDiagram {
                 if (this.background === null) {
                     this.background = new background.Background(this, domElement);
                     this.position.addDependent(this.background);
-                    asyncFetchs.push(this.background.loadBackgroundImage());
+                    asyncFetchs.push(this.background.loadImage());
                 } else {
                     throw new exception.SyntaxError(domElement, "Can only declare a single <background>");
                 }
@@ -378,21 +378,13 @@ export class CellDiagram {
     //==========
     {
         const cyElementList = new CyElementList;
-
-        if (this.background !== null) {
-//...
-        }
-
         if (this.flatMap !== null) {
             cyElementList.extend(this.flatMap.cyElements());
         }
-
         if (this.bondGraph !== null) {
             cyElementList.extend(this.bondGraph.cyElements());
         }
-
 // Add custom styles...
-
         return cyElementList.elements;
     }
 
