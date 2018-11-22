@@ -279,8 +279,7 @@ class CellDlFile
         }
         svg.push(elementSvg);
         svg.push('</svg>')
-//        console.log(svg.join('\n'));
-        return `data:image/svg+xml;utf8,<?xml version="1.0" encoding="UTF-8"?>${encodeURIComponent(svg.join('\n'))}`;
+        return `data:image/svg+xml;base64,${btoa(svg.join('\n'))}`;
     }
 
     previewSvg()
