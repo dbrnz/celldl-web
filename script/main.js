@@ -185,7 +185,7 @@ class CellDlFile
     {
         const text = this._editor.getValue();
         const blob = new Blob([text], { type: "application/xml;charset=utf-8" });
-        saveAs(blob, this.loadedFile);
+        saveAs(blob, this._loadedFile);
     }
 
     displayDiagram()
