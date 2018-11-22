@@ -192,9 +192,12 @@ class CellDlFile
     //==============
     {
         return new Promise((resolve, reject) => {
-            // Remove any existing content from our container
+
+            // Remove existing content from our container
+            // and reset zoom and pan
 
             this._cy.remove('*');
+            this._cy.reset();
             this._cyBackgroundImage = null;
             this._cyBottomLayer.clear(this._cyCtx);
 
@@ -215,12 +218,20 @@ class CellDlFile
                     try {
                         cellDiagram.layout();  // Pass width/height to use as defaults...
 
+                        // Zoom to fit diagram to canvas
+                        const dw = this.diagram.width;
+                        const dh = this.diagram.height
+                        const sw = this._cyBottomLayer.getCanvas().width;
+                        const sh = this._cyBottomLayer.getCanvas().height;
+                        this._cy.zoom((dw*sh > dh*sw) ? sw/dw : sh/dh);
 
                         // Set the background image if one is specified
                         if (cellDiagram.background !== null) {
                             this._cyBackgroundImage = cellDiagram.background.svgImage;
                         }
+
                         const cyElements = cellDiagram.cyElements();
+
 //console.log(JSON.stringify(cyElements, null, 4));
                         this._cy.add(cyElements);
 
