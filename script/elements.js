@@ -84,7 +84,7 @@ export class DiagramElement {
         this.colour = ('color' in this.style) ? stylesheet.parseColour(this.diagram, this.style.color)
                                               : '#808080'; // TODO: specify defaults in one place
         this._opacity = ('opacity' in this.style) ? this.getStyleAsString('opacity')
-                                                  : '';
+                                                  : '1';
         this.display = ('display' in this.style) ? { display: this.getStyleAsString('display') }
                                                  : {};
         this.fontSize = ('font-size' in this.style) ? stylesheet.parseNumber(this.style['font-size'])
@@ -469,6 +469,58 @@ export class DiagramElement {
         return [0, 0]
     }
 
+    cyElement()
+    //=========
+    {
+        const strokeWidth = (this.stroke === 'none') ? 0 : this.strokeWidth;
+        const width = this.geometry.width + strokeWidth;  // Also take text width into account... max(...)
+        const height = this.geometry.height + strokeWidth;
+        const position = this.geometry.centre;
+        const element = {
+            data: { id: this.id },
+            position
+        };
+
+        if (this.elements.length === 0) {
+            element.data.width = width;
+            element.data.height = height;
+            element.data.shape = this.geometry.cyShape;
+            const svgNode = this.generateSvg();
+            svgNode.setAttribute('transform', `translate(${width/2-position.x}, ${height/2-position.y})`);
+            element.scratch = {
+                _elementAsSvg: {
+                        svgNode,
+                        svgFactory: this.diagram.svgFactory
+                    }
+            };
+        } else if (this.colour === 'none') {
+            element.data.colour = 'white';
+            element.data.opacity = 0;
+        } else if (this.colour) {
+            element.data.colour = this.colour;
+            element.data.opacity = this._opacity;
+        }
+        if (this.stroke === 'none') {
+            element.data.stroke = 'white';
+            element.data['stroke-opacity'] = 0;
+            element.data['stroke-width'] = 0;
+        } else if (this.stroke) {
+            element.data.stroke = this.stroke;
+            element.data['stroke-opacity'] = 1;
+            element.data['stroke-width'] = strokeWidth;
+        }
+
+        if (this.container) {
+            element.data['parent'] = this.container.id;
+        }
+        if (this.classes) {
+            element.classes = this.classes.join(" ");
+        }
+
+        // We now will wait until all MathJax has been rendered
+        return element;
+    }
+
     appendLabelAsSvg(parentNode)
     //==========================
     {
@@ -489,7 +541,7 @@ export class DiagramElement {
                 const textAttributes = { x: x, y: y, fill: this.textColour,
                                          'dominant-baseline': "central",
                                          'text-anchor': "middle",
-                                         'font-size': LINE_HEIGHT};
+                                         'font-size': 0.8*LINE_HEIGHT};
                 const styleAttributes = [];
                 if (this.fontStyle !== "") {
                     styleAttributes.push(`font-style: ${this.fontStyle};`)

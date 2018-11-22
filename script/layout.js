@@ -327,11 +327,10 @@ export class Position
                              coordinates.y/dependencies.length);
     }
 
-    _parseComponent(tokens, previousDirn, defaultOffset, defaultDependency)
-    //=====================================================================
+    _parseComponent(tokens, defaultDependency)
+    //========================================
     {
         let offset = null;
-        let usingDefaultOffset = false;
         let reln = null;
         let dependencies = new List();
         let state = 0;
@@ -340,16 +339,13 @@ export class Position
                 switch (state) {
                   case 0:
                     if (token.type !== 'ID' && token.type !== 'HASH') {
-                        offset = stylesheet.parseLength(token, defaultOffset);
+                        offset = stylesheet.parseLength(token, null);
                         // Implicit dependency on our container's size if '%' offset
                         if (offset && offset.units.indexOf('%') >= 0) {
                             this._element.container.size.addDependent(this._element);
                         }
                         state = 1;
                         break;
-                    } else {
-                        offset = defaultOffset;
-                        usingDefaultOffset = true;
                     }
                     // Fall through to parse relationship
                   case 1:
@@ -377,8 +373,6 @@ export class Position
                 }
             }
         } else if (tokens.type === 'HASH') {
-            offset = defaultOffset;
-            usingDefaultOffset = true;
             const dependency = this.diagram.findElement(tokens.value);
             if (dependency === null) {
                 throw new exception.StyleError(tokens, `Unknown element ${tokens.value}`);
@@ -387,23 +381,10 @@ export class Position
         } else {
             throw new exception.StyleError(tokens, "Invalid position rule");
         }
-
-        let constraints = 0;
-        if (previousDirn !== null) {
-            constraints += 1;
-            if (previousDirn === 'H' && HORIZONTAL_RELATIONS.contains(reln)
-             || previousDirn === 'V' && VERTICAL_RELATIONS.contains(reln)) {
-                throw new exception.StyleError(tokens, "Constraints must have different directions");
-            }
-        }
-        if (usingDefaultOffset && constraints >= 1) {
-            offset = null;
-        }
-
         this._addRelationship(offset, reln, dependencies);
         this._addDependencies(dependencies);
-
-        return HORIZONTAL_RELATIONS.contains(reln) ? 'H' : 'V';
+        return (HORIZONTAL_RELATIONS.contains(reln) && (offset !== null)
+             || VERTICAL_RELATIONS.contains(reln)   && (offset === null)) ? 'X' : 'Y';
     }
 
     /*
@@ -427,8 +408,11 @@ export class Position
                         this._addDependency(container);
                     }
                 } else {
-                    const dirn = this._parseComponent(tokens[0], null, defaultOffset, defaultDependency);
-                    this._parseComponent(tokens[1], dirn, defaultOffset, defaultDependency);
+                    const axis1 = this._parseComponent(tokens[0], defaultDependency);
+                    const axis2 = this._parseComponent(tokens[1], defaultDependency);
+                    if (axis1 === axis2) {
+                        throw new exception.StyleError(tokens, "Position constraints must specify different axes");
+                    }
                 }
             } else {
                 throw new exception.StyleError(tokens, "Position can't have more than two components");

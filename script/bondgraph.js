@@ -129,6 +129,20 @@ export class BondGraph extends DiagramElement
         return graph;
     }
 
+    cyElements()
+    //==========
+    {
+        const nodes = [];
+        for (let node of this.elements) {
+            nodes.push(node.cyElement());
+        }
+        const edges = [];
+        for (let edge of this.connections) {
+            edges.push(edge.cyElement());
+        }
+        return { nodes: nodes, edges: edges };
+    }
+
     generateSvg()
     //===========
     {
@@ -329,7 +343,6 @@ export class Gyrator extends DiagramElement
     constructor(diagram, bondGraph, domElement)
     {
         super(diagram, domElement);
-        if (!this.label.startsWith('$')) this.label = `GY:${this.label}`;
         for (let element of domElement.children) {
 // Need to allow either Flows or Potentials...
             if        (element.nodeName === 'from') {
@@ -404,7 +417,7 @@ export class Quantity extends DiagramElement
             const y = this.coordinates.y;
             this.geometry = new geo.RoundedRectangle([x - width/2, y - height/2],
                                                      [x + width/2, y + height/2],
-                                                     0.375*width, 0.375*height);
+                                                     0.18*width, 0.18*height);
         }
     }
 }
@@ -419,7 +432,6 @@ export class Reaction extends DiagramElement
         if (!('radius' in this.style)) {
             this._radius = config.TRANSPORTER.RADIUS;
         }
-        if (!this.label.startsWith('$')) this.label = `RE:${this.label}`;
         for (let element of domElement.children) {
             if (element.nodeName === 'from') {
                 bondGraph.addEdge(Connection.createFromAttributeValue(diagram, element, 'flow',
@@ -444,7 +456,6 @@ export class Transformer extends DiagramElement
     constructor(diagram, bondGraph, domElement)
     {
         super(diagram, domElement);
-        if (!this.label.startsWith('$')) this.label = `TF:${this.label}`;
         for (let element of domElement.children) {
 // Need to allow either Flows or Potentials...
             if (element.nodeName === 'from') {

@@ -1,0 +1,10 @@
+[submodule "thirdparty/mingle"]
+	path = thirdparty/mingle
+	url = git@github.com:dbrnz/mingle.git
+[submodule "thirdparty/ace-builds"]
+	path = thirdparty/ace-builds
+	url = https://github.com/ajaxorg/ace-builds.git
+[submodule "thirdparty/aggregation"]
+	path = thirdparty/aggregation
+	url = git@github.com:dbrnz/aggregation.git
+	branch = celldl

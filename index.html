@@ -3,35 +3,8 @@
         <meta charset="utf-8"/>
         <link href="./styles/webpage.css" rel="stylesheet" type="text/css" />
         <link href="./styles/connections.css" rel="stylesheet" type="text/css" />
-        <script type="text/x-mathjax-config">
-            MathJax.Hub.Config({
-                jax: ["input/TeX", "output/SVG"],
-                messageStyle: "none",
-                showProcessingMessages: false,
-                skipStartupTypeset: true,
-                showMathMenu: false,
-                showMathMenuMSIE: false,
-                TeX: {
-                    extensions: window.Array(
-                        "AMSmath.js",
-                        "AMSsymbols.js",
-                        "autoload-all.js"
-                    )
-                },
-                SVG: {
-                    font: "STIX-Web",
-                    useFontCache: true,
-                    useGlobalCache: false,  // Can we set true and extract global <defs> ??
-                    EqnChunk: 1000000,
-                    EqnDelay: 0
-                } /* ,
-                tex2jax: {
-                    inlineMath: [['$','$'],['\\(','\\)']]
-                } */
-            });
-        </script>
         <script type="text/javascript"
-                src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js">
+                src="./thirdparty/mathjax3/mj3-tex2svg-global.dist.js">
         </script>
         <script src="./thirdparty/ace-builds/src-noconflict/ace.js" type="text/javascript" charset="utf-8">
         </script>
@@ -43,6 +16,13 @@
         </script>
         <script type="text/javascript"
                 src="./thirdparty/math.js">
+        </script>
+        <!-- Cytoscape graph visualisation  -->
+        <script type="text/javascript"
+                src="./thirdparty/cytoscape.js">
+        </script>
+        <script type="text/javascript"
+                src="./thirdparty/cytoscape-canvas.js">
         </script>
         <!-- MINGLE edge bundling -->
         <script type="text/javascript"
@@ -81,7 +61,15 @@
             </section>
           </div>
         </div>
-
+<!-- ->
+        <script>
+            document.head.appendChild(MathJax.Stylesheet());
+        </script>
+<!- -->
+        <script type="module">
+            import {main} from './script/main.js';
+            main('cell-diagram', 'palette');
+        </script>
         <!-- Allow our editor windows to be resized -->
         <script>
             const editorResize = document.getElementById('editor-resize');
@@ -100,6 +88,7 @@
             {
                celldlEditor.style.width = (event.clientX - celldlEditor.offsetLeft) + 'px';
                editorFooter.style.width = (event.clientX - editorFooter.offsetLeft) + 'px';
+               window.containerResize();
             }
 
             function stopResizing(event)
@@ -113,9 +102,5 @@
      * https://developer.mozilla.org/en-US/docs/Web/API/File/Using_files_from_web_applications
        and trigger a download to save data.
 -->
-        <script type="module">
-            import {main} from './script/main.js';
-            main('cell-diagram', 'palette');
-        </script>
     </body>
 </html>

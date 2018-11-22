@@ -22,7 +22,7 @@ limitations under the License.
 
 //==============================================================================
 
-import * as mathjax from './mathjax.js';
+import {TypeSetter} from './mathjax.js';
 import {List, format} from './utils.js';
 
 //==============================================================================
@@ -381,7 +381,6 @@ export class SvgFactory
         this._gradientsToId = {};
         this._idPrefix = idPrefix;
         this._nextId = 0;
-        this._promises = [];
     }
 
     arrow(colour, scale=1.0)
@@ -393,7 +392,7 @@ export class SvgFactory
         } else {
             id = this.nextId();
             this._arrows[colour] = id;
-            this.definitionsStore(id, `<marker id="${id}" orient="auto" style="overflow: visible">
+            this.addDefinition(id, `<marker id="${id}" orient="auto" style="overflow: visible">
     <path fill="${colour}" transform="rotate(90) scale(${0.5*scale}) translate(0, 10)"
         d="M0,0l5,3.1l0.1-0.2l-3.3-8.2l-1.9-8.6l-1.9,8.6l-3.3,8.2l0.1,0.2l5-3.1z"/>
 </marker>`);
@@ -469,28 +468,16 @@ export class SvgFactory
         return `_SVG_${this._idPrefix}_${this._nextId}_`;
     }
 
-    promises()
-    //========
-    {
-        return Promise.all(this._promises);
-    }
-
-    resetPromises()
-    //=============
-    {
-        this._promises = [];
-    }
-
-    typeset(latex, x, y, rotation=0, colour="#000000")
+    typeset(latex, x, y, rotation=0, colour="#000000")  // Need BBox of destination (x, y, w, h)
     //================================================
     {
         const nodeId = this.nextId();
         const svgNode = document.createElementNS(SVG_NS, 'g');
         svgNode.id = nodeId;
+
         // And rotate...
-        svgNode.setAttribute('transform', `translate(${x}, ${y})`);
-        this._promises.push(new mathjax.TypeSetter(latex, nodeId, svgNode, colour));
-        return svgNode;
+        svgNode.setAttribute('transform', `translate(${x}, ${y}) scale(0.90)`); // Scale to give a margin
+        return TypeSetter.typeset(latex, svgNode, colour);
     }
 }
 

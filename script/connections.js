@@ -209,6 +209,15 @@ export class Connection
         return this._validPath ? this._path : null;
     }
 
+    cyElement()
+    //=========
+    {
+        const nodes = this.sourceTarget();
+        return {
+            data: { source: nodes.source.id, target: nodes.target.id, colour: this.lineColour }
+        };
+    }
+
     generateSvg()
     //===========
     {

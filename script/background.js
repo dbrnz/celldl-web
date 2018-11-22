@@ -49,7 +49,8 @@ export class Background extends DiagramElement
         this.size.setSize([new geo.Length(100*this._scale, '%'),
                            new geo.Length(100*this._scale, '%')]);
         this.position.setOffset([new geo.Length(50, '%'), new geo.Length(50, '%')]);
-        this.svgDocument = null;
+        this._svgDocument = null;
+        this._svgImage = null;
         if (this._image) {
             if (!this._image.endsWith('.svg')) {
                 throw new exception.SyntaxError(domElement, "Only SVG background images are currently supported");
@@ -64,6 +65,18 @@ export class Background extends DiagramElement
         }
     }
 
+    get svgDocument()
+    //===============
+    {
+        return this._svgDocument;
+    }
+
+    get svgImage()
+    //============
+    {
+        return this._svgImage;
+    }
+
     addElement(element)
     //=================
     {
@@ -71,21 +84,31 @@ export class Background extends DiagramElement
         this.position.addDependent(element);
     }
 
-    async loadBackgroundImage()
-    //=========================
+    async loadImage()
+    //===============
     {
         // Note: `fetch()` is a Promise
 
-        return self._imageParsedPromise = fetch(this._image)
-                                        .then(response => response.text())
-                                        .catch(error => console.error('Error getting background:', error))
-                                        .then(text => { this.parseBackgroundSvg(text); });
+        return fetch(this._image)
+                   .then(response => response.text())
+                   .catch(error => console.error('Error getting background image:', error))
+                   .then(text => {
+                        this.parseBackgroundSvg(text);
+                        return new Promise((resolve) => {
+                            const img = new Image();
+                            img.src = "data:image/svg+xml;base64," + btoa(text);
+                            img.onload = () => {
+                                this._svgImage = img;
+                                resolve();
+                            }
+                        });
+                   });
     }
 
     parseBackgroundSvg(svgText)
     //=========================
     {
-        this.svgDocument = new SvgDocument(svgText);
+        this._svgDocument = new SvgDocument(svgText);
         for (let region of this.elements) {
             region.setPositionOffset();
         }
