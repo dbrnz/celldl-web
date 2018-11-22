@@ -23,13 +23,13 @@ limitations under the License.
 //==============================================================================
 
 import {CellDiagram} from './cellDiagram.js';
+import {Cytoscape} from './cytoscape.js';
 import {DiagramEditor} from './diagramEditor.js';
 import {Palette} from './palette.js';
 import {StyleSheet} from './stylesheet.js';
 import {TextEditor} from './textEditor.js';
 
 import {saveAs} from '../thirdparty/FileSaver.js';
-import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
 
@@ -42,77 +42,10 @@ class CellDlFile
         // and then editor.markClean()
 
         this._loadedFile = '';
-        this._cy = cytoscape({
-            container:
-                document.getElementById(htmlContainerId),
-            style: [
-                {   selector: 'node',
-                    css: {
-                        shape: 'roundrectangle',
-                    }
-                },
-                {   selector: 'node[colour]',
-                    css: {
-                        'background-color': 'data(colour)',
-                        'background-opacity': 'data(opacity)'
-                    }
-                },
-                {   selector: 'node[image]',
-                    css: {
-                        'background-image': 'data(image)',
-                        'background-fit': 'cover',
-                        'background-clip': 'none',
-                        'background-opacity': 0
-                    }
-                },
-                {   selector: 'node[shape]',
-                    css: {
-                        shape: 'data(shape)',
-                        'background-image': e => CellDlFile.cyElementSvg(e),
-                        'background-fit': 'cover',
-                        'background-clip': 'none',
-                        'background-opacity': 0
-                    }
-                },
-                {   selector: 'node[stroke]',
-                    css: {
-                        'border-color': 'data(stroke)',
-                        'border-opacity': 'data(stroke-opacity)',
-                        'border-width': 'data(stroke-width)'
-                    }
-                },
-                {   selector: 'node[width]',
-                    css: {
-                        width: 'data(width)',
-                        height: 'data(height)'
-                    }
-                },
-                {   selector: 'edge',
-                    css: {
-                        'curve-style': 'bezier',
-                        'target-arrow-shape': 'triangle-backcurve'
-                    }
-                },
-                {   selector: 'edge[colour]',
-                    css: {
-                        'line-color': 'data(colour)',
-                        'target-arrow-color': 'data(colour)'
-                    }
-                }
-            ],
-            layout: {
-                name: 'preset',
-                fit: true,
-                padding: 0
-            }
-        });
-        this._cyBottomLayer = this._cy.cyCanvas({ zIndex: -1 });
-        this._cyCtx = this._cyBottomLayer.getCanvas().getContext("2d");
-        this._cyBackgroundImage = null;
-        this._cy.on("render cyCanvas.resize", this.renderBottomLayer.bind(this));
+
+        this._cytoscape = new Cytoscape(htmlContainerId);
 
         this._palette = new Palette(document.getElementById(paletteId));
-        this.diagram = null;
 
         // Start with an empty diagram
         this._editor.setValue(`<cell-diagram>
@@ -130,21 +63,7 @@ class CellDlFile
     containerResize()
     //===============
     {
-        this._cy.resize();
-    }
-
-    renderBottomLayer(evt)
-    //====================
-    {
-        // Draw the background image if it's been set
-        if (this._cyBackgroundImage !== null) {
-            this._cyBottomLayer.resetTransform(this._cyCtx);
-            this._cyBottomLayer.clear(this._cyCtx);
-            this._cyBottomLayer.setTransform(this._cyCtx);
-            this._cyCtx.save();
-            this._cyCtx.drawImage(this._cyBackgroundImage, 0, 0, this.diagram.width, this.diagram.height);
-            this._cyCtx.restore();
-        }
+        this._cytoscape.resize();
     }
 
     upLoadedFileAsText(file)
@@ -192,52 +111,29 @@ class CellDlFile
     //==============
     {
         return new Promise((resolve, reject) => {
-
-            // Remove existing content from our container
-            // and reset zoom and pan
-
-            this._cy.remove('*');
-            this._cy.reset();
-            this._cyBackgroundImage = null;
-            this._cyBottomLayer.clear(this._cyCtx);
-
             const cellDlText = this._editor.getValue();
             if (cellDlText === '') {
                 reject("No CellDL to display");
             }
+
+            this._cytoscape.reset();
 
             const domParser = new DOMParser();
             const xmlDocument = domParser.parseFromString(cellDlText, "application/xml");
             document.body.style.cursor = 'wait';
 
             const cellDiagram = new CellDiagram('diagram', this._editor);
-            this.diagram = cellDiagram;
             try {
               cellDiagram.parseDocument(xmlDocument)
                 .then(() => {
                     try {
                         cellDiagram.layout();  // Pass width/height to use as defaults...
 
-                        // Zoom to fit diagram to canvas
-                        const dw = this.diagram.width;
-                        const dh = this.diagram.height
-                        const sw = this._cyBottomLayer.getCanvas().width;
-                        const sh = this._cyBottomLayer.getCanvas().height;
-                        this._cy.zoom((dw*sh > dh*sw) ? sw/dw : sh/dh);
-
-                        // Set the background image if one is specified
-                        if (cellDiagram.background !== null) {
-                            this._cyBackgroundImage = cellDiagram.background.svgImage;
-                        }
-
-                        const cyElements = cellDiagram.cyElements();
-
-//console.log(JSON.stringify(cyElements, null, 4));
-                        this._cy.add(cyElements);
+                        this._cytoscape.display(cellDiagram);
 
                         // Reset busy wheel
                         document.body.style.cursor = 'default';
-
+                        // All done
                         resolve(cellDiagram);
                     } catch (error) {
                         reject(error);
@@ -250,36 +146,6 @@ class CellDlFile
                 reject(error);
             }
         });
-    }
-
-    static cyElementSvg(e)
-    //====================
-    {
-        const width = e.data('width');
-        const height = e.data('height');
-        const svg = [[`<svg xmlns="${SVG_NS}" xmlns:xlink="http://www.w3.org/1999/xlink"`,
-                      `viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">`].join(' ')];
-        const elementAsSvg = e.scratch()._elementAsSvg;
-        const elementSvg = elementAsSvg.svgNode.outerHTML;
-        const defs = new Map();
-        const urlIds = elementSvg.match(/url\(#[^)]+\)/g);
-        if (urlIds) {
-            for (let urlId of urlIds) {
-                const id = urlId.substring(5, urlId.length-1);
-                if (!defs.has(id)) {
-                    const definition = elementAsSvg.svgFactory.getDefinition(id);
-                    if (definition) {
-                        defs.set(id, definition);
-                    }
-                }
-            }
-        }
-        if (defs.size > 0) {
-            svg.push(`<defs>${Array.from(defs.values()).join('\n')}</defs>`)
-        }
-        svg.push(elementSvg);
-        svg.push('</svg>')
-        return `data:image/svg+xml;base64,${btoa(svg.join('\n'))}`;
     }
 
     previewSvg()

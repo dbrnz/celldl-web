@@ -33,7 +33,7 @@ import * as stylesheet from './stylesheet.js';
 import * as utils from './utils.js';
 
 import {CELLDL_NAMESPACE, DiagramElement} from './elements.js';
-import {CyElementList} from './cytoscape-utils.js';
+import {CyElementList} from './cytoscape.js';
 import {SvgFactory, SVG_NS, SVG_VERSION} from './svgElements.js';
 
 //==============================================================================
