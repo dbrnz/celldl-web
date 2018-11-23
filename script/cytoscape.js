@@ -93,6 +93,56 @@ export class Cytoscape
                         'curve-style': 'unbundled-bezier',
                         'control-point-distances': '0 0 0',
                     }
+                },
+                // edge handle styling
+                {
+                    selector: '.eh-handle',
+                    style: {
+                        'background-color': 'red',
+                        'width': 12,
+                        'height': 12,
+                        'shape': 'ellipse',
+                        'overlay-opacity': 0,
+                        'border-width': 0,
+                        'border-opacity': 0
+                    }
+                },
+                {
+                    selector: '.eh-hover',
+                    style: {
+                        'background-color': 'red'
+                  }
+                },
+                {
+                    selector: '.eh-source',
+                    style: {
+                        'border-width': 4,
+                        'border-color': 'red',
+                        'border-opacity': 1
+                    }
+                },
+                {
+                    selector: '.eh-target',
+                    style: {
+                        'border-width': 4,
+                        'border-color': 'red',
+                        'border-opacity': 1
+                    }
+                },
+                {
+                    selector: '.eh-preview, .eh-ghost-edge',
+                    style: {
+                        'background-color': 'red',
+                        'line-color': 'red',
+                        'target-arrow-color': 'red',
+                        'source-arrow-color': 'red'
+                    }
+                },
+                {
+                    selector: '.eh-ghost-edge.eh-preview-active',
+                    style: {
+                        'opacity': 0
+                    }
                 }
             ],
             layout: {
@@ -104,10 +154,18 @@ export class Cytoscape
 
         this._diagram = null;
 
+        this._tapStartElement = null;
+        this._tapStartPos = null;
+        this._cy.on('tapstart tapend', 'node', this._tapEvent.bind(this));
+
         this._cyBottomLayer = this._cy.cyCanvas({ zIndex: -1 });
         this._cyCtx = this._cyBottomLayer.getCanvas().getContext("2d");
         this._cyBackgroundImage = null;
         this._cy.on("render cyCanvas.resize", this._renderBottomLayer.bind(this));
+
+        this._cy.edgehandles({
+            handlePosition: node => 'middle middle'
+        });
 
         this._cy.expandCollapse({
             layoutBy: {
@@ -173,6 +231,21 @@ export class Cytoscape
     //======
     {
         this._cy.resize();
+    }
+
+    _tapEvent(evt)
+    //============
+    {
+        const pos = evt.position;
+        if (evt.type === 'tapstart') {
+            console.log(`Start move ${evt.target.id()} at (${pos.x}, ${pos.y})`);
+            this._dragging = true;  // Or save node id and check this matches...
+        } else if (evt.type === 'tapdrag' && this._dragging) {
+            console.log(`Moving ${evt.target.id()} to (${pos.x}, ${pos.y})`);
+        } else if (evt.type === 'tapend') {
+            console.log(`Moved ${evt.target.id()} to (${pos.x}, ${pos.y})`);
+            //this._dragging = false;
+        }
     }
 
     _renderBottomLayer(evt)
