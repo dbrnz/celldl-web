@@ -122,6 +122,12 @@ export class Cytoscape
         });
     }
 
+    asSvg()
+    //=====
+    {
+        return this._cy.svg({scale: 1, full: true});
+    }
+
     /**
       * Display a diagram using Cytoscape
       *

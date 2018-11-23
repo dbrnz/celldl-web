@@ -161,22 +161,14 @@ class CellDlFile
             });
     }
 
-    saveSvg(svgDiagram)
-    //=================
-    {
-        const svg = svgDiagram.outerHTML;
-        const blob = new Blob([svg], { type: "image/svg+xml" });
-        const svgFileName = `${this._loadedFile.split('.')[0]}.svg`
-        saveAs(blob, svgFileName);
-    }
-
     exportSvg()
     //=========
     {
-        // Render the diagram without selected elements and grid
+        const svg = this._cytoscape.asSvg();
 
-        const svgDiagram = this._diagram.generateSvg();
-        this.saveSvg(svgDiagram);
+        const blob = new Blob([svg], { type: "image/svg+xml" });
+        const svgFileName = `${this._loadedFile.split('.')[0]}.svg`
+        saveAs(blob, svgFileName);
     }
 
     connectionMatrix(connectionMatrixId)
