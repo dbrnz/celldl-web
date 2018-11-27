@@ -87,11 +87,14 @@ export class Background extends DiagramElement
     async loadImage()
     //===============
     {
-        // Note: `fetch()` is a Promise
-
         return fetch(this._image)
-                   .then(response => response.text())
-                   .catch(error => console.error('Error getting background image:', error))
+                   .then(response => {
+                        if (response.ok) {
+                            return response.text();
+                        }
+                        console.error(`Cannot retrieve ${this._image}`)
+                        throw new Error(`Cannot retrieve ${this._image}`)
+                    })
                    .then(text => {
                         this.parseBackgroundSvg(text);
                         return new Promise((resolve) => {
@@ -102,7 +105,7 @@ export class Background extends DiagramElement
                                 resolve();
                             }
                         });
-                   });
+                    });
     }
 
     parseBackgroundSvg(svgText)

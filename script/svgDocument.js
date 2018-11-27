@@ -35,7 +35,7 @@ export class SvgDocument
         this._document = domParser.parseFromString(svgText, "image/svg+xml");
         const svgNode = this._document.documentElement;
         if (svgNode.nodeName !== 'svg') {
-            throw new exception.SyntaxError(svgNode, "Background is not in SVG format...");
+            throw new Error(svgNode, "Background is not in SVG format...");
         }
 
         // get viewport/width/height/x/y
