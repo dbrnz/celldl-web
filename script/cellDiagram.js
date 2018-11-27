@@ -154,7 +154,8 @@ export class CellDiagram {
                                 this.flatMap = new flatmap.FlatMap(this, flatMapElement);
                                 this.position.addDependent(this.flatMap);
                             }
-                        })
+                        },
+                        error => { throw error ; })
                       .catch(error => { throw error; });
     }
 

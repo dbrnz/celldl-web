@@ -92,18 +92,20 @@ export class Background extends DiagramElement
                         if (response.ok) {
                             return response.text();
                         }
-                        console.error(`Cannot retrieve ${this._image}`)
                         throw new Error(`Cannot retrieve ${this._image}`)
                     })
                    .then(text => {
                         this.parseBackgroundSvg(text);
-                        return new Promise((resolve) => {
+                        return new Promise((resolve, reject) => {
                             const img = new Image();
-                            img.src = "data:image/svg+xml;base64," + btoa(text);
                             img.onload = () => {
                                 this._svgImage = img;
                                 resolve();
-                            }
+                            };
+                            img.onerror = (evt) => {
+                                reject(new Error("Error loading background image..."));
+                            };
+                            img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(text)));
                         });
                     });
     }
