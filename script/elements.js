@@ -478,7 +478,7 @@ export class DiagramElement {
         const position = this.geometry.centre;
         const element = {
             data: { id: this.id },
-            position
+            position: position.copy()
         };
 
         if (this.elements.length === 0) {

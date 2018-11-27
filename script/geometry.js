@@ -76,6 +76,12 @@ export class Point extends GeoObject
         this.y = y;
     }
 
+    copy()
+    //====
+    {
+        return new Point(this.x, this.y);
+    }
+
     valueAt(index)
     //============
     {
