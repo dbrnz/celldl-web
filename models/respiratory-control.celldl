@@ -1,0 +1,902 @@
+<cell-diagram>
+    <background image="./models/respiratory-control-background.svg"/>
+    <flat-map>
+        <component id="ID_nwtN_30b67478-7047-4767-971a-cbbba7987bfd" class="compartment outermost" label="BRAINSTEM RESPIRATORY NETWORK">
+            <component id="ID_b57788b5-42c8-2f69-5a0e-99c4bf5f7079" class="compartment" label="PRG">
+                <component id="ID_36cdac7b-e379-18df-e79d-46afb76f605e" class="macromolecule" label="caudal-IE"/>
+                <component id="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" class="macromolecule" label="I-pons"/>
+                <component id="ID_7f52254a-4f4c-1f62-2c25-9fc023b7067b" class="macromolecule" label="NRM-pons"/>
+                <component id="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc" class="macromolecule" label="rostral-IE"/>
+                <component id="ID_nwtN_3c9183cd-1f48-44f3-84b1-a24f9a52188c" class="macromolecule" label="E"/>
+                <component id="ID_nwtN_905718fd-95eb-4575-9c60-e5905d34faaa" class="macromolecule" label="EI"/>
+            </component>
+            <component id="ID_82015c9b-b1f2-88ae-9dc6-dc303c70079b" class="compartment" label="NTS">
+                <component id="ID_354aee03-65e4-4819-3b46-f3140d6d24cf" class="macromolecule" label="Pump-"/>
+                <component id="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" class="macromolecule" label="2nd order cough"/>
+                <component id="ID_625e378a-d985-dbe8-c11f-a7f618ad3a0b" class="macromolecule" label="2nd order deflation"/>
+                <component id="ID_892fbf18-91a2-f3a8-cd40-ef1f2d9c5211" class="macromolecule" label="Pump+"/>
+            </component>
+            <component id="ID_3e9561fa-600f-38cc-bb12-838d8f512153" class="compartment" label="Raphe">
+                <component id="ID_ea7cbecf-3611-1291-3831-d33ae32d8159" class="macromolecule" label="R-32"/>
+                <component id="ID_2d4faab0-7466-23a1-46ba-8a6eace8b92b" class="macromolecule" label="R-28"/>
+                <component id="ID_58dc20ad-8001-f135-0d64-dc7228b04c15" class="macromolecule" label="R-8"/>
+                <component id="ID_d7df739d-374f-801b-d75e-65e07be3fca1" class="macromolecule" label="R-31"/>
+                <component id="ID_be75ca55-8b5e-7cb5-7a55-3bc05b6158ca" class="macromolecule" label="R-29"/>
+                <component id="ID_1c098fab-4477-1cc4-5d86-90a3c2f0b1b0" class="macromolecule" label="R-30"/>
+            </component>
+            <component id="ID_320fd772-4d6a-12fd-5e82-416e1d47d21f" class="compartment" label="NUCLEUS AMBIGUUS">
+                <component id="ID_2b6cdd4d-2b7f-e701-662e-3547d3aef1f8" class="macromolecule" label="ELM"/>
+                <component id="ID_deca44e3-125f-63c0-b3cc-6f1f0d142215" class="macromolecule" label="ILM"/>
+            </component>
+            <component id="ID_nwtN_0a136f0b-08d1-486c-b56d-1ae75e118d18" class="compartment" label="Ventral Respiratory Column">
+                <component id="ID_nwtN_fa19b75a-d24b-4815-aa91-1a9384fcde9c" class="compartment" label="VRG">
+                    <component id="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" class="macromolecule" label="I-Aug"/>
+                    <component id="ID_nwtN_dcdfbdb9-6e99-47f1-9deb-c1331b91c222" class="macromolecule" label="E-Aug-BS"/>
+                    <component id="ID_nwtN_22d066ec-fd60-42a7-8a0b-27e10477af19" class="macromolecule" label="VRC-IE"/>
+                </component>
+                <component id="ID_d5d8df29-bb7a-7334-65a5-c267e47d816a" class="compartment" label="BotC">
+                    <component id="ID_f0aa265f-bdcf-f786-9a75-d6d99c80f9c3" class="macromolecule" label="E-Dec-pre-ELM"/>
+                    <component id="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" class="macromolecule" label="E-Aug-Late"/>
+                    <component id="ID_6a302337-4f59-027e-d35d-d42afd50da96" class="macromolecule" label="E-Dec-Phasic"/>
+                    <component id="ID_f2d07e91-8f8e-9246-d909-d0fd148af290" class="macromolecule" label="E-Aug (+)"/>
+                    <component id="ID_fa4d4581-8417-b0ac-c89e-df1bce1c1517" class="macromolecule" label="E-Aug-Cough"/>
+                    <component id="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" class="macromolecule" label="E-Aug-Early"/>
+                    <component id="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" class="macromolecule" label="E-Dec-Tonic"/>
+                    <component id="ID_48751ef3-df31-d349-a182-b6e9d4cbc75f" class="macromolecule" label="NRM-BotC"/>
+                </component>
+                <component id="ID_nwtN_6e21f412-f81a-4f52-9fe4-5488cb75316a" class="macromolecule" label="I-Aug-BS"/>
+                <component id="ID_0702d067-ac01-1860-f63e-72133cced841" class="compartment" label="pre-BotC">
+                    <component id="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" class="macromolecule" label="I-Dec"/>
+                    <component id="ID_2d61734d-3f05-8053-03c3-ad2dd2235fb0" class="macromolecule" label="I-Driver"/>
+                    <component id="ID_bdfadd5c-d6b4-2055-ef0f-6655a0db1171" class="macromolecule" label="I-Dec-2"/>
+                </component>
+            </component>
+        </component>
+        <component id="ID_nwtN_6b948e85-6192-4111-9f4e-ae1582ea13a1" class="compartment outermost" label="SPINE">
+            <component id="ID_nwtN_a4ded8dd-a491-4aa6-b75d-e2dd1bab4d7a" class="macromolecule" label="PHR-HT"/>
+            <component id="ID_3d9abc7a-3f8e-a0bc-4a1d-b48b132b989f" class="macromolecule" label="PHR"/>
+            <component id="ID_bb12cf6b-1d29-20c6-7d43-411414b24d68" class="macromolecule" label="LUM-HT"/>
+            <component id="ID_29006319-571e-314e-2c86-94cdc904aa94" class="macromolecule" label="LUM"/>
+        </component>
+        <component id="ID_nwtN_abee836a-709f-4749-bf8a-705dbe831188" class="compartment outermost" label="LUNG">
+            <component id="ID_nwtN_f0b865c1-4b32-454e-8ab1-aac14f1dce05" class="macromolecule" label="Lung Dis-1s"/>
+            <component id="ID_e9de3c38-27f9-914d-31e1-7667d1ab2165" class="macromolecule" label="Lung PSRs"/>
+            <component id="ID_b31a819f-5d6d-e2eb-7b7b-a815584dc334" class="macromolecule" label="Lung Def-1s"/>
+        </component>
+        <component id="ID_36af1fe9-166d-a968-c617-5566754320b7" class="macromolecule" label="AIRWAY"/>
+        <component id="ID_052d0cc9-54c1-c4db-9fe8-76b14a1df978" class="macromolecule" label="LARYNX"/>
+        <component id="ID_9691c9f5-48dc-7572-b24a-da83c6ed9809" class="macromolecule" label="ABDOMINAL MUSCLES"/>
+        <component id="ID_nwtN_7fb15955-b629-436c-ac4c-38829107c585" class="macromolecule" label="DIAPHRAGM"/>
+<!--
+        <component id="ID_nwtN_f7f06e9f-0865-4b56-8ba9-737e48dc9299" class="macromolecule" label="KEY"/>
+        <component id="ID_nwtN_aa2f64ae-96bb-43bf-9524-93277b6f0f13" class="macromolecule" label="_"/>
+        <component id="ID_fbe37738-8376-97d0-c07f-a2329e01b0d3" class="macromolecule" label="Presence is established"/>
+        <component id="ID_2ffaad30-c781-8424-82f1-b4a52c167a91" class="macromolecule" label="Presence is speculative"/>
+        <component id="ID_nwtN_0bf21c99-5827-4136-8b9f-f0d34da45cb2" class="macromolecule" label="_"/>
+        <component id="ID_c780c217-6420-b19e-4495-a034375119d3" class="macromolecule" label="Connection is speculative"/>
+        <component id="ID_b308d488-df17-1559-8a8d-0c753a7068cd" class="macromolecule" label="_"/>
+        <component id="ID_nwtN_1c5f0126-139f-4224-8d03-c66bc43f74ef" class="macromolecule" label="_"/>
+        <component id="ID_1ef86a8a-b465-e721-84d7-16a44d5ba1b4" class="macromolecule" label="Inhibitory synapse"/>
+        <component id="ID_0558a8d8-66d2-0c00-0323-944806660804" class="macromolecule" label="Excitatory synapse"/>
+-->
+        <connection from="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" to="ID_7f52254a-4f4c-1f62-2c25-9fc023b7067b" class="excitatory"/>
+        <connection from="ID_7f52254a-4f4c-1f62-2c25-9fc023b7067b" to="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" class="excitatory"/>
+        <connection from="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" to="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc" class="excitatory"/>
+        <connection from="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc" to="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" class="excitatory"/>
+        <connection from="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" to="ID_36cdac7b-e379-18df-e79d-46afb76f605e" class="excitatory"/>
+        <connection from="ID_nwtN_3c9183cd-1f48-44f3-84b1-a24f9a52188c" to="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc" class="inhibitory"/>
+        <connection from="ID_nwtN_905718fd-95eb-4575-9c60-e5905d34faaa" to="ID_36cdac7b-e379-18df-e79d-46afb76f605e" class="excitatory"/>
+        <connection from="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc" to="ID_nwtN_905718fd-95eb-4575-9c60-e5905d34faaa" class="excitatory"/>
+        <connection from="ID_nwtN_905718fd-95eb-4575-9c60-e5905d34faaa" to="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc" class="excitatory"/>
+        <connection from="ID_36cdac7b-e379-18df-e79d-46afb76f605e" to="ID_nwtN_3c9183cd-1f48-44f3-84b1-a24f9a52188c" class="inhibitory"/>
+        <connection from="ID_nwtN_3c9183cd-1f48-44f3-84b1-a24f9a52188c" to="ID_36cdac7b-e379-18df-e79d-46afb76f605e" class="inhibitory"/>
+        <connection from="ID_6a302337-4f59-027e-d35d-d42afd50da96" to="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc" class="excitatory"/>
+        <connection from="ID_6a302337-4f59-027e-d35d-d42afd50da96" to="ID_36cdac7b-e379-18df-e79d-46afb76f605e" class="excitatory"/>
+        <connection from="ID_48751ef3-df31-d349-a182-b6e9d4cbc75f" to="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc" class="inhibitory"/>
+        <connection from="ID_48751ef3-df31-d349-a182-b6e9d4cbc75f" to="ID_36cdac7b-e379-18df-e79d-46afb76f605e" class="inhibitory"/>
+        <connection from="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" to="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" class="excitatory"/>
+        <connection from="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" to="ID_nwtN_3c9183cd-1f48-44f3-84b1-a24f9a52188c" class="excitatory"/>
+        <connection from="ID_nwtN_905718fd-95eb-4575-9c60-e5905d34faaa" to="ID_nwtN_22d066ec-fd60-42a7-8a0b-27e10477af19" class="excitatory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" class="inhibitory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" class="excitatory"/>
+        <connection from="ID_354aee03-65e4-4819-3b46-f3140d6d24cf" to="ID_36cdac7b-e379-18df-e79d-46afb76f605e"/>
+        <connection from="ID_354aee03-65e4-4819-3b46-f3140d6d24cf" to="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4"/>
+        <connection from="ID_354aee03-65e4-4819-3b46-f3140d6d24cf" to="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc"/>
+        <connection from="ID_354aee03-65e4-4819-3b46-f3140d6d24cf" to="ID_nwtN_3c9183cd-1f48-44f3-84b1-a24f9a52188c"/>
+        <connection from="ID_354aee03-65e4-4819-3b46-f3140d6d24cf" to="ID_nwtN_905718fd-95eb-4575-9c60-e5905d34faaa"/>
+        <connection from="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" to="ID_36cdac7b-e379-18df-e79d-46afb76f605e" class="inhibitory"/>
+        <connection from="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" to="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc" class="inhibitory"/>
+        <connection from="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" to="ID_36cdac7b-e379-18df-e79d-46afb76f605e" class="excitatory"/>
+        <connection from="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" to="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc" class="excitatory"/>
+        <connection from="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" to="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" class="excitatory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_36cdac7b-e379-18df-e79d-46afb76f605e" class="inhibitory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc" class="inhibitory"/>
+        <connection from="ID_7f52254a-4f4c-1f62-2c25-9fc023b7067b" to="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" class="inhibitory"/>
+        <connection from="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" to="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" class="inhibitory"/>
+        <connection from="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc" to="ID_nwtN_22d066ec-fd60-42a7-8a0b-27e10477af19" class="excitatory"/>
+        <connection from="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc" to="ID_nwtN_905718fd-95eb-4575-9c60-e5905d34faaa" class="inhibitory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_nwtN_905718fd-95eb-4575-9c60-e5905d34faaa" class="excitatory"/>
+        <connection from="ID_48751ef3-df31-d349-a182-b6e9d4cbc75f" to="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" class="excitatory"/>
+        <connection from="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" to="ID_36cdac7b-e379-18df-e79d-46afb76f605e" class="inhibitory"/>
+        <connection from="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" to="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc" class="inhibitory"/>
+        <connection from="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" to="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" class="inhibitory"/>
+        <connection from="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" to="ID_nwtN_905718fd-95eb-4575-9c60-e5905d34faaa" class="excitatory"/>
+        <connection from="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" to="ID_nwtN_3c9183cd-1f48-44f3-84b1-a24f9a52188c" class="excitatory"/>
+        <connection from="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" to="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" class="excitatory"/>
+        <connection from="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" to="ID_36cdac7b-e379-18df-e79d-46afb76f605e" class="excitatory"/>
+        <connection from="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" to="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc" class="excitatory"/>
+        <connection from="ID_892fbf18-91a2-f3a8-cd40-ef1f2d9c5211" to="ID_bdfadd5c-d6b4-2055-ef0f-6655a0db1171" class="excitatory"/>
+        <connection from="ID_625e378a-d985-dbe8-c11f-a7f618ad3a0b" to="ID_b31a819f-5d6d-e2eb-7b7b-a815584dc334" class="excitatory"/>
+        <connection from="ID_b31a819f-5d6d-e2eb-7b7b-a815584dc334" to="ID_625e378a-d985-dbe8-c11f-a7f618ad3a0b" class="excitatory"/>
+        <connection from="ID_e9de3c38-27f9-914d-31e1-7667d1ab2165" to="ID_354aee03-65e4-4819-3b46-f3140d6d24cf" class="excitatory"/>
+        <connection from="ID_e9de3c38-27f9-914d-31e1-7667d1ab2165" to="ID_892fbf18-91a2-f3a8-cd40-ef1f2d9c5211" class="excitatory"/>
+        <connection from="ID_354aee03-65e4-4819-3b46-f3140d6d24cf" to="ID_bdfadd5c-d6b4-2055-ef0f-6655a0db1171" class="inhibitory"/>
+        <connection from="ID_2d4faab0-7466-23a1-46ba-8a6eace8b92b" to="ID_1c098fab-4477-1cc4-5d86-90a3c2f0b1b0" class="excitatory"/>
+        <connection from="ID_ea7cbecf-3611-1291-3831-d33ae32d8159" to="ID_d7df739d-374f-801b-d75e-65e07be3fca1" class="inhibitory"/>
+        <connection from="ID_be75ca55-8b5e-7cb5-7a55-3bc05b6158ca" to="ID_1c098fab-4477-1cc4-5d86-90a3c2f0b1b0" class="excitatory"/>
+        <connection from="ID_58dc20ad-8001-f135-0d64-dc7228b04c15" to="ID_d7df739d-374f-801b-d75e-65e07be3fca1" class="inhibitory"/>
+        <connection from="ID_58dc20ad-8001-f135-0d64-dc7228b04c15" to="ID_ea7cbecf-3611-1291-3831-d33ae32d8159" class="inhibitory"/>
+        <connection from="ID_58dc20ad-8001-f135-0d64-dc7228b04c15" to="ID_be75ca55-8b5e-7cb5-7a55-3bc05b6158ca" class="excitatory"/>
+        <connection from="ID_58dc20ad-8001-f135-0d64-dc7228b04c15" to="ID_nwtN_dcdfbdb9-6e99-47f1-9deb-c1331b91c222" class="inhibitory"/>
+        <connection from="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" to="ID_be75ca55-8b5e-7cb5-7a55-3bc05b6158ca" class="inhibitory"/>
+        <connection from="ID_1c098fab-4477-1cc4-5d86-90a3c2f0b1b0" to="ID_be75ca55-8b5e-7cb5-7a55-3bc05b6158ca" class="inhibitory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_deca44e3-125f-63c0-b3cc-6f1f0d142215" class="excitatory"/>
+        <connection from="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" to="ID_2b6cdd4d-2b7f-e701-662e-3547d3aef1f8" class="inhibitory"/>
+        <connection from="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" to="ID_2b6cdd4d-2b7f-e701-662e-3547d3aef1f8" class="inhibitory"/>
+        <connection from="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" to="ID_deca44e3-125f-63c0-b3cc-6f1f0d142215" class="inhibitory"/>
+        <connection from="ID_fa4d4581-8417-b0ac-c89e-df1bce1c1517" to="ID_deca44e3-125f-63c0-b3cc-6f1f0d142215" class="inhibitory"/>
+        <connection from="ID_bdfadd5c-d6b4-2055-ef0f-6655a0db1171" to="ID_2b6cdd4d-2b7f-e701-662e-3547d3aef1f8" class="inhibitory"/>
+        <connection from="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" to="ID_2b6cdd4d-2b7f-e701-662e-3547d3aef1f8" class="inhibitory"/>
+        <connection from="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" to="ID_deca44e3-125f-63c0-b3cc-6f1f0d142215" class="excitatory"/>
+        <connection from="ID_f0aa265f-bdcf-f786-9a75-d6d99c80f9c3" to="ID_2b6cdd4d-2b7f-e701-662e-3547d3aef1f8" class="excitatory"/>
+        <connection from="ID_nwtN_f0b865c1-4b32-454e-8ab1-aac14f1dce05" to="ID_2b6cdd4d-2b7f-e701-662e-3547d3aef1f8" class="excitatory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_2b6cdd4d-2b7f-e701-662e-3547d3aef1f8" class="inhibitory"/>
+        <connection from="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" to="ID_nwtN_6e21f412-f81a-4f52-9fe4-5488cb75316a" class="excitatory"/>
+        <connection from="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" to="ID_nwtN_22d066ec-fd60-42a7-8a0b-27e10477af19" class="excitatory"/>
+        <connection from="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" to="ID_nwtN_22d066ec-fd60-42a7-8a0b-27e10477af19" class="inhibitory"/>
+        <connection from="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" to="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" class="inhibitory"/>
+        <connection from="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" to="ID_nwtN_6e21f412-f81a-4f52-9fe4-5488cb75316a" class="inhibitory"/>
+        <connection from="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" to="ID_nwtN_22d066ec-fd60-42a7-8a0b-27e10477af19" class="inhibitory"/>
+        <connection from="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" to="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" class="inhibitory"/>
+        <connection from="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" to="ID_nwtN_6e21f412-f81a-4f52-9fe4-5488cb75316a" class="inhibitory"/>
+        <connection from="ID_2d61734d-3f05-8053-03c3-ad2dd2235fb0" to="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" class="excitatory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" class="inhibitory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_nwtN_22d066ec-fd60-42a7-8a0b-27e10477af19" class="inhibitory"/>
+        <connection from="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" to="ID_nwtN_6e21f412-f81a-4f52-9fe4-5488cb75316a" class="inhibitory"/>
+        <connection from="ID_fa4d4581-8417-b0ac-c89e-df1bce1c1517" to="ID_nwtN_dcdfbdb9-6e99-47f1-9deb-c1331b91c222" class="inhibitory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_nwtN_dcdfbdb9-6e99-47f1-9deb-c1331b91c222" class="inhibitory"/>
+        <connection from="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" to="ID_deca44e3-125f-63c0-b3cc-6f1f0d142215" class="inhibitory"/>
+        <connection from="ID_6a302337-4f59-027e-d35d-d42afd50da96" to="ID_nwtN_22d066ec-fd60-42a7-8a0b-27e10477af19" class="inhibitory"/>
+        <connection from="ID_6a302337-4f59-027e-d35d-d42afd50da96" to="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" class="inhibitory"/>
+        <connection from="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" to="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" class="excitatory"/>
+        <connection from="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" to="ID_nwtN_6e21f412-f81a-4f52-9fe4-5488cb75316a" class="excitatory"/>
+        <connection from="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" to="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" class="excitatory"/>
+        <connection from="ID_f2d07e91-8f8e-9246-d909-d0fd148af290" to="ID_nwtN_dcdfbdb9-6e99-47f1-9deb-c1331b91c222" class="excitatory"/>
+        <connection from="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" to="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" class="excitatory"/>
+        <connection from="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" to="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" class="inhibitory"/>
+        <connection from="ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4" to="ID_nwtN_22d066ec-fd60-42a7-8a0b-27e10477af19" class="excitatory"/>
+        <connection from="ID_7f52254a-4f4c-1f62-2c25-9fc023b7067b" to="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" class="excitatory"/>
+        <connection from="ID_7f52254a-4f4c-1f62-2c25-9fc023b7067b" to="ID_nwtN_22d066ec-fd60-42a7-8a0b-27e10477af19" class="excitatory"/>
+        <connection from="ID_892fbf18-91a2-f3a8-cd40-ef1f2d9c5211" to="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" class="excitatory"/>
+        <connection from="ID_892fbf18-91a2-f3a8-cd40-ef1f2d9c5211" to="ID_nwtN_22d066ec-fd60-42a7-8a0b-27e10477af19" class="excitatory"/>
+        <connection from="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" to="ID_nwtN_22d066ec-fd60-42a7-8a0b-27e10477af19" class="inhibitory"/>
+        <connection from="ID_bdfadd5c-d6b4-2055-ef0f-6655a0db1171" to="ID_nwtN_dcdfbdb9-6e99-47f1-9deb-c1331b91c222" class="inhibitory"/>
+        <connection from="ID_6a302337-4f59-027e-d35d-d42afd50da96" to="ID_f2d07e91-8f8e-9246-d909-d0fd148af290" class="inhibitory"/>
+        <connection from="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" to="ID_6a302337-4f59-027e-d35d-d42afd50da96" class="inhibitory"/>
+        <connection from="ID_6a302337-4f59-027e-d35d-d42afd50da96" to="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" class="inhibitory"/>
+        <connection from="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" to="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" class="inhibitory"/>
+        <connection from="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" to="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" class="inhibitory"/>
+        <connection from="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" to="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" class="inhibitory"/>
+        <connection from="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" to="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" class="inhibitory"/>
+        <connection from="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" to="ID_6a302337-4f59-027e-d35d-d42afd50da96" class="inhibitory"/>
+        <connection from="ID_6a302337-4f59-027e-d35d-d42afd50da96" to="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" class="inhibitory"/>
+        <connection from="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" to="ID_f0aa265f-bdcf-f786-9a75-d6d99c80f9c3" class="inhibitory"/>
+        <connection from="ID_fa4d4581-8417-b0ac-c89e-df1bce1c1517" to="ID_f0aa265f-bdcf-f786-9a75-d6d99c80f9c3" class="inhibitory"/>
+        <connection from="ID_fa4d4581-8417-b0ac-c89e-df1bce1c1517" to="ID_f2d07e91-8f8e-9246-d909-d0fd148af290" class="inhibitory"/>
+        <connection from="ID_6a302337-4f59-027e-d35d-d42afd50da96" to="ID_fa4d4581-8417-b0ac-c89e-df1bce1c1517" class="inhibitory"/>
+        <connection from="ID_892fbf18-91a2-f3a8-cd40-ef1f2d9c5211" to="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" class="excitatory"/>
+        <connection from="ID_7f52254a-4f4c-1f62-2c25-9fc023b7067b" to="ID_48751ef3-df31-d349-a182-b6e9d4cbc75f" class="inhibitory"/>
+        <connection from="ID_7f52254a-4f4c-1f62-2c25-9fc023b7067b" to="ID_6a302337-4f59-027e-d35d-d42afd50da96" class="excitatory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" class="inhibitory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" class="inhibitory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_f0aa265f-bdcf-f786-9a75-d6d99c80f9c3" class="inhibitory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" class="inhibitory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_6a302337-4f59-027e-d35d-d42afd50da96" class="inhibitory"/>
+        <connection from="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" to="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" class="excitatory"/>
+        <connection from="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" to="ID_f0aa265f-bdcf-f786-9a75-d6d99c80f9c3" class="excitatory"/>
+        <connection from="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" to="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" class="excitatory"/>
+        <connection from="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" to="ID_f2d07e91-8f8e-9246-d909-d0fd148af290" class="excitatory"/>
+        <connection from="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" to="ID_fa4d4581-8417-b0ac-c89e-df1bce1c1517" class="excitatory"/>
+        <connection from="ID_bdfadd5c-d6b4-2055-ef0f-6655a0db1171" to="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" class="inhibitory"/>
+        <connection from="ID_bdfadd5c-d6b4-2055-ef0f-6655a0db1171" to="ID_f2d07e91-8f8e-9246-d909-d0fd148af290" class="inhibitory"/>
+        <connection from="ID_bdfadd5c-d6b4-2055-ef0f-6655a0db1171" to="ID_f0aa265f-bdcf-f786-9a75-d6d99c80f9c3" class="inhibitory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_f2d07e91-8f8e-9246-d909-d0fd148af290" class="inhibitory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_fa4d4581-8417-b0ac-c89e-df1bce1c1517" class="inhibitory"/>
+        <connection from="ID_892fbf18-91a2-f3a8-cd40-ef1f2d9c5211" to="ID_6a302337-4f59-027e-d35d-d42afd50da96" class="excitatory"/>
+        <connection from="ID_ea7cbecf-3611-1291-3831-d33ae32d8159" to="ID_6a302337-4f59-027e-d35d-d42afd50da96" class="inhibitory"/>
+        <connection from="ID_ea7cbecf-3611-1291-3831-d33ae32d8159" to="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" class="inhibitory"/>
+        <connection from="ID_ea7cbecf-3611-1291-3831-d33ae32d8159" to="ID_f0aa265f-bdcf-f786-9a75-d6d99c80f9c3" class="inhibitory"/>
+        <connection from="ID_be75ca55-8b5e-7cb5-7a55-3bc05b6158ca" to="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" class="excitatory"/>
+        <connection from="ID_be75ca55-8b5e-7cb5-7a55-3bc05b6158ca" to="ID_6a302337-4f59-027e-d35d-d42afd50da96" class="excitatory"/>
+        <connection from="ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc" to="ID_6a302337-4f59-027e-d35d-d42afd50da96" class="inhibitory"/>
+        <connection from="ID_7f52254a-4f4c-1f62-2c25-9fc023b7067b" to="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" class="excitatory"/>
+        <connection from="ID_7f52254a-4f4c-1f62-2c25-9fc023b7067b" to="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" class="excitatory"/>
+        <connection from="ID_7f52254a-4f4c-1f62-2c25-9fc023b7067b" to="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" class="excitatory"/>
+        <connection from="ID_625e378a-d985-dbe8-c11f-a7f618ad3a0b" to="ID_6a302337-4f59-027e-d35d-d42afd50da96" class="inhibitory"/>
+        <connection from="ID_nwtN_905718fd-95eb-4575-9c60-e5905d34faaa" to="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" class="excitatory"/>
+        <connection from="ID_fa4d4581-8417-b0ac-c89e-df1bce1c1517" to="ID_nwtN_6e21f412-f81a-4f52-9fe4-5488cb75316a" class="inhibitory"/>
+        <connection from="ID_6a302337-4f59-027e-d35d-d42afd50da96" to="ID_nwtN_6e21f412-f81a-4f52-9fe4-5488cb75316a" class="inhibitory"/>
+        <connection from="ID_2d61734d-3f05-8053-03c3-ad2dd2235fb0" to="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" class="excitatory"/>
+        <connection from="ID_7f52254a-4f4c-1f62-2c25-9fc023b7067b" to="ID_2d61734d-3f05-8053-03c3-ad2dd2235fb0" class="excitatory"/>
+        <connection from="ID_6a302337-4f59-027e-d35d-d42afd50da96" to="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" class="inhibitory"/>
+        <connection from="ID_6a302337-4f59-027e-d35d-d42afd50da96" to="ID_2d61734d-3f05-8053-03c3-ad2dd2235fb0" class="inhibitory"/>
+        <connection from="ID_nwtN_3c9183cd-1f48-44f3-84b1-a24f9a52188c" to="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" class="inhibitory"/>
+        <connection from="ID_nwtN_22d066ec-fd60-42a7-8a0b-27e10477af19" to="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" class="inhibitory"/>
+        <connection from="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" to="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" class="excitatory"/>
+        <connection from="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617" to="ID_bdfadd5c-d6b4-2055-ef0f-6655a0db1171" class="excitatory"/>
+        <connection from="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" to="ID_bdfadd5c-d6b4-2055-ef0f-6655a0db1171" class="inhibitory"/>
+        <connection from="ID_fa4d4581-8417-b0ac-c89e-df1bce1c1517" to="ID_bdfadd5c-d6b4-2055-ef0f-6655a0db1171" class="inhibitory"/>
+        <connection from="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" to="ID_bdfadd5c-d6b4-2055-ef0f-6655a0db1171" class="inhibitory"/>
+        <connection from="ID_6a302337-4f59-027e-d35d-d42afd50da96" to="ID_bdfadd5c-d6b4-2055-ef0f-6655a0db1171" class="inhibitory"/>
+        <connection from="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" to="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" class="inhibitory"/>
+        <connection from="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" to="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" class="inhibitory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" class="inhibitory"/>
+        <connection from="ID_2d61734d-3f05-8053-03c3-ad2dd2235fb0" to="ID_2d61734d-3f05-8053-03c3-ad2dd2235fb0" class="excitatory"/>
+        <connection from="ID_36cdac7b-e379-18df-e79d-46afb76f605e" to="ID_2d61734d-3f05-8053-03c3-ad2dd2235fb0" class="excitatory"/>
+        <connection from="ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f" to="ID_bdfadd5c-d6b4-2055-ef0f-6655a0db1171"/>
+        <connection from="ID_354aee03-65e4-4819-3b46-f3140d6d24cf" to="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" class="inhibitory"/>
+        <connection from="ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf" to="ID_bdfadd5c-d6b4-2055-ef0f-6655a0db1171" class="excitatory"/>
+        <connection from="ID_nwtN_dcdfbdb9-6e99-47f1-9deb-c1331b91c222" to="ID_29006319-571e-314e-2c86-94cdc904aa94" class="excitatory"/>
+        <connection from="ID_nwtN_dcdfbdb9-6e99-47f1-9deb-c1331b91c222" to="ID_bb12cf6b-1d29-20c6-7d43-411414b24d68" class="excitatory"/>
+        <connection from="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" to="ID_3d9abc7a-3f8e-a0bc-4a1d-b48b132b989f" class="inhibitory"/>
+        <connection from="ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985" to="ID_nwtN_a4ded8dd-a491-4aa6-b75d-e2dd1bab4d7a" class="inhibitory"/>
+        <connection from="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" to="ID_3d9abc7a-3f8e-a0bc-4a1d-b48b132b989f" class="inhibitory"/>
+        <connection from="ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e" to="ID_nwtN_a4ded8dd-a491-4aa6-b75d-e2dd1bab4d7a" class="inhibitory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_bb12cf6b-1d29-20c6-7d43-411414b24d68" class="inhibitory"/>
+        <connection from="ID_bb12cf6b-1d29-20c6-7d43-411414b24d68" to="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" class="inhibitory"/>
+        <connection from="ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794" to="ID_29006319-571e-314e-2c86-94cdc904aa94" class="inhibitory"/>
+        <connection from="ID_nwtN_6e21f412-f81a-4f52-9fe4-5488cb75316a" to="ID_nwtN_a4ded8dd-a491-4aa6-b75d-e2dd1bab4d7a" class="excitatory"/>
+        <connection from="ID_nwtN_6e21f412-f81a-4f52-9fe4-5488cb75316a" to="ID_3d9abc7a-3f8e-a0bc-4a1d-b48b132b989f" class="excitatory"/>
+        <connection from="ID_354aee03-65e4-4819-3b46-f3140d6d24cf" to="ID_b31a819f-5d6d-e2eb-7b7b-a815584dc334" class="inhibitory"/>
+        <connection from="ID_deca44e3-125f-63c0-b3cc-6f1f0d142215" to="ID_052d0cc9-54c1-c4db-9fe8-76b14a1df978"/>
+        <connection from="ID_2b6cdd4d-2b7f-e701-662e-3547d3aef1f8" to="ID_052d0cc9-54c1-c4db-9fe8-76b14a1df978"/>
+        <connection from="ID_nwtN_a4ded8dd-a491-4aa6-b75d-e2dd1bab4d7a" to="ID_nwtN_7fb15955-b629-436c-ac4c-38829107c585"/>
+        <connection from="ID_3d9abc7a-3f8e-a0bc-4a1d-b48b132b989f" to="ID_nwtN_7fb15955-b629-436c-ac4c-38829107c585"/>
+        <connection from="ID_bb12cf6b-1d29-20c6-7d43-411414b24d68" to="ID_9691c9f5-48dc-7572-b24a-da83c6ed9809"/>
+        <connection from="ID_29006319-571e-314e-2c86-94cdc904aa94" to="ID_9691c9f5-48dc-7572-b24a-da83c6ed9809"/>
+        <connection from="ID_36af1fe9-166d-a968-c617-5566754320b7" to="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617"/>
+        <connection from="ID_052d0cc9-54c1-c4db-9fe8-76b14a1df978" to="ID_836bdb84-04e5-7ed8-a97d-3398bc84f617"/>
+<!--
+        <connection from="ID_nwtN_0bf21c99-5827-4136-8b9f-f0d34da45cb2" to="ID_nwtN_1c5f0126-139f-4224-8d03-c66bc43f74ef"/>
+-->
+    </flat-map>
+    <style>
+cell-diagram {
+    width: 2626.8335219126247;
+    height: 3057.23797357249;
+}
+
+        connection {
+            stroke-opacity: 0.7;
+            stroke-width: 4px;
+        }
+        .compartment {
+            color: #CCC;
+            opacity: 0.2;
+            stroke: #111;
+            stroke-width: 2px;
+            size: 25v, 25v;
+            text-position: 50%, 90%;
+            shape: rounded-rectangle;
+        }
+        .compartment > .compartment {
+            color: #DDD;
+            opacity: 0.7;
+            stroke: #222;
+        }
+
+        .compartment > .compartment > .compartment {
+            color: #EEE;
+            opacity: 0.7;
+            stroke: #333;
+        }
+
+        .outermost {
+            size: 95v, 95v;
+            stroke: #c0c0c0;
+        }
+        .macromolecule {
+            color: #c0c0FF;
+            opacity: 0.7;
+            size: 4v, 2v;
+            shape: rounded-rectangle;
+        }
+        .process {
+            color: green;
+            size: 1v, 1v;
+        }
+        .consumption, .inhibitory {
+            line-color: #8080FF;
+        }
+        .production, .excitatory {
+            line-color: #FF8080;
+        }
+        .warn {
+            color: #ffff00;
+            size: 1.5v, 1.5v;
+        }
+
+        #ID_nwtN_30b67478-7047-4767-971a-cbbba7987bfd {
+           position: 49.17%, 31.68%;
+           size: 98.17%, 59.28%;
+        }
+        #ID_b57788b5-42c8-2f69-5a0e-99c4bf5f7079 {
+           position: 80.53%, 29.56%;
+           size: 32.15%, 39.92%;
+        }
+        #ID_36cdac7b-e379-18df-e79d-46afb76f605e {
+           position: 86.34%, 62.84%;
+        }
+        #ID_6d8be0af-e94a-f0f4-6093-ed0a31d51ab4 {
+           position: 59.52%, 51.02%;
+        }
+        #ID_7f52254a-4f4c-1f62-2c25-9fc023b7067b {
+           position: 91.12%, 92.36%;
+        }
+        #ID_fb7ca76b-2c7c-94ab-ca16-c544ea3214bc {
+           position: 40.98%, 7.24%;
+        }
+        #ID_nwtN_3c9183cd-1f48-44f3-84b1-a24f9a52188c {
+           position: 36.66%, 43.09%;
+        }
+        #ID_nwtN_905718fd-95eb-4575-9c60-e5905d34faaa {
+           position: 76.48%, 39.78%;
+        }
+        #ID_nwtN_ebffeec5-462c-4566-90ee-3f615560bf8f {
+           position: 85.11%, 26.36%;
+        }
+        #ID_nwtN_76341230-25b7-496b-9427-46c052e3d4ee {
+           position: 59.46%, 24.58%;
+        }
+        #ID_nwtN_8cf6a6bc-e21b-4633-951e-d05a2254945b {
+           position: 72.33%, 56.04%;
+        }
+        #ID_nwtN_2d7e6bee-d333-47fb-8125-0196086c1927 {
+           position: 34.55%, 25.15%;
+        }
+        #ID_nwtN_661f449b-5a34-460b-98cc-7194591451de {
+           position: 93.23%, 45.61%;
+        }
+        #ID_nwtN_a827e4e8-05ee-4202-aa44-694b3bb3efa4 {
+           position: 56.70%, 16.03%;
+        }
+        #ID_nwtN_7c325313-785f-4b86-ae62-91e7a28e2731 {
+           position: 67.60%, 47.31%;
+        }
+        #ID_nwtN_a8876d69-0971-4127-9864-4be14401d06f {
+           position: 40.23%, 74.40%;
+        }
+        #ID_nwtN_590d756e-8480-4273-a713-1d00e37e6375 {
+           position: 35.45%, 35.90%;
+        }
+        #ID_nwtN_6560ad1d-8e94-448f-a764-17a61fa71493 {
+           position: 14.49%, 60.53%;
+        }
+        #ID_nwtN_343923cd-2033-4f8a-810a-2625bff8653f {
+           position: 21.28%, 65.79%;
+        }
+        #ID_nwtN_4af01944-06d3-4203-94c5-1ee0b35dd913 {
+           position: 17.28%, 36.57%;
+        }
+        #ID_nwtN_6fdd9233-e311-4894-b5d6-4c74c8d39b28 {
+           position: 25.94%, 76.39%;
+        }
+        #ID_nwtN_dadcc789-4816-435c-b8ca-71349964dbad {
+           position: 38.44%, 72.98%;
+        }
+        #ID_nwtN_8a6e6964-fb76-4fc8-8ea2-5781d73b44a5 {
+           position: 88.12%, 7.70%;
+        }
+        #ID_nwtN_110f373c-10d0-4ba8-a10d-0fa98b60183c {
+           position: 47.75%, 94.36%;
+        }
+        #ID_839c7653-99b0-f552-ef10-81f103c37609 {
+           position: 18.95%, 50.46%;
+        }
+        #ID_06611d4a-f435-871e-06d3-0cb84b9bae51 {
+           position: 21.72%, 74.12%;
+        }
+        #ID_afe0f551-cc3f-0f4d-df39-85911ba8b198 {
+           position: 69.73%, 81.54%;
+        }
+        #ID_a1f4fd02-bc20-dcfb-7bae-2b3f5de8a112 {
+           position: 74.42%, 22.21%;
+        }
+        #ID_de4fcb24-d40b-dfbb-664f-597f2acef64a {
+           position: 28.34%, 66.61%;
+        }
+        #ID_8f0d3690-a332-763b-97fa-35cf035b74b9 {
+           position: 15.81%, 9.51%;
+        }
+        #ID_62112f04-80e8-11a9-9272-695dbbc4c1f5 {
+           position: 67.05%, 12.54%;
+        }
+        #ID_2a8616fe-dca1-a20d-b87a-0e27b5216dbe {
+           position: 47.11%, 75.53%;
+        }
+        #ID_b578e122-0fb0-3a67-75b5-482522186b44 {
+           position: 50.87%, 39.19%;
+        }
+        #ID_5eaffc39-3e05-00d3-a973-65a4daa87d5c {
+           position: 5.83%, 56.28%;
+        }
+        #ID_82015c9b-b1f2-88ae-9dc6-dc303c70079b {
+           position: 76.39%, 66.91%;
+           size: 25.39%, 22.81%;
+        }
+        #ID_354aee03-65e4-4819-3b46-f3140d6d24cf {
+           position: 60.86%, 29.14%;
+        }
+        #ID_836bdb84-04e5-7ed8-a97d-3398bc84f617 {
+           position: 89.10%, 52.17%;
+        }
+        #ID_625e378a-d985-dbe8-c11f-a7f618ad3a0b {
+           position: 67.72%, 87.32%;
+        }
+        #ID_892fbf18-91a2-f3a8-cd40-ef1f2d9c5211 {
+           position: 40.02%, 26.81%;
+        }
+        #ID_nwtN_c41e4bad-fa29-4160-9442-624e65f67b40 {
+           position: 90.24%, 6.12%;
+        }
+        #ID_nwtN_91395fc3-b74e-4543-a028-24351ea14c7a {
+           position: 5.70%, 43.46%;
+        }
+        #ID_nwtN_3bc4d837-2df7-4231-a9f1-382220e18b0d {
+           position: 84.21%, 93.88%;
+        }
+        #ID_nwtN_f8f6445b-2658-4cf1-8b90-3febc5806588 {
+           position: 41.13%, 87.27%;
+        }
+        #ID_6fea4058-8ede-6b5d-cb27-a2e4a28e71df {
+           position: 9.85%, 68.45%;
+        }
+        #ID_3e9561fa-600f-38cc-bb12-838d8f512153 {
+           position: 47.65%, 11.48%;
+           size: 20.24%, 14.40%;
+        }
+        #ID_ea7cbecf-3611-1291-3831-d33ae32d8159 {
+           position: 90.59%, 67.24%;
+        }
+        #ID_2d4faab0-7466-23a1-46ba-8a6eace8b92b {
+           position: 27.29%, 18.04%;
+        }
+        #ID_58dc20ad-8001-f135-0d64-dc7228b04c15 {
+           position: 18.50%, 69.63%;
+        }
+        #ID_d7df739d-374f-801b-d75e-65e07be3fca1 {
+           position: 51.61%, 21.69%;
+        }
+        #ID_be75ca55-8b5e-7cb5-7a55-3bc05b6158ca {
+           position: 50.01%, 57.50%;
+        }
+        #ID_1c098fab-4477-1cc4-5d86-90a3c2f0b1b0 {
+           position: 9.41%, 23.35%;
+        }
+        #ID_nwtN_1918e1b7-1e66-4960-b73b-11787d783aae {
+           position: 19.31%, 6.79%;
+        }
+        #ID_d395cd73-f46b-1406-3c20-0cae5d3f43fe {
+           position: 67.03%, 42.49%;
+        }
+        #ID_97ee7440-2730-3ce0-2b5d-994883ce3d19 {
+           position: 23.00%, 30.07%;
+        }
+        #ID_3cd4964b-8f3b-074a-04ef-5777eb99bb95 {
+           position: 34.36%, 23.95%;
+        }
+        #ID_89e48370-fb7b-9dc8-c518-9c5695d91d04 {
+           position: 73.16%, 69.69%;
+        }
+        #ID_ca937d68-9041-4a39-c21e-a42480a5d471 {
+           position: 33.85%, 57.91%;
+        }
+        #ID_nwtN_52f92bf1-611f-40e7-8db2-4a286dc06d90 {
+           position: 7.21%, 93.21%;
+        }
+        #ID_nwtN_c74b7031-06ba-4e62-87a8-2064f0a010bc {
+           position: 38.49%, 82.14%;
+        }
+        #ID_bb22a413-3de2-3f0e-d87c-dc77bc0d979b {
+           position: 21.95%, 42.58%;
+        }
+        #ID_320fd772-4d6a-12fd-5e82-416e1d47d21f {
+           position: 50.42%, 90.33%;
+           size: 17.37%, 10.37%;
+        }
+        #ID_2b6cdd4d-2b7f-e701-662e-3547d3aef1f8 {
+           position: 63.33%, 65.69%;
+        }
+        #ID_deca44e3-125f-63c0-b3cc-6f1f0d142215 {
+           position: 24.81%, 86.26%;
+        }
+        #ID_nwtN_b458504e-cb3e-4699-8689-c4c427fe48d2 {
+           position: 6.03%, 81.72%;
+        }
+        #ID_nwtN_0a35a32f-1ace-4d97-810b-3d53615d46db {
+           position: 53.52%, 19.03%;
+        }
+        #ID_nwtN_b7cbc4ac-bcb0-4020-bb6b-4c1eadc685a3 {
+           position: 22.25%, 17.13%;
+        }
+        #ID_nwtN_dddf531f-3ff0-40c6-942b-54ced93a1558 {
+           position: 37.80%, 62.13%;
+        }
+        #ID_8173e632-a7d4-643f-16e5-a10de9b214f7 {
+           position: 54.12%, 89.28%;
+        }
+        #ID_90834493-4561-4e00-8fec-63f4a983a612 {
+           position: 92.42%, 7.50%;
+        }
+        #ID_7ffb86e3-0150-fda7-11c7-5b00cbabfb43 {
+           position: 93.97%, 69.30%;
+        }
+        #ID_e5a29c33-1f67-c456-aef8-7dc13e683cd0 {
+           position: 44.77%, 32.91%;
+        }
+        #ID_nwtN_0a136f0b-08d1-486c-b56d-1ae75e118d18 {
+           position: 33.80%, 54.60%;
+           size: 64.00%, 62.86%;
+        }
+        #ID_nwtN_fa19b75a-d24b-4815-aa91-1a9384fcde9c {
+           position: 23.55%, 37.22%;
+           size: 41.21%, 55.75%;
+        }
+        #ID_nwtN_07d65032-bc0d-4dd1-b548-bbd80d581eaf {
+           position: 27.24%, 81.36%;
+        }
+        #ID_nwtN_80052c8d-6c62-4d31-bbf2-9f4ef608fb65 {
+           position: 35.60%, 21.58%;
+        }
+        #ID_nwtN_3b23275a-8fac-48c4-b737-1ebefa6b868a {
+           position: 11.49%, 67.41%;
+        }
+        #ID_nwtN_02dfeb11-a2d8-4175-972f-f16693f7a083 {
+           position: 48.15%, 40.94%;
+        }
+        #ID_nwtN_0a514ac1-669b-4c30-8550-abee1f1650d2 {
+           position: 24.24%, 91.24%;
+        }
+        #ID_nwtN_81d1e4e4-2f2d-4d34-87b8-0fcc42f82a28 {
+           position: 50.38%, 65.15%;
+        }
+        #ID_nwtN_b5c779b5-b99f-44ca-bc36-ea7b0479b1db {
+           position: 81.95%, 15.91%;
+        }
+        #ID_nwtN_58b172a1-7d56-4069-91ac-b4052b37c548 {
+           position: 73.06%, 50.74%;
+        }
+        #ID_nwtN_bc9aecff-914f-4864-983d-2a58a79680a7 {
+           position: 81.09%, 81.40%;
+        }
+        #ID_nwtN_f55c9e23-4e2e-4cd6-92a6-666a9827af9d {
+           position: 49.47%, 94.24%;
+        }
+        #ID_nwtN_dcdfbdb9-6e99-47f1-9deb-c1331b91c222 {
+           position: 59.39%, 49.60%;
+        }
+        #ID_nwtN_371a42ba-7774-413f-861c-bb7c8e5b1e89 {
+           position: 56.59%, 38.05%;
+        }
+        #ID_nwtN_3f466ebd-6e9d-410c-a808-73614d2a18ba {
+           position: 80.03%, 61.70%;
+        }
+        #ID_nwtN_5d42ea39-9c8c-4627-ac9b-ca24ef5663eb {
+           position: 50.51%, 84.21%;
+        }
+        #ID_nwtN_3e112833-9d66-41c2-bc96-96062e05a8e4 {
+           position: 68.99%, 30.94%;
+        }
+        #ID_nwtN_13ea108d-c913-49ed-b17f-a50a65861389 {
+           position: 94.31%, 78.08%;
+        }
+        #ID_nwtN_359082e7-2330-475e-bcb1-cfefc6cbb80d {
+           position: 13.80%, 84.79%;
+        }
+        #ID_nwtN_22d066ec-fd60-42a7-8a0b-27e10477af19 {
+           position: 9.86%, 34.71%;
+        }
+        #ID_d191d57e-d26d-7ff3-6a14-c82a04e35965 {
+           position: 23.86%, 62.37%;
+        }
+        #ID_5177c1b5-a833-cb7d-2484-772d2ad6c227 {
+           position: 46.43%, 5.76%;
+        }
+        #ID_3514ca8c-3c86-1570-8c5d-3dba2c99b3b3 {
+           position: 52.94%, 54.24%;
+        }
+        #ID_945d803c-da7c-41f1-b521-6c992e86af85 {
+           position: 57.57%, 63.91%;
+        }
+        #ID_531cd7c6-9ddb-cfcf-562c-f55d53fef453 {
+           position: 40.41%, 45.48%;
+        }
+        #ID_b3b0b9da-4c46-bd67-8471-5c6c5d414360 {
+           position: 57.06%, 88.82%;
+        }
+        #ID_d5d8df29-bb7a-7334-65a5-c267e47d816a {
+           position: 72.38%, 37.20%;
+           size: 50.26%, 71.56%;
+        }
+        #ID_f0aa265f-bdcf-f786-9a75-d6d99c80f9c3 {
+           position: 70.30%, 53.45%;
+        }
+        #ID_d4e2a07b-961f-d048-5cb7-cd5392eb2985 {
+           position: 43.96%, 51.66%;
+        }
+        #ID_6a302337-4f59-027e-d35d-d42afd50da96 {
+           position: 16.44%, 62.40%;
+        }
+        #ID_f2d07e91-8f8e-9246-d909-d0fd148af290 {
+           position: 79.97%, 81.68%;
+        }
+        #ID_fa4d4581-8417-b0ac-c89e-df1bce1c1517 {
+           position: 56.82%, 69.77%;
+        }
+        #ID_ecc9f48c-c023-0511-d51a-4aa6510fa83e {
+           position: 40.88%, 76.65%;
+        }
+        #ID_cd4bd8fc-e5f5-1539-320a-99c0c45e741f {
+           position: 13.31%, 30.01%;
+        }
+        #ID_48751ef3-df31-d349-a182-b6e9d4cbc75f {
+           position: 31.30%, 21.88%;
+        }
+        #ID_nwtN_29aa91a8-e881-4f54-af9f-bc43ceecf013 {
+           position: 63.38%, 83.50%;
+        }
+        #ID_5cbb5fbc-2bee-0f87-0da9-674874ffa014 {
+           position: 25.97%, 67.73%;
+        }
+        #ID_0baac494-b235-9cef-cdd2-e14626843429 {
+           position: 38.83%, 62.53%;
+        }
+        #ID_6435dc39-a631-602e-ec9e-8f7a55fa7a2f {
+           position: 36.17%, 41.24%;
+        }
+        #ID_65bf041c-5469-3eb0-6cab-ba3c462ae8cd {
+           position: 31.10%, 56.03%;
+        }
+        #ID_e649f41e-1caf-c9e3-2b21-3130e7313de5 {
+           position: 60.80%, 39.32%;
+        }
+        #ID_24231e53-67ce-002c-f1e0-516e3e020b20 {
+           position: 64.89%, 59.80%;
+        }
+        #ID_884ac03d-0a2b-e0ee-e2aa-5fdba254b79d {
+           position: 76.74%, 62.85%;
+        }
+        #ID_d599e540-e8da-0c2f-1555-802c8619ce31 {
+           position: 50.24%, 65.43%;
+        }
+        #ID_nwtN_cc6cdcf5-3fca-43c0-8791-9d56c04d442f {
+           position: 82.77%, 39.18%;
+        }
+        #ID_nwtN_9153e986-b112-4abb-ac9b-ba4a72175ba0 {
+           position: 46.44%, 5.59%;
+        }
+        #ID_nwtN_306fd963-6c9e-445c-a78a-3e6875fa2b81 {
+           position: 47.25%, 31.42%;
+        }
+        #ID_nwtN_023d459d-8292-4167-b782-a27702cbd738 {
+           position: 5.86%, 80.70%;
+        }
+        #ID_nwtN_db125daa-c7c7-48b2-a676-31568b66c312 {
+           position: 94.43%, 67.17%;
+        }
+        #ID_nwtN_fdabd2a9-0ed0-46bc-a7f1-2fa9c9f66ddd {
+           position: 24.79%, 94.41%;
+        }
+        #ID_nwtN_900c067c-8802-49cb-9f66-819c2e924a71 {
+           position: 70.33%, 90.53%;
+        }
+        #ID_nwtN_e64b6a89-d3e5-4ed7-88be-a0c959f7e3b5 {
+           position: 83.76%, 87.02%;
+        }
+        #ID_nwtN_a8bdb4e1-f795-4e4f-9311-3ee8848ffd68 {
+           position: 68.53%, 32.16%;
+        }
+        #ID_nwtN_435b8a65-33a5-4259-9011-08393542ca7f {
+           position: 34.81%, 11.42%;
+        }
+        #ID_nwtN_de6e2537-2491-485c-8f1f-bbf87799ee11 {
+           position: 36.13%, 35.81%;
+        }
+        #ID_nwtN_d7860a76-cea6-41eb-b281-4461134313e0 {
+           position: 53.16%, 34.92%;
+        }
+        #ID_nwtN_66d3a20f-9cc4-405e-bc1a-9080cfd27cca {
+           position: 26.31%, 81.03%;
+        }
+        #ID_1d227e96-e530-c514-732a-39642399d032 {
+           position: 79.72%, 26.75%;
+        }
+        #ID_nwtN_6e21f412-f81a-4f52-9fe4-5488cb75316a {
+           position: 33.67%, 7.88%;
+        }
+        #ID_nwtN_c7f15b6e-1b6d-4631-9571-5583c0ee7eee {
+           position: 51.14%, 18.92%;
+        }
+        #ID_e1ffcd1f-ee45-9c40-85a3-64f6da95d97c {
+           position: 48.36%, 20.82%;
+        }
+        #ID_0702d067-ac01-1860-f63e-72133cced841 {
+           position: 42.52%, 83.77%;
+           size: 28.89%, 24.96%;
+        }
+        #ID_c058c28f-5fdb-0f01-ec0f-c1c4d2541794 {
+           position: 63.76%, 52.30%;
+        }
+        #ID_2d61734d-3f05-8053-03c3-ad2dd2235fb0 {
+           position: 11.98%, 41.64%;
+        }
+        #ID_bdfadd5c-d6b4-2055-ef0f-6655a0db1171 {
+           position: 39.11%, 89.02%;
+        }
+        #ID_6ad8dc1f-387a-9cf8-d19c-a1fdaf3abeb7 {
+           position: 25.72%, 61.57%;
+        }
+        #ID_nwtN_09bb0218-f488-46b4-a8d6-7e0f2b1466f1 {
+           position: 5.99%, 12.97%;
+        }
+        #ID_nwtN_f56d4a00-e07d-4484-a655-27105e22cbff {
+           position: 38.25%, 21.25%;
+        }
+        #ID_nwtN_eb565093-c84c-4821-b8d9-49ea439fc4d8 {
+           position: 89.89%, 52.26%;
+        }
+        #ID_nwtN_3519aac2-7c86-4778-aecb-b4941c4d1731 {
+           position: 94.01%, 86.95%;
+        }
+        #ID_nwtN_4c749e29-3026-4a96-9a09-40e7b3d586b9 {
+           position: 43.50%, 50.82%;
+        }
+        #ID_nwtN_35443e34-0cd3-4d1c-a89e-b6c3fc2c12dd {
+           position: 77.14%, 6.71%;
+        }
+        #ID_nwtN_3eade646-65d7-4677-af31-f5a92dcc17eb {
+           position: 59.59%, 77.75%;
+        }
+        #ID_nwtN_1f290214-fb6f-4171-a504-0a491a95989e {
+           position: 8.10%, 62.32%;
+        }
+        #ID_b125f491-1103-6f2b-3b8c-a1fec53d530e {
+           position: 15.79%, 23.98%;
+        }
+        #ID_c1108b29-b63b-c2b7-c366-4b12afea5847 {
+           position: 42.85%, 33.79%;
+        }
+        #ID_427b025b-2668-6af3-4c8a-a9db304210d1 {
+           position: 89.03%, 14.21%;
+        }
+        #ID_9df82b6a-501a-a00c-feb0-24dc9d9d4fad {
+           position: 13.47%, 84.08%;
+        }
+        #ID_nwtN_6b948e85-6192-4111-9f4e-ae1582ea13a1 {
+           position: 39.59%, 70.87%;
+           size: 22.19%, 8.58%;
+        }
+        #ID_nwtN_a4ded8dd-a491-4aa6-b75d-e2dd1bab4d7a {
+           position: 43.73%, 88.92%;
+        }
+        #ID_3d9abc7a-3f8e-a0bc-4a1d-b48b132b989f {
+           position: 57.62%, 71.62%;
+        }
+        #ID_bb12cf6b-1d29-20c6-7d43-411414b24d68 {
+           position: 73.80%, 48.03%;
+        }
+        #ID_29006319-571e-314e-2c86-94cdc904aa94 {
+           position: 89.57%, 49.50%;
+        }
+        #ID_f2c09fde-2078-e111-f0e3-8c0f5323e1ac {
+           position: 85.55%, 6.74%;
+        }
+        #ID_nwtN_6a4e942c-9149-4799-9515-a61497d027fa {
+           position: 59.63%, 17.22%;
+        }
+        #ID_nwtN_3dc00363-fa5a-49c4-a5d0-26f3d9af84b1 {
+           position: 13.95%, 32.50%;
+        }
+        #ID_cc2112bb-6dff-6cfc-ca61-6cc58b92879b {
+           position: 51.42%, 28.19%;
+        }
+        #ID_f71a972b-5714-85ed-4690-be12fa339811 {
+           position: 79.49%, 15.60%;
+        }
+        #ID_a1c971da-c719-da27-3b4f-2421c1b37a1b {
+           position: 5.78%, 64.20%;
+        }
+        #ID_nwtN_abee836a-709f-4749-bf8a-705dbe831188 {
+           position: 71.14%, 73.30%;
+           size: 12.43%, 8.93%;
+        }
+        #ID_nwtN_f0b865c1-4b32-454e-8ab1-aac14f1dce05 {
+           position: 85.26%, 10.84%;
+        }
+        #ID_e9de3c38-27f9-914d-31e1-7667d1ab2165 {
+           position: 14.74%, 80.52%;
+        }
+        #ID_dd1712f7-ae6a-62ac-c6c0-49ac8acdb99c {
+           position: 33.47%, 21.19%;
+        }
+        #ID_b31a819f-5d6d-e2eb-7b7b-a815584dc334 {
+           position: 50.57%, 89.16%;
+        }
+        #ID_36af1fe9-166d-a968-c617-5566754320b7 {
+           position: 92.99%, 75.13%;
+        }
+        #ID_052d0cc9-54c1-c4db-9fe8-76b14a1df978 {
+           position: 79.14%, 79.83%;
+        }
+        #ID_9691c9f5-48dc-7572-b24a-da83c6ed9809 {
+           position: 76.80%, 94.48%;
+        }
+        #ID_nwtN_7fb15955-b629-436c-ac4c-38829107c585 {
+           position: 76.82%, 91.25%;
+        }
+        #ID_nwtN_ccd53523-e57d-45dc-a22c-5a03ad100f1d {
+           position: 60.91%, 67.02%;
+        }
+        #ID_nwtN_f625dafe-cd65-4be3-9d57-b1fa4bb76963 {
+           position: 47.25%, 73.16%;
+        }
+        #ID_nwtN_b3e3ed90-f2fd-4d92-bed9-294e2d776690 {
+           position: 54.75%, 67.82%;
+        }
+        #ID_nwtN_a69e83d3-4ba7-4a9e-8599-502a1de759a7 {
+           position: 85.96%, 65.45%;
+        }
+        #ID_nwtN_594ec6d8-2522-40c3-acf6-ea56b79f1918 {
+           position: 94.66%, 64.14%;
+        }
+        #ID_nwtN_f7f06e9f-0865-4b56-8ba9-737e48dc9299 {
+           position: 22.74%, 80.46%;
+        }
+        #ID_nwtN_aa2f64ae-96bb-43bf-9524-93277b6f0f13 {
+           position: 17.34%, 82.66%;
+        }
+        #ID_fbe37738-8376-97d0-c07f-a2329e01b0d3 {
+           position: 26.60%, 82.74%;
+        }
+        #ID_2ffaad30-c781-8424-82f1-b4a52c167a91 {
+           position: 26.51%, 85.74%;
+        }
+        #ID_nwtN_0bf21c99-5827-4136-8b9f-f0d34da45cb2 {
+           position: 13.95%, 88.16%;
+        }
+        #ID_c780c217-6420-b19e-4495-a034375119d3 {
+           position: 26.93%, 88.02%;
+        }
+        #ID_b308d488-df17-1559-8a8d-0c753a7068cd {
+           position: 17.26%, 85.66%;
+        }
+        #ID_nwtN_1c5f0126-139f-4224-8d03-c66bc43f74ef {
+           position: 20.58%, 88.10%;
+        }
+        #ID_nwtN_31321d7f-a58b-4622-936f-90713b4646b3 {
+           position: 17.10%, 88.13%;
+        }
+        #ID_nwtN_a75b36f0-8f7a-49dc-ac92-6fae65cea997 {
+           position: 17.12%, 90.11%;
+        }
+        #ID_6dd9aa98-aaaa-d753-9a91-4b3faa313906 {
+           position: 17.18%, 92.62%;
+        }
+        #ID_1ef86a8a-b465-e721-84d7-16a44d5ba1b4 {
+           position: 26.70%, 90.41%;
+        }
+        #ID_0558a8d8-66d2-0c00-0323-944806660804 {
+           position: 26.76%, 93.05%;
+        }
+    </style>
+</cell-diagram>
