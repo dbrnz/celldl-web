@@ -50,7 +50,6 @@ class CellDlFile
         // Start with an empty diagram
         this._editor.setValue(`<cell-diagram>
 </cell-diagram>`);
-        this._editor.clearSelection();
         this.refresh();
     }
 
@@ -85,9 +84,8 @@ class CellDlFile
     // Also want to be able to load remote file by URL
         for (let file of fileList) {
             this.upLoadedFileAsText(file).then(text => {
-                this._editor.setValue(text, 0);
-                this._editor.clearSelection();
                 this.previewSvg();
+                this._editor.setValue(text);
             });
             break;
         }

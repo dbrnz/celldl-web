@@ -479,7 +479,6 @@ export class CellDiagram {
                 this.textEditor.setValue(text.replace(cellDiagramEndRegExp,
                     `$1    ${positions.join("\n    ")}\n$2$3`));
             }
-            this.textEditor.clearSelection();
         }
     }
 

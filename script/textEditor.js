@@ -26,31 +26,37 @@ export class TextEditor
 {
     constructor(textEditorId)
     {
-        this.editor = ace.edit(textEditorId);
-        this.editor.setTheme("ace/theme/xcode");
-        this.editor.setOptions({
-            autoScrollEditorIntoView: true,
-            hScrollBarAlwaysVisible: true
-        });
-        this.editor.session.setMode("ace/mode/xml");
-    }
-
-    clearSelection()
-    //==============
-    {
-        this.editor.clearSelection();
+        this._text = '';
+        if (textEditorId) {
+            this._editor = ace.edit(textEditorId);
+            this._editor.setTheme("ace/theme/xcode");
+            this._editor.setOptions({
+                autoScrollEditorIntoView: true,
+                hScrollBarAlwaysVisible: true
+            });
+            this._editor.session.setMode("ace/mode/xml");
+        } else {
+            this._editor = null;
+        }
     }
 
     getValue()
     //========
     {
-        return this.editor.getValue();
+        if (this._editor !== null) {
+            this._text = this._editor.getValue();
+        }
+        return this._text;
     }
 
-    setValue(text, pos)
-    //=================
+    setValue(text)
+    //============
     {
-        this.editor.setValue(text, pos);
+        this._text = text;
+        if (this._editor !== null) {
+            this._editor.setValue(text, 0);
+            this._editor.clearSelection();
+        }
     }
 }
 

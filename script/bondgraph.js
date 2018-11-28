@@ -104,7 +104,6 @@ export class BondGraph extends DiagramElement
             this.diagram.textEditor.setValue(text.replace(cellDiagramEndRegExp,
                 `$1$2    <bond-graph>\n$2        ${element.toXml()}\n$2    </bond-graph>\n$2$3`));
         }
-        this.diagram.textEditor.clearSelection();
 
         // Add element to the bondgraph's container
         this.addElement(element);
