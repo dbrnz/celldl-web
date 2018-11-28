@@ -84,8 +84,8 @@ class CellDlFile
     // Also want to be able to load remote file by URL
         for (let file of fileList) {
             this.upLoadedFileAsText(file).then(text => {
-                this.previewSvg();
                 this._editor.setValue(text);
+                this.refresh();
             });
             break;
         }
