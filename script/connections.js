@@ -174,20 +174,22 @@ export class Connection
     return path;
     }
 
-    sourceTarget()
-    //============
+    get source()
+    //==========
     {
-        return {
-            source: this._toParent ? this._otherElement : this._parentElement,
-            target: this._toParent ? this._parentElement : this._otherElement
-        };
+        return this._toParent ? this._otherElement : this._parentElement;
+    }
+
+    get target()
+    //==========
+    {
+        return this._toParent ? this._parentElement : this._otherElement;
     }
 
     assignPath()
     //==========
     {
-        const nodes = this.sourceTarget();
-        this._path = this.lineAsPath(nodes.source, nodes.target);
+        this._path = this.lineAsPath(this.source, this.target);
         this._validPath = true;
     }
 
@@ -221,8 +223,7 @@ export class Connection
     generateSvg()
     //===========
     {
-        const nodes = this.sourceTarget();
-        const trimmedPath = Connection.trimPath(this._path, nodes.source, nodes.target).asPolyBezier();
+        const trimmedPath = Connection.trimPath(this._path, this.source, this.target).asPolyBezier();
         const svgNode = trimmedPath.svgNode();
         const strokeWidth = this._diagram.strokeWidthToPixels(
                                 ('stroke-width' in this._style) ? stylesheet.parseLength(this._style['stroke-width'])
