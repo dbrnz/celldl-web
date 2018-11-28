@@ -179,10 +179,10 @@ export class Curve extends GeoObject
 
 //==============================================================================
 
-// The equation of a projective line is `Ax + By + C = 0`
+// The equation of a line is `Ax + By + C = 0`
 // Slope = -A/B, y-intercept = -C/B
 
-export class ProjectiveLine extends Curve
+export class Line extends Curve
 {
     constructor(A, B, C)
     {
@@ -203,7 +203,7 @@ export class ProjectiveLine extends Curve
     //==========
     {
         if (!this.valid) {
-            throw new exception.ValueError("Invalid Projective Line");
+            throw new exception.ValueError("Invalid Line");
         }
     }
 
@@ -225,7 +225,7 @@ export class ProjectiveLine extends Curve
     //==================
     {
         this.checkValid();
-        return new ProjectiveLine(this.A, this.B, this.C + offset*Math.sqrt(this.normSquared));
+        return new Line(this.A, this.B, this.C + offset*Math.sqrt(this.normSquared));
     }
 
     distanceFrom(point)
@@ -239,7 +239,7 @@ export class ProjectiveLine extends Curve
     //===============
     {
         this.checkValid();
-        return new ProjectiveLine(this.A, this.B, this.C - (offset[0]*this.A + offset[1]*this.B));
+        return new Line(this.A, this.B, this.C - (offset[0]*this.A + offset[1]*this.B));
     }
 
     intersection(other)
@@ -267,7 +267,7 @@ export class ProjectiveLine extends Curve
 
 //==============================================================================
 
-export class LineSegment extends ProjectiveLine
+export class LineSegment extends Line
 {
     constructor(start, end)
     {
@@ -1127,7 +1127,7 @@ export function test()
                   ];
 
     const lxy = new LineSegment(new Point(200, 300), new Point(400, 100));
-    const pxy = new ProjectiveLine(lxy.A, lxy.B, lxy.C);
+    const pxy = new Line(lxy.A, lxy.B, lxy.C);
     lines.push(pxy);
     lines.push(pxy.translate([50, 50]));
 
