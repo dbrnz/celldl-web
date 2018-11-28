@@ -157,6 +157,8 @@ export class Cytoscape
         this._tapStartElement = null;
         this._tapStartPos = null;
         this._cy.on('tapstart tapend', 'node', this._tapEvent.bind(this));
+        this._moveStartId =  null;
+        this._moveStartPos = null;
 
         this._cyBottomLayer = this._cy.cyCanvas({ zIndex: -1 });
         this._cyCtx = this._cyBottomLayer.getCanvas().getContext("2d");
@@ -246,15 +248,23 @@ export class Cytoscape
     _tapEvent(evt)
     //============
     {
-        const pos = evt.position;
         if (evt.type === 'tapstart') {
-            console.log(`Start move ${evt.target.id()} at (${pos.x}, ${pos.y})`);
-            this._dragging = true;  // Or save node id and check this matches...
-        } else if (evt.type === 'tapdrag' && this._dragging) {
-            console.log(`Moving ${evt.target.id()} to (${pos.x}, ${pos.y})`);
+            this._moveStartId =  evt.target.id();
+            this._moveStartPos = evt.position;
         } else if (evt.type === 'tapend') {
-            console.log(`Moved ${evt.target.id()} to (${pos.x}, ${pos.y})`);
-            //this._dragging = false;
+            const endPos = evt.position;
+            if (this._moveStartId === evt.target.id()
+                && (endPos.x !== this._moveStartPos.x
+                 || endPos.y !== this._moveStartPos.y)) {
+                    const diagramElement = this._diagram.findElement(this._moveStartId);
+                    if (diagramElement !== null) {
+                        diagramElement.move([endPos.x - this._moveStartPos.x,
+                                             endPos.y - this._moveStartPos.y]);
+                        this._diagram.addManualPositionedElement(diagramElement);
+                    }
+                 }
+            this._moveStartId =  null;
+            this._moveStartPos = null;
         }
     }
 
