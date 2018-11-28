@@ -29,8 +29,8 @@ import * as geo from './script/geometry.js';
 /**
  * Default diagram size (in SVG pixels)
 **/
-export const DIAGRAM = { WIDTH:  500,
-                         HEIGHT: 500
+export const DIAGRAM = { WIDTH:  1000,
+                         HEIGHT: 1000
                        };
 
 // Default position and radius of an element

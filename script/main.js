@@ -49,12 +49,6 @@ class CellDlFile
 
         // Start with an empty diagram
         this._editor.setValue(`<cell-diagram>
-    <style>
-        cell-diagram {
-            width:  500;  /* SVG 'pixels' */
-            height: 500;  /* SVG 'pixels' */
-        }
-    </style>
 </cell-diagram>`);
         this._editor.clearSelection();
         this.previewSvg();
