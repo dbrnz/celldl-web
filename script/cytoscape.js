@@ -180,10 +180,18 @@ export class Cytoscape
         });
     }
 
-    asSvg()
-    //=====
+    asPng(options={})
+    //===============
     {
-        return this._cy.svg({scale: 1, full: true});
+        const opts = Object.assign({scale: 1, full: true}, options);
+        return this._cy.png(opts);
+    }
+
+    asSvg(options={})
+    //===============
+    {
+        const opts = Object.assign({scale: 1, full: true}, options);
+        return this._cy.svg(opts);
     }
 
     /**

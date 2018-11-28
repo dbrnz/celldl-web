@@ -194,14 +194,25 @@ class CellDlFile
             });
     }
 
+    exportPng()
+    //=========
+    {
+        if (this._cytoscape) {
+            const blob = this._cytoscape.asPng({output: 'blob'});
+            const pngFileName = `${this._loadedFile.split('.')[0]}.png`
+            saveAs(blob, pngFileName);
+        }
+    }
+
     exportSvg()
     //=========
     {
-        const svg = this._cytoscape.asSvg();
-
-        const blob = new Blob([svg], { type: "image/svg+xml" });
-        const svgFileName = `${this._loadedFile.split('.')[0]}.svg`
-        saveAs(blob, svgFileName);
+        if (this._cytoscape) {
+            const svg = this._cytoscape.asSvg();
+            const blob = new Blob([svg], { type: "image/svg+xml" });
+            const svgFileName = `${this._loadedFile.split('.')[0]}.svg`
+            saveAs(blob, svgFileName);
+        }
     }
 
     connectionMatrix(connectionMatrixId)
