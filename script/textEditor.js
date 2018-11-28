@@ -24,9 +24,9 @@ limitations under the License.
 
 export class TextEditor
 {
-    constructor()
+    constructor(textEditorId)
     {
-        this.editor = ace.edit("celldl-editor");
+        this.editor = ace.edit(textEditorId);
         this.editor.setTheme("ace/theme/xcode");
         this.editor.setOptions({
             autoScrollEditorIntoView: true,

@@ -35,9 +35,9 @@ import {saveAs} from '../thirdparty/FileSaver.js';
 
 class CellDlFile
 {
-    constructor(htmlContainerId, paletteId)
+    constructor(textEditorId, htmlContainerId, paletteId)
     {
-        this._editor = new TextEditor();
+        this._editor = new TextEditor(textEditorId);
         // Check editor.isClean() before loading a new file or closing window
         // and then editor.markClean()
 
@@ -219,9 +219,9 @@ class CellDlFile
 
 //==============================================================================
 
-export function main(htmlContainerId, paletteId)
+export function main(textEditorId, htmlContainerId, paletteId)
 {
-    const cellDlFile = new CellDlFile(htmlContainerId, paletteId);
+    const cellDlFile = new CellDlFile(textEditorId, htmlContainerId, paletteId);
 
     // Expose editor's functions to HTML elements
 
