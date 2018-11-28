@@ -219,6 +219,8 @@ export class Cytoscape
 
 //console.log(JSON.stringify(cyElements, null, 4));
         this._cy.add(cyElements);
+
+        this._cy.fit();
     }
 
    /**
