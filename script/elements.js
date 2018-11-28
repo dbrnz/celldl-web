@@ -506,12 +506,12 @@ export class DiagramElement {
         }
         if (this.stroke === 'none') {
             element.data.stroke = 'white';
-            element.data['stroke-opacity'] = 0;
-            element.data['stroke-width'] = 0;
+            element.data['strokeOpacity'] = 0;
+            element.data['strokeWidth'] = 0;
         } else if (this.stroke) {
             element.data.stroke = this.stroke;
-            element.data['stroke-opacity'] = 1;
-            element.data['stroke-width'] = strokeWidth;
+            element.data['strokeOpacity'] = 1;
+            element.data['strokeWidth'] = strokeWidth;
         }
 
         if (this.container) {
