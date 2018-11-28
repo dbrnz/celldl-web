@@ -48,17 +48,9 @@ export class SvgDocument
         this._height = parseFloat(dims[3]);
     }
 
-    /**
-     *  @return [float, float]: Centroid as percentage of image width/height
-    **/
-    centroid(nodeId)
-    //==============
+    _centroid(node)
+    //=============
     {
-        let node = this._document.getElementById(nodeId);
-        if (!node) {
-            return undefined;
-        }
-
         //const transform = this._getTransform(node);
 
         if (node.nodeName === 'use') {
@@ -74,6 +66,24 @@ export class SvgDocument
                 return undefined;
             }
         }
+
+        if (node.nodeName === 'g') {
+            // look in children for first path/circle/ellipse/rect/polygon
+            // or use and g if only one child
+
+
+            if (node.children.length === 0) {
+                return this._centroid(node.children[0]);
+            } else {
+                // what about averaging position if multiple children ??
+                for (let child of node.children) {
+                    if (child.nodeName === 'path') {
+                        return this._centroid(child);
+                    }
+                }
+            }
+        }
+
         //const transform = node.getCTM(); // this is identity
                                            // can skew/translate/multiply
 
@@ -88,6 +98,17 @@ export class SvgDocument
         }
 
         return undefined;
+    }
+
+    /**
+     *  @return [float, float]: Centroid as percentage of image width/height
+    **/
+    centroid(nodeId)
+    //==============
+    {
+        let node = this._document.getElementById(nodeId);
+
+        return node ? this._centroid(node) : undefined;
     }
 }
 
