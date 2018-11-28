@@ -90,7 +90,9 @@ class CellDlFile
     //============
     {
     // Also want to be able to load remote file by URL
-        for (let file of fileList) {
+        // MS Edge doesn't support `let file of fileList`
+        for (let i = 0; i < fileList.length; i++) {
+            const file = fileList[i];
             this.upLoadedFileAsText(file).then(text => {
                 this._editor.setValue(text);
                 this.refresh();
