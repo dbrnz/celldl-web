@@ -22,6 +22,8 @@ limitations under the License.
 
 //==============================================================================
 
+import * as config from '../config.js';
+
 import {CellDiagram} from './cellDiagram.js';
 import {Cytoscape} from './cytoscape.js';
 import {DiagramEditor} from './diagramEditor.js';
