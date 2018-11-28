@@ -105,6 +105,7 @@ export class Background extends DiagramElement
                             img.onerror = (evt) => {
                                 reject(new Error("Error loading background image..."));
                             };
+                            // TODO: See https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem
                             img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(text)));
                         });
                     });

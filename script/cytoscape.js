@@ -299,7 +299,9 @@ export class Cytoscape
         }
         svg.push(elementSvg);
         svg.push('</svg>')
-        return `data:image/svg+xml;base64,${btoa(svg.join('\n'))}`;
+        // TODO: See https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding#The_Unicode_Problem
+        // for a better way to do this.
+        return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg.join('\n'))) )}`;
     }
 }
 
