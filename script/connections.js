@@ -214,10 +214,15 @@ export class Connection
     cyElement()
     //=========
     {
-        const nodes = this.sourceTarget();
-        return {
-            data: { source: nodes.source.id, target: nodes.target.id, colour: this.lineColour }
+        const edgeData = {
+            data: {
+                id: this.id,
+                source: this.source.id,
+                target: this.target.id,
+                colour: this.lineColour
+            }
         };
+        return edgeData;
     }
 
     generateSvg()
