@@ -164,11 +164,11 @@ export class Cytoscape
         this._cyCtx = this._cyBottomLayer.getCanvas().getContext("2d");
         this._cyBackgroundImage = null;
         this._cy.on("render cyCanvas.resize", this._renderBottomLayer.bind(this));
-
+/*
         this._cy.edgehandles({
             handlePosition: node => 'middle middle'
         });
-
+*/
         this._cy.expandCollapse({
             layoutBy: {
                 name: 'preset',
