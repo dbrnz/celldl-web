@@ -45,7 +45,7 @@ export class Length {
     toString()
     //========
     {
-        return `${this.length}${this.units}`;
+        return `${this.length.toPrecision(4)}${this.units}`;
     }
 }
 
