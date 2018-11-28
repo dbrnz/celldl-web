@@ -384,11 +384,15 @@ export class DiagramElement {
             //
             // NB. This set is not necessarily our sub-elements
 
-            this.layout(true);
 
-            this.invalidateConnections();
-            if (drawConnections) {
-                this.redrawConnections();
+            if (config.CYTOSCAPE) {
+                this.layout();
+            } else {
+                this.layout(true); // true to update SVG
+                this.invalidateConnections();
+                if (drawConnections) {
+                    this.redrawConnections();
+                }
             }
         }
         return offset;

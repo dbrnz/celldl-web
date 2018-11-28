@@ -43,7 +43,13 @@ class CellDlFile
 
         this._loadedFile = '';
 
-        this._cytoscape = new Cytoscape(htmlContainerId);
+        if (config.CYTOSCAPE) {
+            this._cytoscape = new Cytoscape(htmlContainerId);
+            this._svgContainerNode = null;
+        } else {
+            this._cytoscape = null;
+            this._svgContainerNode = document.getElementById(htmlContainerId);
+        }
 
         this._palette = new Palette(document.getElementById(paletteId));
 
@@ -56,7 +62,9 @@ class CellDlFile
     containerResize()
     //===============
     {
-        this._cytoscape.resize();
+        if (this._cytoscape) {
+            this._cytoscape.resize();
+        }
     }
 
     upLoadedFileAsText(file)
@@ -108,7 +116,13 @@ class CellDlFile
                 reject("No CellDL to display");
             }
 
-            this._cytoscape.reset();
+            if (this._cytoscape) {
+                this._cytoscape.reset();
+            } else {
+                for (let child of this._svgContainerNode.children) {
+                    child.remove();
+                }
+            }
 
             const domParser = new DOMParser();
             const xmlDocument = domParser.parseFromString(cellDlText, "application/xml");
@@ -121,7 +135,32 @@ class CellDlFile
                     try {
                         cellDiagram.layout();  // Pass width/height to use as defaults...
 
-                        this._cytoscape.display(cellDiagram);
+                        if (this._cytoscape) {
+                            this._cytoscape.display(cellDiagram);
+                        } else {
+                            const svgDiagram = cellDiagram.generateSvg();
+
+                            // Show the SVG diagram
+                            // Note: If we use `appendChild` then `url()` links in the SVG
+                            //       document are not resolved
+                            this._svgContainerNode.insertAdjacentHTML('afterbegin', svgDiagram.outerHTML);
+
+                            // Reset busy wheel
+                            document.body.style.cursor = 'default';
+
+                            const svgNode = this._svgContainerNode.children[0];
+
+                            const diagramEditor = new DiagramEditor(cellDiagram, this._palette);
+
+                            const grid = diagramEditor.gridSvg();
+                            if (grid !== null) {
+                                svgNode.insertAdjacentHTML('beforeend', grid.outerHTML);
+                             }
+
+                            diagramEditor.svgLoaded(svgNode);
+
+                            resolve(cellDiagram);
+                        }
 
                         // Reset busy wheel
                         document.body.style.cursor = 'default';

@@ -75,3 +75,9 @@ export const GRID = { X_SPACING: new geo.Length(1, 'vw'),
                     };
 
 //==============================================================================
+
+// Use Cytoscape.js for graoh drawing and manipulation
+
+export const CYTOSCAPE = true;
+
+//==============================================================================
