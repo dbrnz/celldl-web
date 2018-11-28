@@ -55,8 +55,7 @@ export class Connection
         this._styleElementId = styleElementId;
 
         this._line = null;
-        this._path = null;
-        this._validPath = false;
+        this.invalidatePath();
         this._order = 1;
         this._adjacent = 1;
 
@@ -202,6 +201,7 @@ export class Connection
     invalidatePath()
     //==============
     {
+        this._path = null;
         this._validPath = false;
     }
 
