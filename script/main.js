@@ -51,7 +51,7 @@ class CellDlFile
         this._editor.setValue(`<cell-diagram>
 </cell-diagram>`);
         this._editor.clearSelection();
-        this.previewSvg();
+        this.refresh();
     }
 
     containerResize()
@@ -142,8 +142,8 @@ class CellDlFile
         });
     }
 
-    previewSvg()
-    //==========
+    refresh()
+    //=======
     {
         this.displayDiagram().then(
             (diagram) => { this._diagram = diagram; },
@@ -221,8 +221,8 @@ export function main(textEditorId, htmlContainerId, paletteId)
 
     window.loadCellDl = (fileList) => cellDlFile.load(fileList);
     window.saveCellDl = () => cellDlFile.save();
-    window.previewSvg = () => cellDlFile.previewSvg();
     window.exportSvg = () => cellDlFile.exportSvg();
+    window.refresh = () => cellDlFile.refresh();
     window.connectionMatrix = () => cellDlFile.connectionMatrix();
     window.containerResize = () => cellDlFile.containerResize();
 }
