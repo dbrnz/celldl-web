@@ -88,10 +88,9 @@ class CellDlFile
         });
     }
 
-    load(fileList)
-    //============
+    loadFile(fileList)
+    //================
     {
-    // Also want to be able to load remote file by URL
         // MS Edge doesn't support `let file of fileList`
         for (let i = 0; i < fileList.length; i++) {
             const file = fileList[i];
@@ -101,6 +100,22 @@ class CellDlFile
             });
             break;
         }
+    }
+
+    async loadUrl(url)
+    //================
+    {
+        return fetch(url)
+                   .then(response => {
+                        if (response.ok) {
+                            return response.text();
+                        }
+                        throw Error(`Cannot load ${url}`);
+                    })
+                    .then(text => {
+                        this._editor.setValue(text);
+                    })
+                    .catch(error => alert(error));
     }
 
     save()
@@ -271,7 +286,17 @@ export function main(textEditorId, htmlContainerId, paletteId)
 
     // Expose editor's functions to HTML elements
 
-    window.loadCellDl = (fileList) => cellDlFile.load(fileList);
+
+    const url = new URLSearchParams(window.location.search).get('url');
+    if (url === null) {
+        window.loadCellDl = (fileList) => cellDlFile.loadFile(fileList);
+    } else {
+        // Disable Load CellDL button
+        $('#loadCellDlButton').prop('disabled', true);
+        cellDlFile.loadUrl(url).then(() => {
+            cellDlFile.refresh();
+        });
+    }
     window.saveCellDl = () => cellDlFile.save();
     window.exportSvg = () => cellDlFile.exportSvg();
     window.refresh = () => cellDlFile.refresh();
