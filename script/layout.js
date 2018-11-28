@@ -172,7 +172,8 @@ export class Position
     moveByOffset(offset)
     //==================
     {
-        this.setCoordinates(this._coordinates.translate(offset));
+        const newCoords = this._coordinates.translate(offset); // Returns a new Point
+        this.setCoordinates(newCoords);
     }
 
     coordinatesToString()
