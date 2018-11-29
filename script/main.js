@@ -31,7 +31,7 @@ import {Palette} from './palette.js';
 import {StyleSheet} from './stylesheet.js';
 import {TextEditor} from './textEditor.js';
 
-import {saveAs} from '../thirdparty/FileSaver.js';
+const fileSaver = require('file-saver');
 
 //==============================================================================
 
@@ -123,7 +123,7 @@ class CellDlFile
     {
         const text = this._editor.getValue();
         const blob = new Blob([text], { type: "application/xml;charset=utf-8" });
-        saveAs(blob, this._loadedFile);
+        fileSaver.saveAs(blob, this._loadedFile);
     }
 
     displayDiagram()
@@ -217,7 +217,7 @@ class CellDlFile
         if (this._cytoscape) {
             const blob = this._cytoscape.asPng({output: 'blob'});
             const pngFileName = `${this._loadedFile.split('.')[0]}.png`
-            saveAs(blob, pngFileName);
+            fileSaver.saveAs(blob, pngFileName);
         }
     }
 
@@ -228,7 +228,7 @@ class CellDlFile
             const svg = this._cytoscape.asSvg();
             const blob = new Blob([svg], { type: "image/svg+xml" });
             const svgFileName = `${this._loadedFile.split('.')[0]}.svg`
-            saveAs(blob, svgFileName);
+            fileSaver.saveAs(blob, svgFileName);
         }
     }
 
@@ -280,12 +280,11 @@ class CellDlFile
 
 //==============================================================================
 
-export function main(textEditorId, htmlContainerId, paletteId)
+function main(textEditorId, htmlContainerId, paletteId)
 {
     const cellDlFile = new CellDlFile(textEditorId, htmlContainerId, paletteId);
 
     // Expose editor's functions to HTML elements
-
 
     const url = new URLSearchParams(window.location.search).get('url');
     if (url === null) {
@@ -303,6 +302,12 @@ export function main(textEditorId, htmlContainerId, paletteId)
     window.connectionMatrix = () => cellDlFile.connectionMatrix();
     window.containerResize = () => cellDlFile.containerResize();
 }
+
+//==============================================================================
+
+// Expose our main() to HTML
+
+window.main = main;
 
 //==============================================================================
 

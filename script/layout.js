@@ -30,6 +30,8 @@ import * as utils from './utils.js';
 
 import {List} from './utils.js';
 
+import * as jsnx from 'jsnetworkx';
+
 //==============================================================================
 
 export const HORIZONTAL_RELATIONS = new List(['left', 'right']);

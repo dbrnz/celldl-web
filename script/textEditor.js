@@ -22,6 +22,12 @@ limitations under the License.
 
 //==============================================================================
 
+import ace from 'ace-builds/src-noconflict/ace';
+import 'ace-builds/src-min-noconflict/theme-xcode';
+import 'ace-builds/src-min-noconflict/mode-xml';
+
+//==============================================================================
+
 export class TextEditor
 {
     constructor(textEditorId)

@@ -26,6 +26,22 @@ import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
 
+// Load and register Cytoscape.js and its extensions and dependencies
+
+import cytoscape from 'cytoscape';
+
+import cyCanvas from 'cytoscape-canvas';
+cyCanvas(cytoscape);
+
+const jquery = require('jquery');
+const expandCollapse = require('cytoscape-expand-collapse');
+expandCollapse(cytoscape, jquery);
+
+const edgehandles = require('cytoscape-edgehandles');
+cytoscape.use(edgehandles);
+
+//==============================================================================
+
 export class Cytoscape
 {
     constructor(containerId)

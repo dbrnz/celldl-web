@@ -1,0 +1,44 @@
+{
+  "name": "CellDlEditor",
+  "version": "0.2.0",
+  "description": "An editor for the Cell Diagramming Language (CellDL)",
+  "browser": "dist/main.js",
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dbrnz/celldl-web.git"
+  },
+  "author": "David Brooks",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dbrnz/celldl-web/issues"
+  },
+  "homepage": "https://github.com/dbrnz/celldl-web#readme",
+  "browserslist": "> 0.25%, not dead",
+  "devDependencies": {
+    "@babel/cli": "^7.1.5",
+    "@babel/core": "^7.1.6",
+    "@babel/preset-env": "^7.1.6",
+    "babel-loader": "^8.0.4",
+    "webpack": "^4.26.1",
+    "webpack-cli": "^3.1.2"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.0.0",
+    "ace-builds": "^1.4.2",
+    "bezier-js": "^2.3.1",
+    "cytoscape": "^3.2.21",
+    "cytoscape-canvas": "^3.0.1",
+    "cytoscape-edgehandles": "^3.4.2",
+    "cytoscape-expand-collapse": "^3.1.2",
+    "cytoscape-svg": "^0.1.1",
+    "file-saver": "^2.0.0",
+    "jquery": "^3.3.1",
+    "jsnetworkx": "^0.3.4",
+    "kd-tree-javascript": "github:ubilabs/kd-tree-javascript",
+    "lodash": "^4.17.11",
+    "mathjs": "^5.2.3"
+  }
+}

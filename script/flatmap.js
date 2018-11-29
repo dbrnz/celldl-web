@@ -43,6 +43,8 @@ import {DiagramElement, RectangularMixin} from './elements.js';
 import {Connection} from './connections.js';
 import {SVG_NS} from './svgElements.js';
 
+import * as jsnx from 'jsnetworkx';
+
 //==============================================================================
 
 export class FlatMap extends DiagramElement
