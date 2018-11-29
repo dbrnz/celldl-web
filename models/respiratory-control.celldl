@@ -281,8 +281,8 @@ cell-diagram {
             stroke-width: 4px;
         }
         .compartment {
-            color: #CCC;
-            opacity: 0.2;
+            color: #fff;
+            opacity: 0.1;
             stroke: #111;
             stroke-width: 2px;
             size: 25v, 25v;
@@ -291,13 +291,13 @@ cell-diagram {
         }
         .compartment > .compartment {
             color: #DDD;
-            opacity: 0.7;
+            opacity: 0.1;
             stroke: #222;
         }
 
         .compartment > .compartment > .compartment {
             color: #EEE;
-            opacity: 0.7;
+            opacity: 0.1;
             stroke: #333;
         }
 
