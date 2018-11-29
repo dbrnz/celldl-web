@@ -40,6 +40,9 @@ expandCollapse(cytoscape, jquery);
 const edgehandles = require('cytoscape-edgehandles');
 cytoscape.use(edgehandles);
 
+import svg from 'cytoscape-svg';
+cytoscape.use(svg);
+
 //==============================================================================
 
 export class Cytoscape

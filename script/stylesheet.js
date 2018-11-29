@@ -32,7 +32,7 @@ import {Length} from './geometry.js';
 import * as cssparser from '../thirdparty/cssparser.js';
 
 // Specifity from https://github.com/keeganstreet/specificity
-import * as SPECIFICITY from '../thirdparty/specificity.js';
+import * as SPECIFICITY from 'specificity';
 
 //==============================================================================
 
