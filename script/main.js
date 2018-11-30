@@ -224,8 +224,15 @@ class CellDlFile
     exportSvg()
     //=========
     {
+        let svg = null;
         if (this._cytoscape) {
-            const svg = this._cytoscape.asSvg();
+            svg = this._cytoscape.asSvg();
+        } else {
+            // Render the diagram without selected elements and grid
+            const svgDiagram = this._diagram.generateSvg();
+            svg = svgDiagram.outerHTML;
+        }
+        if (svg !== null) {
             const blob = new Blob([svg], { type: "image/svg+xml" });
             const svgFileName = `${this._loadedFile.split('.')[0]}.svg`
             saveAs(blob, svgFileName);
