@@ -108,8 +108,35 @@ TURTLE_PREFIXES = ['@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 
 # -----------------------------------------------------------------------------
 
-def escape_id(id):
-    return 'ID_{}'.format(id) if id is not None else None
+# -----------------------------------------------------------------------------
+
+class Id(object):
+    _ids = []
+
+    @staticmethod
+    def new(name, guid):
+        if name:
+            clean_name = (name.replace(' (+)', '_plus')
+                              .replace('Pump-', 'Pump-minus')
+                              .replace('Pump+', 'Pump-plus')
+                              .replace(' ', '_')
+                              )
+            if clean_name[0].isalpha():
+                id = clean_name
+            else:
+                id = 'ID_{}'.format(clean_name)
+        elif guid is not None:
+            id = 'ID_{}'.format(guid)
+        else:
+            id = 'ID'
+        n = 1
+        unique = id
+        while unique in Id._ids:
+            unique = '{}-{}'.format(id, n)
+            n += 1
+        Id._ids.append(unique)
+        return unique
+
 # -----------------------------------------------------------------------------
 
 def annotations(description_xml, property):
@@ -124,8 +151,6 @@ def annotations(description_xml, property):
     return values
 
 
-def unescape_id(id):
-    return id[3:] if id is not None else None
 
 # -----------------------------------------------------------------------------
 
@@ -194,15 +219,15 @@ class Group(object):
 # -----------------------------------------------------------------------------
 
 class Arc(object):
-    def __init__(self, id, cls, source, target):
-        self._id = escape_id(id)
+    def __init__(self, guid, cls, source, target):
+        self._guid = guid
         self._classes = [cls] if cls else []
-        self._source = escape_id(source).rsplit('.')[0]  ## Port number...
-        self._target = escape_id(target).rsplit('.')[0]
+        self._source = source.rsplit('.')[0]  ## Port number...
+        self._target = target.rsplit('.')[0]
 
     @property
-    def id(self):
-        return self._id
+    def guid(self):
+        return self._guid
 
     @property
     def primary_class(self):
@@ -224,14 +249,15 @@ class Arc(object):
 # -----------------------------------------------------------------------------
 
 class Glyph(object):
-    def __init__(self, id, cls, label, bbox, compartment):
-        self._id = id         # Already cleaned...
+    def __init__(self, guid, cls, label, bbox, compartment):
+        self._guid = guid
         self._classes = [cls] if cls else []
         self._label = label
+        self._id = Id.new(label, guid)
         self._bbox = bbox
         self._position = None
         self._size = None
-        self._compartment = escape_id(compartment)
+        self._compartment = compartment
         self._parent = None
         self._children = []
         self._index = None
@@ -250,7 +276,7 @@ class Glyph(object):
 
     @property
     def uri(self):
-        return '<#{}>'.format(unescape_id(self._id))
+        return '<#{}>'.format(self._guid)
 
     @property
     def label(self):
@@ -324,9 +350,9 @@ class Glyph(object):
     def get_annotations(self, glyph_xml):
         for annotation in glyph_xml.iter('{{{}}}annotation'.format(NAMESPACES['sbgn'])):
             for description in annotation.iter('{{{}}}Description'.format(NAMESPACES['rdf'])):
-                id = escape_id(description.get('{{{}}}about'.format(NAMESPACES['rdf']))[1:])
-                if id != self.id:
-                    raise ValueError("Annotation is not about us ({})".format(self.id))
+                guid = description.get('{{{}}}about'.format(NAMESPACES['rdf']))[1:]
+                if guid != self._guid:
+                    raise ValueError("Annotation is not about us ({})".format(self._guid))
                 self._derived_from = annotations(description, 'bqmodel:isDerivedFrom')
                 types = annotations(description, 'bqbiol:is')
                 if types:
@@ -396,20 +422,20 @@ class SBGN_ML(object):
         self._glyphs = {}
         self._root_glyphs = []
         for glyph in self._xml.findall('sbgn:map/sbgn:glyph', NAMESPACES):
-            id = escape_id(glyph.get('id'))
-            if id:
+            guid = glyph.get('id')
+            if guid:
                 label = glyph.find('sbgn:label', NAMESPACES)
                 bbox = glyph.find('sbgn:bbox', NAMESPACES)
 
                 #ports = glyph.findall('sgbn:port', NAMESPACES)
                 #<port id="nwtN_b458504e-cb3e-4699-8689-c4c427fe48d2.1" />
 
-                g = Glyph(id, glyph.get('class'),
+                g = Glyph(guid, glyph.get('class'),
                           label.get('text', '') if label is not None else '',
                           BBox(float(bbox.get('x')), float(bbox.get('y')),
                                float(bbox.get('w')), float(bbox.get('h'))) if bbox is not None else None,
                           glyph.get('compartmentRef', None))
-                self._glyphs[id] = g
+                self._glyphs[guid] = g
                 if g.compartment is None:
                     self._root_glyphs.append(g)
                 g.get_annotations(glyph)
