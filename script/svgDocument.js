@@ -39,13 +39,17 @@ export class SvgDocument
         }
 
         // get viewport/width/height/x/y
-        const width = svgNode.getAttribute('width');
-        const height = svgNode.getAttribute('height');
         const viewbox = svgNode.getAttribute('viewBox');
-
-        const dims = viewbox.split(' ').filter(e => e);
-        this._width = parseFloat(dims[2]);
-        this._height = parseFloat(dims[3]);
+        if (viewbox) {
+            const dims = viewbox.split(' ').filter(e => e);
+            this._width = parseFloat(dims[2]);
+            this._height = parseFloat(dims[3]);
+        } else {
+            const width = svgNode.getAttribute('width');
+            const height = svgNode.getAttribute('height');
+            this._width = parseFloat(width);
+            this._height = parseFloat(height);
+        }
     }
 
     _centroid(node)
