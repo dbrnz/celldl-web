@@ -548,16 +548,11 @@ class SBGN_ML(object):
                                                                                            [t.id for t in process.targets]))
             elif len(process.targets) == 0:
                 process.add_warning("Process ({}) has no targets".format(process.id))
-            elif len(process.sources) == 1:
-                for target in process.targets:
-                    process.sources[0].add_target(target)
-            elif len(process.targets) == 1:
-                for source in process.sources:
-                    source.add_target(process.targets[0])
             else:
-                process.add_warning("Process ({}) has sources {} and targets {}".format(process.id,
-                                                                                       [s.id for s in process.sources],
-                                                                                       [t.id for t in process.targets]))
+                # All sources connect to all targets
+                for source in process.sources:
+                    for target in process.targets:
+                        self._connections.append(Connection(source, target, process.type))
 
     def to_celldl(self, class_filter=None):
         celldl = ['<cell-diagram>']
