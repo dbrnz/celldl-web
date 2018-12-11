@@ -293,7 +293,6 @@ export function main(textEditorId, htmlContainerId, paletteId)
 
     // Expose editor's functions to HTML elements
 
-
     const url = new URLSearchParams(window.location.search).get('url');
     if (url === null) {
         window.loadCellDl = (fileList) => cellDlFile.loadFile(fileList);
