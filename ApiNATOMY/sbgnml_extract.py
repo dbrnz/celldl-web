@@ -26,10 +26,13 @@ import pathlib
 
 # -----------------------------------------------------------------------------
 
-NAMESPACES = { 'bqmodel': 'http://biomodels.net/model-qualifiers/',
+NAMESPACES = { 'bqbiol': 'http://biomodels.net/biology-qualifiers/',
+               'bqmodel': 'http://biomodels.net/model-qualifiers/',
                'celldl': 'http://www.cellml.org/celldl/1.0#',
+               'obo': 'http://purl.obolibrary.org/obo/',
                'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
                'sbgn': 'http://sbgn.org/libsbgn/0.2',
+               'sio': 'http://semanticscience.org/resource/',
               }
 
 # -----------------------------------------------------------------------------
@@ -95,7 +98,9 @@ DEFAULT_STYLE_RULES = """
 
 TURTLE_PREFIXES = ['@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .',
                    '@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .',
+                   '@prefix bqbiol: <http://biomodels.net/biology-qualifiers/> .',
                    '@prefix bqmodel: <http://biomodels.net/model-qualifiers/> .',
+                   '@prefix obo: <http://purl.obolibrary.org/obo/> .',
                    '@prefix cio: <http://purl.obolibrary.org/cio/> .',
                    '@prefix ro: <http://purl.obolibrary.org/obo/> .',
                    '@prefix fm: <http://example.org/flatmap-ontology/> .',
@@ -105,6 +110,19 @@ TURTLE_PREFIXES = ['@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 
 def escape_id(id):
     return 'ID_{}'.format(id) if id is not None else None
+# -----------------------------------------------------------------------------
+
+def annotations(description_xml, property):
+    values = []
+    properties = description_xml.find(property, NAMESPACES)
+    if properties is not None:
+        bag = properties.find('rdf:Bag', NAMESPACES)
+        if bag is not None:
+            for item in bag.findall('rdf:li', NAMESPACES):
+                resource = item.get('{{{}}}resource'.format(NAMESPACES['rdf']))
+                values.append(resource)
+    return values
+
 
 def unescape_id(id):
     return id[3:] if id is not None else None
@@ -220,6 +238,7 @@ class Glyph(object):
         self._sources = []
         self._targets = []
         self._derived_from = []
+        self._type = None
 
     @property
     def id(self):
@@ -273,6 +292,10 @@ class Glyph(object):
     def targets(self):
         return self._targets
 
+    @property
+    def type(self):
+        return self._type
+
     def add_source(self, source):
         self._sources.append(source)
 
@@ -300,17 +323,14 @@ class Glyph(object):
 
     def get_annotations(self, glyph_xml):
         for annotation in glyph_xml.iter('{{{}}}annotation'.format(NAMESPACES['sbgn'])):
-            for desc in annotation.iter('{{{}}}Description'.format(NAMESPACES['rdf'])):
-                id = escape_id(desc.get('{{{}}}about'.format(NAMESPACES['rdf']))[1:])
+            for description in annotation.iter('{{{}}}Description'.format(NAMESPACES['rdf'])):
+                id = escape_id(description.get('{{{}}}about'.format(NAMESPACES['rdf']))[1:])
                 if id != self.id:
                     raise ValueError("Annotation is not about us ({})".format(self.id))
-                derivation = desc.find('bqmodel:isDerivedFrom', NAMESPACES)
-                if derivation is not None:
-                    bag = derivation.find('rdf:Bag', NAMESPACES)
-                    if bag is not None:
-                        for item in bag.findall('rdf:li', NAMESPACES):
-                            resource = item.get('{{{}}}resource'.format(NAMESPACES['rdf']))
-                            self._derived_from.append(resource)
+                self._derived_from = annotations(description, 'bqmodel:isDerivedFrom')
+                types = annotations(description, 'bqbiol:is')
+                if types:
+                    self._type = types[0]
 
     def _attributes(self):
         attribs = ['id="{}"'.format(self._id)]
