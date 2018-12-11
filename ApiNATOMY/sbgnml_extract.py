@@ -58,21 +58,33 @@ DEFAULT_SIZES = {
 DEFAULT_STYLE_RULES = """
         connection {{
             stroke-opacity: 0.7;
+            stroke-width: 4px;
         }}
         .compartment {{
-            color: none;
-            stroke: red;
+            color: #CCC;
+            stroke: #111;
             stroke-width: 2px;
             size: {}v, {}v;
             text-position: 50%, 90%;
             shape: rounded-rectangle;
         }}
+        .compartment > .compartment {{
+            color: #DDD;
+            stroke: #222;
+        }}
+
+        .compartment > .compartment > .compartment {{
+            color: #EEE;
+            stroke: #333;
+        }}
+
         .outermost {{
             size: 95v, 95v;
             stroke: #c0c0c0;
         }}
         .macromolecule {{
             color: #c0c0FF;
+            opacity: 0.7;
             size: {}v, {}v;
             shape: rounded-rectangle;
         }}
