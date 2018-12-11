@@ -341,6 +341,10 @@ class Glyph(object):
     def type(self):
         return self._type
 
+    def is_a(self, cls):
+        primary_class = self.primary_class
+        return (primary_class in cls) if isinstance(cls, list) else (primary_class == cls)
+
     def add_source(self, source):
         self._sources.append(source)
 
@@ -390,14 +394,15 @@ class Glyph(object):
             attribs.append('label="_"')
         return ' '.join(attribs)
 
-    def to_celldl(self, level=0):
+    def to_celldl(self, level=0, class_filter=None):
         indent = INDENT*level*' '
         if len(self._children) == 0:
             return '{}<component {}/>'.format(indent, self._attributes())
         else:
             celldl = ['{}<component {}>'.format(indent, self._attributes())]
             for c in self._children:
-                celldl.append(c.to_celldl(level+1))
+                if class_filter is None or c.primary_class in class_filter:
+                    celldl.append(c.to_celldl(level+1, class_filter))
             celldl.append('{}</component>'.format(indent))
             return '\n'.join(celldl)
 
@@ -421,7 +426,7 @@ class Glyph(object):
         indent1 = (INDENT+1)*level*' '
         style = ['{}#{} {{'.format(indent, self._id)]
         style.append('{} position: {:.2f}%, {:.2f}%;'.format(indent1, *self.position))
-        if self.primary_class == 'compartment':
+        if self.is_a('compartment'):
             style.append('{} size: {:.2f}%, {:.2f}%;'.format(indent1, *self.size))
         style.append('{}}}'.format(indent))
         return '\n'.join(style)
@@ -497,7 +502,7 @@ class SBGN_ML(object):
         return scaler
 
     def glyphs_of_class(self, cls):
-        return [g for g in self._glyphs.values() if cls == g.primary_class]
+        return [g for g in self._glyphs.values() if g.is_a(cls)]
 
     @property
     def compartments(self):
@@ -516,13 +521,13 @@ class SBGN_ML(object):
             source = self._glyphs.get(arc.source)
             target = self._glyphs.get(arc.target)
             if source and target:
-                if source.primary_class == 'process':
-                    if target.primary_class in [ 'compartment', 'macromolecule']:
+                if source.is_a('process'):
+                    if target.is_a(['compartment', 'macromolecule']):
                         source.add_target(target)
                     else:
                         logging.error("Process ({}) target ({}) has invalid class".format(source.id, target.id))
-                elif source.primary_class in ['compartment', 'macromolecule']:
-                    if target.primary_class == 'process':
+                elif source.is_a(['compartment', 'macromolecule']):
+                    if target.is_a('process'):
                         target.add_source(source)
                     else:
                         logging.error("Process ({}) source ({}) has invalid class".format(target.id, source.id))
@@ -554,12 +559,13 @@ class SBGN_ML(object):
                                                                                        [s.id for s in process.sources],
                                                                                        [t.id for t in process.targets]))
 
-    def to_celldl(self):
+    def to_celldl(self, class_filter=None):
         celldl = ['<cell-diagram>']
 
         celldl.append('{}<flat-map>'.format(INDENT*' '))
         for g in self._root_glyphs:
-            celldl.append(g.to_celldl(2))
+            if class_filter is None or g.primary_class in class_filter:
+                celldl.append(g.to_celldl(2, class_filter))
         for c in self._connections:
             celldl.append(c.to_celldl(2))
         '''
@@ -576,7 +582,7 @@ class SBGN_ML(object):
         celldl.append('</cell-diagram>')
         return '\n'.join(celldl)
 
-    def _json_build(self, glyph):
+    def _json_build(self, glyph, class_filter=None):
         if len(glyph.children) == 0:
             size = glyph.size
             self._json_nodes.append(dict(index=self._json_node_index,
@@ -595,15 +601,17 @@ class SBGN_ML(object):
             if glyph.parent is not None:
                 self._json_groups[glyph.parent.id].groups.append(glyph.id)
             for c in glyph.children:
-                self._json_build(c)
+                if class_filter is None or c.primary_class in class_filter:
+                    self._json_build(c, class_filter)
 
-    def to_json(self):
+    def to_json(self, class_filter=None):
         self._json_nodes = []
         self._json_node_index = 0
         self._json_groups = {}
         self._json_group_count = 0
         for g in self._root_glyphs:
-            self._json_build(g)
+            if class_filter is None or g.primary_class in class_filter:
+                self._json_build(g, class_filter)
 
         groups = self._json_group_count*[None]
         for g in self._json_groups.values():
@@ -618,7 +626,7 @@ class SBGN_ML(object):
                  'constraints': [],
                }
 
-    def to_turtle(self):
+    def to_turtle(self, class_filter=None):
         turtle = []
         if self._source_uri:
             turtle.append('@base <{}> .'.format(self._source_uri))
@@ -658,13 +666,14 @@ if __name__ == '__main__':
 
     sbgn.assign_links()
 
+    class_list = ['compartment', 'macromolecule'] # if --no-processes else None
     if   sys.argv[1] == 'celldl':
-        print(sbgn.to_celldl())
+        print(sbgn.to_celldl(class_list))
     elif sys.argv[1] == 'json':
-        j = sbgn.to_json()
+        j = sbgn.to_json(class_list)
         print(json.dumps(j, sort_keys=True,
                          indent=4, separators=(',', ': ')))
     elif sys.argv[1] == 'rdf':
-        print(sbgn.to_turtle())
+        print(sbgn.to_turtle(class_list))
 
 # -----------------------------------------------------------------------------
