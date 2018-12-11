@@ -27,7 +27,6 @@ import * as geo from './geometry.js';
 import * as utils from './utils.js';
 
 import {DiagramElement} from './elements.js';
-import {SvgDocument} from './svgDocument.js';
 import {SVG_NS} from './svgElements.js';
 
 //==============================================================================
@@ -49,7 +48,6 @@ export class Background extends DiagramElement
         this.size.setSize([new geo.Length(100*this._scale, '%'),
                            new geo.Length(100*this._scale, '%')]);
         this.position.setOffset([new geo.Length(50, '%'), new geo.Length(50, '%')]);
-        this._svgDocument = null;
         this._svgImage = null;
         if (this._image) {
             if (!this._image.endsWith('.svg')) {
@@ -58,17 +56,11 @@ export class Background extends DiagramElement
         }
         for (let element of domElement.children) {
             if (element.nodeName === "region") {
-                this.addElement(new Region(this.diagram, element, this));
+                this.addElement(new Region(this.diagram, element));
             } else {
                 throw new exception.SyntaxError(element, "Invalid element for <background>");
             }
         }
-    }
-
-    get svgDocument()
-    //===============
-    {
-        return this._svgDocument;
     }
 
     get svgImage()
@@ -114,9 +106,23 @@ export class Background extends DiagramElement
     parseBackgroundSvg(svgText)
     //=========================
     {
-        this._svgDocument = new SvgDocument(svgText);
-        for (let region of this.elements) {
-            region.setPositionOffset();
+        // Create a hidden dummy element in the DOM onto which to display
+        // the SVG so we can get the bounding boxes of regions
+
+        if (this.elements.length > 0) {
+            const svgContainer = document.createElement('div');
+            svgContainer.visibility = 'hidden';
+            svgContainer.position = 'fixed';
+            svgContainer.innerHTML = svgText;
+            document.body.appendChild(svgContainer);
+
+            const width = svgContainer.children[0].clientWidth;
+            const height = svgContainer.children[0].clientHeight;
+            for (let region of this.elements) {
+                region.setPositionOffset([width, height]);
+            }
+
+            document.body.removeChild(svgContainer);
         }
     }
 
@@ -140,10 +146,9 @@ export class Background extends DiagramElement
 
 class Region extends DiagramElement
 {
-    constructor(diagram, domElement, background)
+    constructor(diagram, domElement)
     {
         super(diagram, domElement);
-        this._background = background;
         if (domElement.hasAttribute('region')) {
             this.regionId = domElement.getAttribute('region');
         } else {
@@ -151,11 +156,15 @@ class Region extends DiagramElement
         }
     }
 
-    setPositionOffset()
-    //=================
+    setPositionOffset(containerSize)
+    //==============================
     {
-        const offset = this._background.svgDocument.centroid(this.regionId);
-        this.position.setOffset(offset);
+        const element = document.getElementById(this.regionId);
+        if (element) {
+            const bbox = element.getBBox();
+            this.position.setOffset([new geo.Length(100*(bbox.x + bbox.width/2)/containerSize[0], 'vw'),
+                                     new geo.Length(100*(bbox.y + bbox.height/2)/containerSize[1], 'vh')]);
+        }
     }
 
     layout()
