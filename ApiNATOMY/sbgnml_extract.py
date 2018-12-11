@@ -80,10 +80,10 @@ DEFAULT_STYLE_RULES = """
             color: green;
             size: {}v, {}v;
         }}
-        .consumption {{
+        .consumption, .inhibitory {{
             line-color: #8080FF;
         }}
-        .production {{
+        .production, .excitatory {{
             line-color: #FF8080;
         }}
         .warn {{
@@ -107,6 +107,10 @@ TURTLE_PREFIXES = ['@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
                   ]
 
 # -----------------------------------------------------------------------------
+
+TYPE_TO_CLASS = { 'http://identifiers.org/GO:0060076': 'excitatory',
+                  'http://identifiers.org/GO:0060077': 'inhibitory',
+                }
 
 # -----------------------------------------------------------------------------
 
@@ -151,6 +155,9 @@ def annotations(description_xml, property):
     return values
 
 
+def celldl_class_attribute(_type):
+    cls = TYPE_TO_CLASS.get(_type)
+    return ' class="{}"'.format(cls) if cls is not None else ''
 
 # -----------------------------------------------------------------------------
 
@@ -409,6 +416,19 @@ class Glyph(object):
 
 # -----------------------------------------------------------------------------
 
+class Connection(object):
+    def __init__(self, source, target, _type):
+        self._source = source
+        self._target = target
+        self._type = _type
+
+    def to_celldl(self, level=0):
+        indent = INDENT*level*' '
+        return '{}<connection from="{}" to="{}"{}/>'.format(indent,
+            self._source.id, self._target.id, celldl_class_attribute(self._type))
+
+# -----------------------------------------------------------------------------
+
 class SBGN_ML(object):
 
     @staticmethod
@@ -451,6 +471,7 @@ class SBGN_ML(object):
             bbox = glyph.find('sbgn:bbox', NAMESPACES)
             self._arcs.append(Arc(arc.get('id'), arc.get('class'),
                                   arc.get('source'), arc.get('target')))
+            self._connections = []
 
     @staticmethod
     def assign_geometry(children):
@@ -503,8 +524,8 @@ class SBGN_ML(object):
                 process.add_warning("Process ({}) is not connected".format(process.id))
             elif len(process.sources) == 0:
                 if len(process.targets) == 2:
-                    process.targets[0].add_target(process.targets[1])
-                    process.targets[1].add_target(process.targets[0])
+                    self._connections.append(Connection(process.targets[0], process.targets[1], process.type))
+                    self._connections.append(Connection(process.targets[1], process.targets[0], process.type))
                 else:
                     process.add_warning("Process ({}) has no sources and targets {}".format(process.id,
                                                                                            [t.id for t in process.targets]))
@@ -527,8 +548,13 @@ class SBGN_ML(object):
         celldl.append('{}<flat-map>'.format(INDENT*' '))
         for g in self._root_glyphs:
             celldl.append(g.to_celldl(2))
-        for a in self._arcs:
+        for c in self._connections:
+            celldl.append(c.to_celldl(2))
+        '''
+        for a in self._arcs:               # Only between macromolecules...
             celldl.append(a.to_celldl(2))
+        '''
+
         celldl.append('{}</flat-map>'.format(INDENT*' '))
 
         celldl.append('{}<style>'.format(INDENT*' '))
