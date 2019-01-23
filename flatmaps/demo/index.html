@@ -1,0 +1,299 @@
+  <head>
+    <title>background-map.png</title>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css" type="text/css">
+    <link rel="stylesheet" href="https://unpkg.com/ol-layerswitcher@3.0.0/src/ol-layerswitcher.css" />
+
+    <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+    <style type="text/css">
+      html, body {
+        height: 100%;
+        padding: 0;
+        margin: 0;
+        font-family: sans-serif;
+        font-size: small;
+        overflow: hidden;
+        font: 10pt "Helvetica Neue", Arial, Helvetica, sans-serif;
+      }
+      .map {
+        position: absolute;
+        top: 1%;
+        left: 1%;
+        width: 48.5%;
+        height: 98%;
+        border: 1px solid black;
+        font: 10pt "Helvetica Neue", Arial, Helvetica, sans-serif;
+      }
+      #map2 {
+        left: 50.5%;
+      }
+      .popover-content {
+        min-width: 180px;
+      }
+
+    </style>
+<!--    <script src="/static/ol-debug.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.5.0/proj4.js"></script>
+    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
+    <script src="https://unpkg.com/ol-layerswitcher@3.0.0"></script>
+    <script>
+      // From our SVG coordinates to PNG pixels
+      const imageOffset = 200;
+      const PNGscale = 25;
+
+      let map = null;
+
+      const imageExtent = [0, 0, 10000, 18000];
+
+      const startResolution = 128;
+      const resolutions = new Array(22);
+      for (let i = 0, ii = resolutions.length; i < ii; ++i) {
+        resolutions[i] = startResolution / Math.pow(2, i);
+      }
+
+      const tilegrid = new ol.tilegrid.TileGrid({
+        origin: [0, 0],
+        extent: imageExtent,
+        resolutions: resolutions
+      });
+
+      // Or use say +proj=utm +zone=60 +south ???
+      const projection = new ol.proj.Projection({
+        code: 'user:1000',
+        units: 'm',
+        worldExtent: imageExtent
+      });
+      ol.proj.addProjection(projection);
+
+      function newTileLayer(name)
+      {
+        return new ol.layer.Tile({
+          title: name[0].toUpperCase() + name.slice(1),
+          //preload: Infinity,
+          source: new ol.source.TileImage({
+            tileGrid: tilegrid,
+            tileUrlFunction: (...args) => getLayerURL(name, ...args)
+          })
+        });
+      }
+
+      function getLayerURL(layer, coord, ratio, proj)
+      {
+        return `${window.location.href}/tiles/${layer}/${coord[0]}/${coord[1]}/${coord[2]}`;
+      }
+
+      function init()
+      {
+        const view1 =  new ol.View({
+            projection: 'user:1000',
+            resolutions: resolutions,
+            center: [5000, 9000],
+            zoom: 2,
+            maxZoom: 7
+          });
+
+        const select = new ol.interaction.Select();
+
+        const translate = new ol.interaction.Translate({
+          features: select.getFeatures()
+        });
+
+        map = new ol.Map({
+          // ??? renderer: 'webgl',  // ???????
+          interactions: ol.interaction.defaults().extend([select]), //, translate]),
+          layers: [
+            new ol.layer.Tile({
+              title: 'Body',
+              type: 'base',
+              //preload: Infinity,
+              source: new ol.source.TileImage({
+                tileGrid: tilegrid,
+                tileUrlFunction: (...args) => getLayerURL('head', ...args)
+              })
+            }),
+            new ol.layer.Tile({
+              title: 'Grid',
+              visible: false,
+              source: new ol.source.TileDebug({
+                tileGrid: tilegrid,
+                projection: 'user:1000'
+              })
+            })
+          ],
+          target: 'map1',
+          view: view1,
+          loadTilesWhileInteracting: true,
+          loadTilesWhileAnimating: true
+        });
+
+        map.addLayer(newTileLayer('cardiovascular'));
+        map.addLayer(newTileLayer('brownfat'));
+        map.addLayer(newTileLayer('respiratory'));
+        map.addLayer(newTileLayer('digestive'));
+        map.addLayer(newTileLayer('exocrine'));
+        map.addLayer(newTileLayer('endocrine'));
+        map.addLayer(newTileLayer('urinary'));
+        map.addLayer(newTileLayer('reproductive'));
+        map.addLayer(newTileLayer('spine'));
+        map.addLayer(newTileLayer('ganglia'));
+        map.addLayer(newTileLayer('neural'));
+
+        const featureJSON = {
+          "type": "FeatureCollection",
+          "features": [
+/*            { "type": "Feature",
+              "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                  [ 2000, 7000],
+                  [ 4000, 7000],
+                  [ 4000, 9000],
+                  [ 2000, 7000]
+                ]]
+              },
+              "properties": {
+                "name": "Triangle!"
+              }
+            },
+*/
+            pointFeature([PNGscale*(562-imageOffset), PNGscale*618], 'xii'),
+            pointFeature([PNGscale*(562-imageOffset), PNGscale*605], 'ix'),
+            pointFeature([PNGscale*(562-imageOffset), PNGscale*594], 'x')
+          ]
+        };
+
+        function pointFeature(coordinates, name)
+        {
+          return {
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: coordinates
+            },
+            properties: {
+              name: name
+            }
+          };
+        }
+
+        const style = new ol.style.Style({
+          fill: new ol.style.Fill({color: 'pink'}),
+          text: new ol.style.Text({
+            fill: new ol.style.Fill({color: 'green'})
+          })
+        });
+
+        const vectorSource = new ol.source.Vector({
+          features: (new ol.format.GeoJSON()).readFeatures(featureJSON)
+        });
+
+//        vectorSource.addFeature(new ol.Feature(new ol.geom.Circle([5000, 9000], 600)));
+
+        const labels = new ol.layer.Vector({
+//          title: "Features",
+          source: vectorSource,
+          style: (feature, resolution) => {
+            //console.log(`style for ${feature.get('name')} at RES: ${resolution}`);
+            const styleText = style.getText();
+            const fontSize = 4*Math.sqrt(startResolution/resolution);
+            console.log(fontSize);
+            styleText.setFont(`bold ${fontSize}px "Open Sans", "Arial Unicode MS", "sans-serif"`);
+            styleText.setText(feature.get('name'));
+            return style;
+          }
+        });
+
+        map.addLayer(labels);
+
+        map.addControl(new ol.control.OverviewMap({
+            //collapsed: false,
+            view: new ol.View({
+              projection: 'user:1000',
+              resolutions: resolutions,
+              center: [5000, 9000],
+              zoom: 3,
+              maxZoom: 7
+            })
+          })
+        );
+
+
+        // Add a layer switcher
+
+        const layerSwitcher = new ol.control.LayerSwitcher();
+        map.addControl(layerSwitcher);
+
+        const view2 =  new ol.View({
+            projection: 'user:1000',
+            resolutions: resolutions,
+            center: [5000, 9000],
+            zoom: 4,
+            maxZoom: 6
+          });
+
+        map2 = new ol.WebGLMap({
+//        map2 = new ol.Map({
+          view: view1,
+          layers: [
+            new ol.layer.Tile({
+              title: 'Cardiovascular',
+              type: 'base',
+              //preload: Infinity,
+              source: new ol.source.TileImage({
+                tileGrid: tilegrid,
+                tileUrlFunction: (...args) => getLayerURL('cardiovascular', ...args)
+              })
+            })
+          ],
+          target: 'map2',
+          loadTilesWhileInteracting: true,
+          loadTilesWhileAnimating: true
+        });
+        map2.addLayer(newTileLayer('spine'));
+        map2.addLayer(newTileLayer('ganglia'));
+        map2.addLayer(newTileLayer('neural'));
+
+        map2.addLayer(labels);
+
+        const layerSwitcher2 = new ol.control.LayerSwitcher();
+        map2.addControl(layerSwitcher2);
+
+
+      // Popups are created using Popovers from Bootstrap.
+      //
+      // Popup showing the position the user clicked
+      var popup = new ol.Overlay({
+        element: document.getElementById('popup')
+      });
+      map.addOverlay(popup);
+
+      map.on('click', function(evt) {
+        const element = popup.getElement();
+        const coordinate = evt.coordinate;
+        const coords = `(${coordinate[0]}, ${coordinate[1]})`;
+
+        $(element).popover('destroy');
+        popup.setPosition(coordinate);
+        $(element).popover({
+          placement: 'top',
+          animation: false,
+          html: true,
+          content: '<p>Clicked at <code>' + coords + '</code></p>'
+        });
+        $(element).popover('show');
+      });
+      }
+    </script>
+  </head>
+  <body onload="init()">
+    <div id="map1" class="map"></div>
+    <div id="map2" class="map"></div>
+    <div style="display: none;">
+      <!-- Popup -->
+      <div id="popup"></div>
+    </div>
+  </body>
+</html>
