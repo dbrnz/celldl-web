@@ -290,6 +290,9 @@
           html: true,
           content: '<p>Clicked at <code>' + coords + '</code></p>'
         });
+        $(element).on('shown.bs.popover', function() {
+          setTimeout(() => $(element).popover('destroy'), 1500);
+        });
         $(element).popover('show');
       });
 
