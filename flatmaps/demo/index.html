@@ -198,10 +198,10 @@
           features: (new ol.format.GeoJSON()).readFeatures(featureJSON)
         });
 
-//        vectorSource.addFeature(new ol.Feature(new ol.geom.Circle([5000, 9000], 600)));
+        vectorSource.addFeature(new ol.Feature(new ol.geom.Circle([9050, 15150], 600)));
 
         const labels = new ol.layer.Vector({
-//          title: "Features",
+          title: "Features",
           source: vectorSource,
           style: (feature, resolution) => {
             //console.log(`style for ${feature.get('name')} at RES: ${resolution}`);
@@ -243,6 +243,7 @@
 
         map2 = new ol.WebGLMap({
 //        map2 = new ol.Map({
+          interactions: ol.interaction.defaults().extend([select, translate]),
           view: view1,
           layers: [
             new ol.layer.Tile({
