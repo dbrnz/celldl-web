@@ -1,12 +1,20 @@
   <head>
     <title>background-map.png</title>
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- OpenLayers and Proj4js -->
     <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css" type="text/css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.5.0/proj4.js"></script>
+    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/ol-layerswitcher@3.0.0/src/ol-layerswitcher.css" />
 
     <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+    <!-- Context menus -->
+    <link href="/static/css/ol-contextmenu.min.css" rel="stylesheet" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/ol3-contextmenu"></script>
 
     <style type="text/css">
       html, body {
@@ -35,9 +43,6 @@
       }
 
     </style>
-<!--    <script src="/static/ol-debug.js"></script> -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.5.0/proj4.js"></script>
-    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
     <script src="https://unpkg.com/ol-layerswitcher@3.0.0"></script>
     <script>
       // From our SVG coordinates to PNG pixels
@@ -285,7 +290,38 @@
         });
         $(element).popover('show');
       });
+
+      function actionClick(action, evt)
+      {
+        alert(`Action ${action}...`)
       }
+
+      const contextmenu = new ContextMenu({
+        width: 170,
+        defaultItems: true, // defaultItems are (for now) Zoom In/Zoom Out
+        items: [
+          {
+            text: 'Some Actions',
+            items: [{ // <== this is a submenu
+              text: 'Action 1',
+              callback: (...args) => actionClick('1', ...args)
+            }, {
+              text: 'Other action',
+              callback: (...args) => actionClick('2', ...args)
+            }]
+          }, {
+            text: 'Add a Marker',
+            icon: '/static/images/marker.png',
+            callback: (...args) => actionClick('3', ...args)
+          },
+          '-' // this is a separator
+        ]
+      });
+      contextmenu.on('open', function (evt) {
+        setTimeout(() => contextmenu.close(), 5000);
+      });
+      map.addControl(contextmenu);
+    }
     </script>
   </head>
   <body onload="init()">
