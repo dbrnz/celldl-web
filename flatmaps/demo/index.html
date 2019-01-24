@@ -103,7 +103,11 @@
             maxZoom: 7
           });
 
-        const select = new ol.interaction.Select();
+        const circleFeature = new ol.Feature(new ol.geom.Circle([9050, 15150], 600));
+
+        const select = new ol.interaction.Select({filter: (feature, layer) => {
+          return (feature === circleFeature);
+        }});
 
         const translate = new ol.interaction.Translate({
           features: select.getFeatures()
@@ -198,7 +202,7 @@
           features: (new ol.format.GeoJSON()).readFeatures(featureJSON)
         });
 
-        vectorSource.addFeature(new ol.Feature(new ol.geom.Circle([9050, 15150], 600)));
+        vectorSource.addFeature(circleFeature);
 
         const labels = new ol.layer.Vector({
           title: "Features",
