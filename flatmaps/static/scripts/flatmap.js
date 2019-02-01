@@ -164,7 +164,7 @@ export class FlatMap extends olMap
             source: new TileImage({
                 tileGrid: this.tileGrid,
                 tileUrlFunction: (coord, ratio, proj) =>
-                    utils.absoluteUrl(`/${this.id}/tiles/${tileLayer.rasterSource}/${coord[0]}/${coord[1]}/${coord[2]}`)
+                    utils.absoluteUrl(`${this.id}/tiles/${tileLayer.rasterSource}/${coord[0]}/${coord[1]}/${coord[2]}`)
             })
         }));
     }

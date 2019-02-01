@@ -142,7 +142,7 @@ import * as utils from '/static/scripts/utils.js';
 
     const vectorSource = new VectorSource({
       format: new GeoJSON({dataProjection: 'user:1000'}),
-      url: utils.absoluteUrl('./json/features')
+      url: utils.absoluteUrl('json/features')
     });
 
     const circleFeature = new Feature(new Circle([9050, 15150], 600));
