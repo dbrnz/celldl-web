@@ -91,6 +91,19 @@ const functionalMap = {
     ]
 };
 
+/* Rat body */
+
+const ratMap = {
+    "id": "rat",
+    "size": [10000, 5959],
+    //"debug": true,
+    "overviewMap": true,
+    "imageTileLayers": [{
+        "rasterSource": "body"
+      }
+    ]
+};
+
 //==============================================================================
 
 function init()
@@ -98,6 +111,8 @@ function init()
     const map = new FlatMap('map1', bodyMap);
 
     const map2 = new FlatMap('map2', functionalMap);
+
+    const map3 = new FlatMap('map3', ratMap);
 
 }
 
