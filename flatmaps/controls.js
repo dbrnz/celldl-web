@@ -22,69 +22,25 @@ limitations under the License.
 
 //==============================================================================
 
-const bodyMap = {
-    "size": [10000, 18000],
-    "debug": true,
-    "layerSwitcher": true,
-    "overviewMap": true,
-    "imageTileLayers": [{
-        "source": "head"
-      }, {
-        "source": "cardiovascular",
-        "title": "Cardiovascular"
-      }, {
-        "source": "brownfat",
-        "title": "Brown fat"
-      }, {
-        "source": "respiratory",
-        "title": "Respiratory"
-      }, {
-        "source": "digestive",
-        "title": "Digestive"
-      }, {
-        "source": "exocrine",
-        "title": "Exocrine"
-      }, {
-        "source": "endocrine",
-        "title": "Endocrine"
-      }, {
-        "source": "urinary",
-        "title": "Urinary"
-      }, {
-        "source": "reproductive",
-        "title": "Reproductive"
-      }, {
-        "source": "spine",
-        "title": "Spine"
-      }, {
-        "source": "ganglia",
-        "title": "Ganglia"
-      }, {
-        "source": "neural",
-        "title": "Neural"
-      }
-    ]
-};
+import Feature from 'ol';
+import Overlay from 'ol';
 
-/* Functional diagram */
+import Projection from 'ol/proj/Projection';
+import {Vector as VectorSource} from 'ol/source.js';
+import Circle from 'ol/geom/Circle';
 
-const functionalMap = {
-    "size": [10000, 6000],
-    //"debug": true,
-    "overviewMap": true,
-    "imageTileLayers": [{
-        "source": "functional"
-      }
-    ]
-};
+import GeoJSON from 'ol/format/GeoJSON.js';
+import {Vector as VectorLayer} from 'ol/layer.js';
 
+import {Fill, Stroke, Style, Text} from 'ol/style.js';
 
-function init()
-{
-    const map = new FlatMap('map1', bodyMap);
+import ContextMenu from 'ol-contextmenu';
 
-    const map2 = new FlatMap('map2', functionalMap);
+//==============================================================================
 
+import * as utils from '/static/scripts/utils.js';
+
+//==============================================================================
 
     /**
      * Elements that make up the popup.
@@ -96,7 +52,7 @@ function init()
     /**
      * Create an overlay to anchor the popup to the map
      */
-    const overlay = new ol.Overlay({
+    const overlay = new Overlay({
       element: container,
       autoPan: true,
       autoPanAnimation: {
@@ -116,7 +72,7 @@ function init()
 
     map.addOverlay(overlay);
 
-
+//==============================================================================
 
     // From our SVG coordinates to PNG pixels
     const imageOffset = 200;
@@ -165,6 +121,9 @@ function init()
       features: (new ol.format.GeoJSON()).readFeatures(featureJSON)
     });
 */
+
+//==============================================================================
+
 /*
     const select = new ol.interaction.Select({filter: (feature, layer) => {
       return (feature === circleFeature);
@@ -177,37 +136,41 @@ function init()
 
 */
 
+//==============================================================================
+
     /* GeoJSON */
 
-    const vectorSource = new ol.source.Vector({
-      format: new ol.format.GeoJSON({dataProjection: 'user:1000'}),
-      url: absoluteUrl('./json/features')
+    const vectorSource = new VectorSource({
+      format: new GeoJSON({dataProjection: 'user:1000'}),
+      url: utils.absoluteUrl('./json/features')
     });
 
-    const circleFeature = new ol.Feature(new ol.geom.Circle([9050, 15150], 600));
+    const circleFeature = new Feature(new Circle([9050, 15150], 600));
     vectorSource.addFeature(circleFeature);
 
-    const style = new ol.style.Style({
-      fill: new ol.style.Fill({color: 'pink'}),
-      text: new ol.style.Text({
-        fill: new ol.style.Fill({color: 'green'})
+    const featureStyle = new Style({
+      fill: new Fill({color: 'pink'}),
+      text: new Text({
+        fill: new Fill({color: 'green'})
       })
     });
 
-    const labels = new ol.layer.Vector({
+    const labels = new VectorLayer({
       title: "Labels",
       source: vectorSource,
       style: (feature, resolution) => {
         //console.log(`style for ${feature.get('name')} at RES: ${resolution}`);
-        const styleText = style.getText();
+        const styleText = featureStyle.getText();
         const fontSize = 4*Math.sqrt(map.resolutions[0]/resolution);
         styleText.setFont(`bold ${fontSize}px "Open Sans", "Arial Unicode MS", "sans-serif"`);
         styleText.setText(feature.get('name'));
-        return style;
+        return featureStyle;
       }
     });
 
     map.addLayer(labels);
+
+//==============================================================================
 
 /*
     const labeledGanglia = new ol.layer.Group({title: "Ganglia",
@@ -217,6 +180,8 @@ function init()
 
 */
 
+//==============================================================================
+
     /* TopoJSON */
 /*
     const topologySource = new ol.source.Vector({
@@ -224,7 +189,16 @@ function init()
       url: `${window.location.href}/json/topology`
     });
 */
+
+//==============================================================================
+
     /* Vector Tiles */
+
+/*
+    <!-- Tiled GeoJSON -->
+    <!-- <script src="https://mapbox.github.io/geojson-vt/geojson-vt-dev.js"></script> -->
+    <script src="/static/third-party/geojson-vt-dev.js"></script>
+*/
 
     /**
      * Map GeoJSON features to Mapbox vector tiles
@@ -273,7 +247,7 @@ function init()
       }
     }
 
-    const tilePixels = new ol.proj.Projection({
+    const tilePixels = new Projection({
       code: 'TILE_PIXELS',
       units: 'tile-pixels'
     });
@@ -342,6 +316,8 @@ console.log(`Request vector tile at ${tileCoord}, tiles=${data}`);
     });
 */
 
+//==============================================================================
+
     /**
      * Add a click handler to the map to render the popup.
      */
@@ -353,6 +329,8 @@ console.log(`Request vector tile at ${tileCoord}, tiles=${data}`);
       overlay.setPosition(coordinate);
     });
 
+
+//==============================================================================
 
     /* Context menu */
 
@@ -387,4 +365,4 @@ console.log(`Request vector tile at ${tileCoord}, tiles=${data}`);
     });
     map.addControl(contextmenu);
 
-}
+//==============================================================================

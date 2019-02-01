@@ -22,20 +22,44 @@ limitations under the License.
 
 //==============================================================================
 
-/* export */ class FlatMap extends ol.Map
+import {Map as olMap} from 'ol';
+import {View as olView} from 'ol';
+
+import Projection from 'ol/proj/Projection';
+import TileGrid from 'ol/tilegrid/TileGrid';
+import TileImage from 'ol/source/TileImage';
+import TileLayer from 'ol/layer/Tile';
+
+import {OverviewMap} from 'ol/control.js';
+import {TileDebug} from 'ol/source.js';
+
+import LayerSwitcher from 'ol-layerswitcher';
+
+//==============================================================================
+
+import * as utils from '/static/scripts/utils.js';
+
+//==============================================================================
+
+export class FlatMap extends olMap
 {
     /**
      * Create and display a new FlatMap
      *
      * @param      {string}  htmlElementId  The HTML element identifier in which to display the map
      * @param      {Object}  configuration  The maps's configuration
+     * @param      {string}  configuration.id  An identifier for the map
      * @param      {Array<number>}  configuration.size   A two-long array giving the map's [width, height]
      * @param      {boolean}  [configuration.debug=false]  Add a layer showing the grid tiles
+     * @param      {boolean}  [configuration.editable=false]  Allow features to be edited
+     * @param      {string}  [features]  The map's features are in `/{id}/features/{features}`
      * @param      {boolean}  [configuration.layerSwitcher=false]  Add a control to control layer visibility
      * @param      {boolean}  [configuration.overviewMap=false]  Add a control to show an overview map
      * @param      {Array<Object>}  configuration.imageTileLayers  Details of raster image layers
-     * @param      {string}  configuration.imageTileLayers.source  The layer's tiles are at `/tiles/{source}`
-     * @param      {string}  [configuration.imageTileLayers.title=null]  The layer's title
+     * @param      {string}  [configuration.imageTileLayers.title]  The layer's title. A layer will only appear in the
+     *                                                              layer switcher if it has title
+     * @param      {string}  [configuration.imageTileLayers.featureSource]  The layer's features are in `/{id}/features/{featureSource}`
+     * @param      {string}  [configuration.imageTileLayers.rasterSource]  The layer's tiles are in `/{id}/tiles/{rasterSource}/`
      */
     constructor(htmlElementId, configuration)
     {
@@ -56,19 +80,19 @@ limitations under the License.
 
         const mapExtent = [0, 0, configuration.size[0], configuration.size[1]];
 
-        const mapGrid = new ol.tilegrid.TileGrid({
+        const mapGrid = new TileGrid({
             origin: [0, 0],
             extent: mapExtent,
             tileSize: tileSize,
             resolutions: mapResolutions
         });
 
-        const mapProjection = new ol.proj.Projection({
+        const mapProjection = new Projection({
             units: 'm',
             worldExtent: mapExtent
         });
 
-        const mapView =  new ol.View({
+        const mapView =  new olView({
             projection: mapProjection,
             resolutions: mapResolutions,
             center: [configuration.size[0]/2,
@@ -84,6 +108,7 @@ limitations under the License.
             loadTilesWhileAnimating: true
           });
 
+        this.id = configuration.id;
         this.projection = mapProjection;
         this.resolutions = mapResolutions;
         this.tileGrid = mapGrid;
@@ -92,10 +117,10 @@ limitations under the License.
         // sure it's visible if we can't switch layers
 
         if (configuration.debug) {
-            this.addLayer(new ol.layer.Tile({
+            this.addLayer(new TileLayer({
                 title: 'Grid',
                 visible: !configuration.layerSwitcher,
-                source: new ol.source.TileDebug({
+                source: new TileDebug({
                   tileGrid: mapGrid,
                   projection: mapProjection
                 })
@@ -111,15 +136,15 @@ limitations under the License.
         // Add a layer switcher if option set
 
         if (configuration.layerSwitcher) {
-            const layerSwitcher = new ol.control.LayerSwitcher();
+            const layerSwitcher = new LayerSwitcher();
             this.addControl(layerSwitcher);
         }
 
         // Add an overview map if option set
 
         if (configuration.overviewMap) {
-            this.addControl(new ol.control.OverviewMap({
-                view: new ol.View({
+            this.addControl(new OverviewMap({
+                view: new olView({
                     projection: mapProjection,
                     resolutions: mapResolutions,
                     center: [configuration.size[0]/2,
@@ -134,12 +159,12 @@ limitations under the License.
 
     addImageTileLayer(tileLayer)
     {
-        this.addLayer(new ol.layer.Tile({
+        this.addLayer(new TileLayer({
             title: tileLayer.title,
-            source: new ol.source.TileImage({
+            source: new TileImage({
                 tileGrid: this.tileGrid,
                 tileUrlFunction: (coord, ratio, proj) =>
-                    absoluteUrl(`./tiles/${tileLayer.source}/${coord[0]}/${coord[1]}/${coord[2]}`)
+                    utils.absoluteUrl(`/${this.id}/tiles/${tileLayer.rasterSource}/${coord[0]}/${coord[1]}/${coord[2]}`)
             })
         }));
     }

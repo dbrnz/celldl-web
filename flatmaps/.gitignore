@@ -1,3 +1,6 @@
+*/images/*.pdf
 */tiles/
 docs/
 out/
+.cache/
+dist/
