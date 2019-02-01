@@ -34,7 +34,7 @@ import {FlatMap} from '/static/scripts/flatmap.js';
 //==============================================================================
 
 const bodyMap = {
-    "id": "demo",
+    "id": "body",
     "size": [10000, 18000],
     "debug": true,
     "layerSwitcher": true,
