@@ -29,7 +29,12 @@ import Projection from 'ol/proj/Projection';
 import TileGrid from 'ol/tilegrid/TileGrid';
 import TileImage from 'ol/source/TileImage';
 import TileLayer from 'ol/layer/Tile';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 
+import {Fill, Style, Stroke, Text} from 'ol/style.js';
+import {GeoJSON, TopoJSON} from 'ol/format.js';
+import {Group} from 'ol/layer.js';
 import {OverviewMap} from 'ol/control.js';
 import {TileDebug} from 'ol/source.js';
 
@@ -47,24 +52,24 @@ export class FlatMap extends olMap
      * Create and display a new FlatMap
      *
      * @param      {string}  htmlElementId  The HTML element identifier in which to display the map
-     * @param      {Object}  configuration  The maps's configuration
-     * @param      {string}  configuration.id  An identifier for the map
-     * @param      {Array<number>}  configuration.size   A two-long array giving the map's [width, height]
-     * @param      {boolean}  [configuration.debug=false]  Add a layer showing the grid tiles
-     * @param      {boolean}  [configuration.editable=false]  Allow features to be edited
-     * @param      {string}  [features]  The map's features are in `/{id}/features/{features}`
-     * @param      {boolean}  [configuration.layerSwitcher=false]  Add a control to control layer visibility
-     * @param      {boolean}  [configuration.overviewMap=false]  Add a control to show an overview map
-     * @param      {Array<Object>}  configuration.imageTileLayers  Details of raster image layers
-     * @param      {string}  [configuration.imageTileLayers.title]  The layer's title. A layer will only appear in the
+     * @param      {Object}  options  The maps's configurable options
+     * @param      {string}  options.id  An identifier for the map
+     * @param      {Array<number>}  options.size   A two-long array giving the map's [width, height]
+     * @param      {boolean}  [options.debug=false]  Add a layer showing the grid tiles
+     * @param      {boolean}  [options.editable=false]  Allow features to be edited
+     * @param      {string}  [options.features]  The map's features are in `/{id}/features/{features}`
+     * @param      {boolean}  [options.layerSwitcher=false]  Add a control to control layer visibility
+     * @param      {boolean}  [options.overviewMap=false]  Add a control to show an overview map
+     * @param      {Array<Object>}  options.layers  Details of the map's layers
+     * @param      {string}  [options.layers.title]  The layer's title. A layer will only appear in the
      *                                                              layer switcher if it has title
-     * @param      {string}  [configuration.imageTileLayers.featureSource]  The layer's features are in `/{id}/features/{featureSource}`
-     * @param      {string}  [configuration.imageTileLayers.rasterSource]  The layer's tiles are in `/{id}/tiles/{rasterSource}/`
+     * @param      {string}  [options.layers.featureSource]  The layer's features are in `/{id}/features/{featureSource}`
+     * @param      {string}  [options.layers.rasterSource]  The layer's image tiles are in `/{id}/tiles/{rasterSource}/`
      */
-    constructor(htmlElementId, configuration)
+    constructor(htmlElementId, options)
     {
         const tileSize = 256;
-        const maxDimension = Math.max(configuration.size[0], configuration.size[1]);
+        const maxDimension = Math.max(options.size[0], options.size[1]);
 
         let maxZoom = 0;
         for (let dimension = maxDimension/tileSize; dimension >= 1; ) {
@@ -78,7 +83,7 @@ export class FlatMap extends olMap
             mapResolutions[i] = startResolution / Math.pow(2, i);
         }
 
-        const mapExtent = [0, 0, configuration.size[0], configuration.size[1]];
+        const mapExtent = [0, 0, options.size[0], options.size[1]];
 
         const mapGrid = new TileGrid({
             origin: [0, 0],
@@ -95,8 +100,8 @@ export class FlatMap extends olMap
         const mapView =  new olView({
             projection: mapProjection,
             resolutions: mapResolutions,
-            center: [configuration.size[0]/2,
-                     configuration.size[1]/2],
+            center: [options.size[0]/2,
+                     options.size[1]/2],
             zoom: 2,
             maxZoom: maxZoom
           });
@@ -108,7 +113,7 @@ export class FlatMap extends olMap
             loadTilesWhileAnimating: true
           });
 
-        this.id = configuration.id;
+        this.id = options.id;
         this.projection = mapProjection;
         this.resolutions = mapResolutions;
         this.tileGrid = mapGrid;
@@ -116,10 +121,10 @@ export class FlatMap extends olMap
         // Add a debugging grid if option set and make
         // sure it's visible if we can't switch layers
 
-        if (configuration.debug) {
+        if (options.debug) {
             this.addLayer(new TileLayer({
                 title: 'Grid',
-                visible: !configuration.layerSwitcher,
+                visible: !options.layerSwitcher,
                 source: new TileDebug({
                   tileGrid: mapGrid,
                   projection: mapProjection
@@ -127,46 +132,110 @@ export class FlatMap extends olMap
             }));
         }
 
-        // Add image tile layers
+        // Global styling of features
+        this.styleFunction = (feature, resolution) => {
+            // Scale font and stroke to match resolution
 
-        for (let tileLayer of configuration.imageTileLayers) {
-            this.addImageTileLayer(tileLayer);
+            const fontSize = 4*Math.sqrt(mapResolutions[0]/resolution);
+            const strokeWidth = 0.2*mapResolutions[0]/resolution;
+
+            return new Style({
+                stroke: new Stroke({
+                    color: '#400',
+                    width: strokeWidth
+                }),
+                text: new Text({
+                    font: `bold ${fontSize}px "Open Sans", "Arial Unicode MS", "sans-serif"`,
+                    fill: new Fill({color: '#040'}),
+                    textAlign: feature.get('textAlign'),                 // From stylesheet specific to features??
+                    text: feature.get('name')
+                })
+            });
+        }
+
+        // Add map's layers
+
+        if (options.layers) {
+            for (let layer of options.layers) {
+                this.addNewLayer(layer);
+            }
+        }
+
+        // Add a features' layer
+
+        if (options.features) {
+            this.addLayer(this.newFeatureLayer('Features', ''));
+
+
         }
 
         // Add a layer switcher if option set
 
-        if (configuration.layerSwitcher) {
+        if (options.layerSwitcher) {
             const layerSwitcher = new LayerSwitcher();
             this.addControl(layerSwitcher);
         }
 
         // Add an overview map if option set
 
-        if (configuration.overviewMap) {
+        if (options.overviewMap) {
             this.addControl(new OverviewMap({
                 view: new olView({
                     projection: mapProjection,
                     resolutions: mapResolutions,
-                    center: [configuration.size[0]/2,
-                             configuration.size[1]/2],
+                    center: [options.size[0]/2,
+                             options.size[1]/2],
                     zoom: 3,
                     maxZoom: maxZoom
                 })
               })
             );
         }
+    newFeatureLayer(title, source)
+    {
+        return new VectorLayer({
+            title: title,
+            source: new VectorSource({
+                format: new GeoJSON({
+                    dataProjection: this.projection
+                }),
+                url: utils.absoluteUrl(`${this.id}/features/${source}`)
+            }),
+            style: this.styleFunction
+        })
     }
 
-    addImageTileLayer(tileLayer)
+    addNewLayer(options)
     {
-        this.addLayer(new TileLayer({
-            title: tileLayer.title,
-            source: new TileImage({
+        const tileLayer = options.rasterSource
+            ? new TileLayer({
+                title: options.title,
+                source: new TileImage({
                 tileGrid: this.tileGrid,
                 tileUrlFunction: (coord, ratio, proj) =>
-                    utils.absoluteUrl(`${this.id}/tiles/${tileLayer.rasterSource}/${coord[0]}/${coord[1]}/${coord[2]}`)
+                    utils.absoluteUrl(`${this.id}/tiles/${options.rasterSource}/${coord[0]}/${coord[1]}/${coord[2]}`)
+                })
             })
-        }));
+            : null;
+
+        const featureLayer = options.featureSource
+            ? this.newFeatureLayer(options.title, options.featureSource)
+            : null;
+
+
+        if (tileLayer && featureLayer) {
+            tileLayer.set('title', 'image');
+            featureLayer.set('title', 'features');
+            this.addLayer(new Group({
+                title: options.title,
+                fold: 'close',
+                layers: [featureLayer, tileLayer]
+            }));
+        } else if (tileLayer) {
+            this.addLayer(tileLayer);
+        } else if (featureLayer) {
+            this.addLayer(featureLayer);
+        }
     }
 }
 

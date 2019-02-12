@@ -39,7 +39,9 @@ const bodyMap = {
     "debug": true,
     "layerSwitcher": true,
     "overviewMap": true,
-    "imageTileLayers": [{
+    "features": true,
+    "editable": true,
+    "layers": [{
         "rasterSource": "head"
       }, {
         "rasterSource": "cardiovascular",
@@ -70,6 +72,7 @@ const bodyMap = {
         "title": "Spine"
       }, {
         "rasterSource": "ganglia",
+        "featureSource": "ganglia",
         "title": "Ganglia"
       }, {
         "rasterSource": "neural",
@@ -85,7 +88,7 @@ const functionalMap = {
     "size": [20000, 12000],
     //"debug": true,
     "overviewMap": true,
-    "imageTileLayers": [{
+    "layers": [{
         "rasterSource": "functional"
       }
     ]
@@ -98,7 +101,7 @@ const ratMap = {
     "size": [10000, 5959],
     //"debug": true,
     "overviewMap": true,
-    "imageTileLayers": [{
+    "layers": [{
         "rasterSource": "body"
       }
     ]

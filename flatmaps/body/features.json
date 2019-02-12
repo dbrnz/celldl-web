@@ -1,0 +1,20 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [ 2000, 7000],
+                    [ 4000, 7000],
+                    [ 4000, 9000],
+                    [ 2000, 7000]
+                ]]
+            },
+            "properties": {
+                "name": "Triangle!"
+            }
+        }
+    ]
+}
