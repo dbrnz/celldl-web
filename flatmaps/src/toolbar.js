@@ -22,13 +22,47 @@ limitations under the License.
 
 //==============================================================================
 
+
+function awesomeFont(style, name, tooltip)
+{
+    const element = document.createElement('i');
+    element.classList.add(style);
+    element.classList.add(name);
+    element.setAttribute('title', tooltip);
+
+	element.onclick = function(e) {
+	    e.target.classList.add('selected');
+	};
+
+    return element;
+}
+
+
+function spacer()
+{
+    const element = document.createElement('i');
+    element.classList.add('spacer');
+    return element;
+}
+
+
 export class Toolbar
 {
 	constructor(containerId) {
         const toolbarElement = document.createElement('div');
         toolbarElement.id = `${containerId}-toolbar`;
         toolbarElement.classList.add('flatmap-toolbar');
-        toolbarElement.textContent = "xxx";
+        toolbarElement.appendChild(awesomeFont('fas', 'fa-mouse-pointer', 'Select'));
+        toolbarElement.appendChild(spacer());
+        toolbarElement.appendChild(awesomeFont('fas', 'fa-map-marker', 'Add point'));
+        toolbarElement.appendChild(awesomeFont('fas', 'fa-pencil-alt', 'Add line'));
+        toolbarElement.appendChild(awesomeFont('fas', 'fa-vector-square', 'Add rectangle'));
+        toolbarElement.appendChild(awesomeFont('fas', 'fa-draw-polygon', 'Add polygon'));
+        toolbarElement.appendChild(spacer());
+        toolbarElement.appendChild(awesomeFont('far', 'fa-trash-alt', 'Delete'));
+        toolbarElement.appendChild(spacer());
+        toolbarElement.appendChild(awesomeFont('fas', 'fa-undo', 'Undo'));
+        toolbarElement.appendChild(awesomeFont('fas', 'fa-redo', 'Redo'));
         this._domElement = toolbarElement;
 	}
 
