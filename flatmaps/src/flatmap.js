@@ -29,7 +29,7 @@ import 'ol-contextmenu/dist/ol-contextmenu.css';
 
 //==============================================================================
 
-import '../css/flatmap.css';
+import '/static/css/flatmap.css';
 
 //==============================================================================
 
@@ -53,8 +53,8 @@ import LayerSwitcher from 'ol-layerswitcher';
 
 //==============================================================================
 
-import * as utils from '/static/scripts/utils.js';
-import {Toolbar} from '/src/toolbar.js';
+import * as utils from './utils.js';
+import {Toolbar} from './toolbar.js';
 
 //==============================================================================
 
@@ -234,6 +234,8 @@ export class FlatMap extends olMap
               })
             );
         }
+    }
+
     newFeatureLayer(title, source)
     {
         return new VectorLayer({
@@ -264,7 +266,6 @@ export class FlatMap extends olMap
         const featureLayer = options.featureSource
             ? this.newFeatureLayer(options.title, options.featureSource)
             : null;
-
 
         if (tileLayer && featureLayer) {
             tileLayer.set('title', 'image');

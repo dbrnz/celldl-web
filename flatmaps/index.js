@@ -26,7 +26,7 @@ limitations under the License.
 
 //==============================================================================
 
-import {FlatMap} from '/static/scripts/flatmap.js';
+import {FlatMap} from '/src/flatmap.js';
 
 //==============================================================================
 
