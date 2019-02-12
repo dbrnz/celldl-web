@@ -1,5 +1,9 @@
 /* Tidy up layer switcher control */
 
+.layer-switcher {
+	top: 0.5em;
+}
+
 .layer-switcher li.group {
     padding: 0
 }
