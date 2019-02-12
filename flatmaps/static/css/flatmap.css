@@ -13,3 +13,17 @@
     position: relative;
     bottom: .1em
 }
+
+.flatmap-map {
+	display: flex;
+	flex-direction: column;
+}
+
+.flatmap-toolbar {
+	height: 25px;
+	border-bottom: 1px solid #888;
+}
+
+.flatmap-display {
+	height: calc(100% - 25px);
+}

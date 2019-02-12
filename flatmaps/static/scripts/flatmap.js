@@ -54,6 +54,7 @@ import LayerSwitcher from 'ol-layerswitcher';
 //==============================================================================
 
 import * as utils from '/static/scripts/utils.js';
+import {Toolbar} from '/src/toolbar.js';
 
 //==============================================================================
 
@@ -117,8 +118,28 @@ export class FlatMap extends olMap
             maxZoom: maxZoom
           });
 
+        let mapDisplayElementId = '';
+        let toolbar = null;
+
+        if (options.editable) {
+            mapDisplayElementId = `${htmlElementId}-display`;
+
+            const mapElement = document.getElementById(htmlElementId);
+            mapElement.classList.add('flatmap-map');
+
+            toolbar = new Toolbar(htmlElementId);
+            mapElement.appendChild(toolbar.domElement);
+
+            const mapDisplayElement = document.createElement('div');
+            mapDisplayElement.id = mapDisplayElementId;
+            mapDisplayElement.classList.add('flatmap-display')
+            mapElement.appendChild(mapDisplayElement);
+        } else {
+            mapDisplayElementId = htmlElementId;
+        }
+
         super({
-            target: htmlElementId,
+            target: mapDisplayElementId,
             view: mapView,
             loadTilesWhileInteracting: true,
             loadTilesWhileAnimating: true
