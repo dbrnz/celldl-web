@@ -127,13 +127,13 @@ export class FlatMap extends olMap
             const mapElement = document.getElementById(htmlElementId);
             mapElement.classList.add('flatmap-map');
 
-            toolbar = new Toolbar(htmlElementId);
-            mapElement.appendChild(toolbar.domElement);
-
             const mapDisplayElement = document.createElement('div');
             mapDisplayElement.id = mapDisplayElementId;
             mapDisplayElement.classList.add('flatmap-display')
             mapElement.appendChild(mapDisplayElement);
+
+            toolbar = new Toolbar(htmlElementId);
+            mapElement.appendChild(toolbar.domElement);
         } else {
             mapDisplayElementId = htmlElementId;
         }
@@ -234,6 +234,19 @@ export class FlatMap extends olMap
               })
             );
         }
+/*  WIP
+        if (options.editable) {
+            const draw = new Draw();
+            const select = new Select();
+            const translate = new Translate({
+                features: select.getFeatures()
+            });
+            const interactions = this.getInteractions();
+
+        this.interactions: ol.interaction.defaults().eend([select]), //, translate]),
+        }
+WIP  */
+
     }
 
     newFeatureLayer(title, source)
@@ -252,6 +265,8 @@ export class FlatMap extends olMap
 
     addNewLayer(options)
     {
+        // Just have options.source and use it to get both tiles and features??
+
         const tileLayer = options.rasterSource
             ? new TileLayer({
                 title: options.title,
@@ -266,6 +281,23 @@ export class FlatMap extends olMap
         const featureLayer = options.featureSource
             ? this.newFeatureLayer(options.title, options.featureSource)
             : null;
+
+/*
+        const dataProjection = this.projection;
+
+fetch(`${this.id}/features/${options.featureSource}`)
+    .then(response => response.json())
+    .then(json => {
+        var features = new GeoJSON().readFeatures(json);
+        vectorSource.addFeatures(features);
+    })
+    .catch(error => console.log(error));
+
+
+fetch(url).then()
+
+*/
+
 
         if (tileLayer && featureLayer) {
             tileLayer.set('title', 'image');
@@ -283,4 +315,18 @@ export class FlatMap extends olMap
     }
 }
 
+//==============================================================================
+/*
+
+Todo:
+
+* Feature layers
+* Feature creation and editing
+* Layer reordering
+* Context menu (menu items depend on selection/position)
+* Tooltips
+* Feature vactor layer as tiles
+
+
+*/
 //==============================================================================
