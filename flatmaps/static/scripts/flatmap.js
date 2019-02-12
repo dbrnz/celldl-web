@@ -22,6 +22,17 @@ limitations under the License.
 
 //==============================================================================
 
+import 'ol/ol.css';
+
+import 'ol-layerswitcher/src/ol-layerswitcher.css';
+import 'ol-contextmenu/dist/ol-contextmenu.css';
+
+//==============================================================================
+
+import '../css/flatmap.css';
+
+//==============================================================================
+
 import {Map as olMap} from 'ol';
 import {View as olView} from 'ol';
 

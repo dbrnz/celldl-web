@@ -1,0 +1,15 @@
+/* Tidy up layer switcher control */
+
+.layer-switcher li.group {
+    padding: 0
+}
+
+.layer-switcher li.group>label {
+    font-weight: normal;
+}
+
+.layer-switcher li.layer input {
+    vertical-align: middle;
+    position: relative;
+    bottom: .1em
+}
