@@ -198,6 +198,17 @@ export class FlatMap extends olMap
         if (options.features) {
             this.addLayer(this.newFeatureLayer('Features', ''));
 
+        this.addLayer(new VectorLayer({
+            title: "Topology",
+            source: new VectorSource({
+                format: new TopoJSON({
+                    dataProjection: this.projection
+                }),
+                url: utils.absoluteUrl(`${this.id}/topology/`)
+            }),
+            style: this.styleFunction
+        }));
+
 
         }
 
