@@ -23,6 +23,10 @@
 	flex-direction: column;
 }
 
+.flatmap-display {
+	flex-grow: 1;
+}
+
 /* Tool bar styling */
 
 .flatmap-toolbar {
@@ -32,14 +36,14 @@
     transform: translate(-50%, 0);
 	height: 31px;
 	font-size: 20px;
-	border: 2px solid #222;
-	background: Ivory;
+	border: 2px solid SlateGray;
+	background: Gainsboro;
 	opacity: 0.7;
-	color: Navy;
+	color: SteelBlue;
 }
 
 .flatmap-toolbar i {
-	border: 1px solid #888;
+	border: 1.5px solid Silver;
 	width: 25px;
 	height: 23px;
 	text-align: center;
@@ -49,13 +53,13 @@
 }
 
 .flatmap-toolbar i.selected {
-	background: #AAA;
+	background: PowderBlue;
 }
 
 .flatmap-toolbar i.spacer {
 	width: 0;
 	padding: 0;
-	border: 1px solid black;
-	border-top: 4px solid black;
-	border-bottom: 4px solid black;
+	border: 1.5px solid SlateGray;
+	border-top: 5px solid SlateGray;
+	border-bottom: 4px solid SlateGray;
 }

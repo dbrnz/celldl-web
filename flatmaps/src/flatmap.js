@@ -145,6 +145,10 @@ export class FlatMap extends olMap
             loadTilesWhileAnimating: true
           });
 
+        if (toolbar) {
+            toolbar.setMap(this);
+        }
+
         this.id = options.id;
         this.projection = mapProjection;
         this.resolutions = mapResolutions;

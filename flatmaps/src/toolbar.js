@@ -23,51 +23,114 @@ limitations under the License.
 //==============================================================================
 
 
-function awesomeFont(style, name, tooltip)
+//==============================================================================
+
+class Tool
 {
-    const element = document.createElement('i');
-    element.classList.add(style);
-    element.classList.add(name);
-    element.setAttribute('title', tooltip);
+	constructor(toolbar, tooltip, action) {
+		this._toolbar = toolbar;
+		this._action = action;
+    	this._domElement = document.createElement('i');
+		this._domElement.onclick = this.clicked.bind(this);
+    	if (tooltip) {
+    		this._domElement.setAttribute('title', tooltip);
+    	}
+	}
 
-	element.onclick = function(e) {
-	    e.target.classList.add('selected');
-	};
+	get action()
+	{
+		return this._action;
+	}
 
-    return element;
+	get domElement()
+	{
+		return this._domElement;
+	}
+
+	clicked(toolElement)
+	{
+		this._toolbar.toolClicked(this);
+	}
+
+	highlight(selected)
+	{
+		if (selected) {
+			this._domElement.classList.add('selected');
+		} else {
+			this._domElement.classList.remove('selected');
+		}
+	}
 }
 
+//==============================================================================
 
-function spacer()
+class StyledTool extends Tool
 {
-    const element = document.createElement('i');
-    element.classList.add('spacer');
-    return element;
+	constructor(toolbar, style, name, tooltip, action) {
+		super(toolbar, tooltip, action);
+    	this._domElement.classList.add(style);
+    	this._domElement.classList.add(name);
+	}
 }
 
+//==============================================================================
 
 export class Toolbar
 {
 	constructor(containerId) {
-        const toolbarElement = document.createElement('div');
-        toolbarElement.id = `${containerId}-toolbar`;
-        toolbarElement.classList.add('flatmap-toolbar');
-        toolbarElement.appendChild(awesomeFont('fas', 'fa-mouse-pointer', 'Select'));
-        toolbarElement.appendChild(spacer());
-        toolbarElement.appendChild(awesomeFont('fas', 'fa-map-marker', 'Add point'));
-        toolbarElement.appendChild(awesomeFont('fas', 'fa-pencil-alt', 'Add line'));
-        toolbarElement.appendChild(awesomeFont('fas', 'fa-vector-square', 'Add rectangle'));
-        toolbarElement.appendChild(awesomeFont('fas', 'fa-draw-polygon', 'Add polygon'));
-        toolbarElement.appendChild(spacer());
-        toolbarElement.appendChild(awesomeFont('far', 'fa-trash-alt', 'Delete'));
-        toolbarElement.appendChild(spacer());
-        toolbarElement.appendChild(awesomeFont('fas', 'fa-undo', 'Undo'));
-        toolbarElement.appendChild(awesomeFont('fas', 'fa-redo', 'Redo'));
-        this._domElement = toolbarElement;
+		this._map = null;
+        this._domElement = document.createElement('div');
+        this._domElement.id = `${containerId}-toolbar`;
+        this._domElement.classList.add('flatmap-toolbar');
+        this._tools = [];
+        this.addStyledTool('fas', 'fa-mouse-pointer', 'Select');
+        this.addSpacer();
+        this.addStyledTool('fas', 'fa-map-marker', 'Add point');
+        this.addStyledTool('fas', 'fa-pencil-alt', 'Add line');
+        this.addStyledTool('fas', 'fa-vector-square', 'Add rectangle');
+        this.addStyledTool('fas', 'fa-draw-polygon', 'Add polygon');
+        this.addSpacer();
+        this.addStyledTool('far', 'fa-trash-alt', 'Delete');
+        this.addSpacer();
+        this.addStyledTool('fas', 'fa-undo', 'Undo');
+        this.addStyledTool('fas', 'fa-redo', 'Redo');
+        this.addSpacer();
+        this.addStyledTool('fas', 'fa-save', 'Save changes');
 	}
 
-	get domElement() {
+	get domElement()
+	{
 		return this._domElement;
+	}
+
+	addSpacer()
+	{
+    	const element = document.createElement('i');
+    	element.classList.add('spacer');
+    	this._domElement.appendChild(element);
+	}
+
+	addStyledTool(style, name, tooltip, action=null)
+	{
+		const tool = new StyledTool(this, style, name, tooltip, action);
+		this._domElement.appendChild(tool.domElement);
+		this._tools.push(tool);
+	}
+
+	setMap(map)
+	{
+		this._map = map;
+	}
+
+	toolClicked(tool)
+	{
+		for (let t of this._tools) {
+			t.highlight(t === tool);
+		}
+		if (tool.action) {
+			tool.action(this._map);
+			tool.highlight(false);  // Or default back to selection ??
+		}
 	}
 }
 
