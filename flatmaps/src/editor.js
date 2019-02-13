@@ -21,11 +21,3 @@ limitations under the License.
 'use strict';
 
 //==============================================================================
-
-export function absoluteUrl(relativePath)
-{
-    const url = new URL(relativePath, window.location.href)
-    return url.href;
-}
-
-//==============================================================================
